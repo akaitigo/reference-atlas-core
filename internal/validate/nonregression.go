@@ -113,47 +113,70 @@ func AuditNonRegression(dir string) (NonRegressionResult, error) {
 	}
 	baselineCount, currentCount := 0, 0
 	for _, collection := range nonRegressionCollections {
-		oldItems := indexBaselineItems(anySlice(baselineCollections[collection]))
-		newItems := indexBaselineItems(anySlice(currentCollections[collection]))
-		baselineCount += len(oldItems)
-		currentCount += len(newItems)
-		for id, oldItem := range oldItems {
-			newItem, exists := newItems[id]
-			if collection == "evidence" && oldItem["verdict"] != "pass" && !exists {
-				return NonRegressionResult{}, fmt.Errorf("失敗Evidenceを削除・上書きできません: %s", id)
-			}
-			if exists {
-				if err := rejectDirectWeakening(collection, oldItem, newItem); err != nil {
+		oldValues := anySlice(baselineCollections[collection])
+		newValues := anySlice(currentCollections[collection])
+		oldGroups := groupBaselineItems(oldValues)
+		newGroups := groupBaselineItems(newValues)
+		newItems := indexBaselineItems(newValues)
+		baselineCount += len(oldValues)
+		currentCount += len(newValues)
+		for id, oldGroup := range oldGroups {
+			newGroup := newGroups[id]
+			used := make([]bool, len(newGroup))
+			for _, oldItem := range oldGroup {
+				exact := matchingBaselineFingerprint(newGroup, used, stringValue(oldItem["fingerprint"]))
+				if exact >= 0 {
+					if err := rejectDirectWeakening(collection, oldItem, newGroup[exact]); err != nil {
+						return NonRegressionResult{}, err
+					}
+					used[exact] = true
+					continue
+				}
+				if len(oldGroup) > 1 || len(newGroup) > 1 {
+					return NonRegressionResult{}, fmt.Errorf("Baseline %sの重複ID multisetを削除・変更できません: %s", collection, id)
+				}
+				var newItem map[string]any
+				exists := len(newGroup) == 1
+				if exists {
+					newItem = newGroup[0]
+				}
+				if collection == "evidence" && oldItem["verdict"] != "pass" && !exists {
+					return NonRegressionResult{}, fmt.Errorf("失敗Evidenceを削除・上書きできません: %s", id)
+				}
+				if exists {
+					if err := rejectDirectWeakening(collection, oldItem, newItem); err != nil {
+						return NonRegressionResult{}, err
+					}
+					if oldItem["fingerprint"] == newItem["fingerprint"] {
+						continue
+					}
+					if collection == "authority_extraction" && authorityExtractionStrengthens(oldItem, newItem) {
+						continue
+					}
+					if collection == "authority_body_inventory" && authorityBodyStrengthens(oldItem, newItem) {
+						continue
+					}
+					if collection == "authority_review_queue" && authorityReviewStrengthens(oldItem, newItem) {
+						continue
+					}
+					if collection == "skill_router_cells" && skillRouterCellStrengthens(oldItem, newItem) {
+						continue
+					}
+				}
+				mapping := replacements[collection+":"+id]
+				if mapping == nil {
+					if !exists {
+						return NonRegressionResult{}, fmt.Errorf("Baseline %sを削除・Scope外移動できません: %s", collection, id)
+					}
+					return NonRegressionResult{}, fmt.Errorf("Baseline %sのAssertion・閾値・予算・Platformを変更できません: %s", collection, id)
+				}
+				if err := validateReplacement(ctx, collection, oldItem, mapping, newItems); err != nil {
 					return NonRegressionResult{}, err
 				}
-				if oldItem["fingerprint"] == newItem["fingerprint"] {
-					continue
-				}
-				if collection == "authority_extraction" && authorityExtractionStrengthens(oldItem, newItem) {
-					continue
-				}
-				if collection == "authority_body_inventory" && authorityBodyStrengthens(oldItem, newItem) {
-					continue
-				}
-				if collection == "authority_review_queue" && authorityReviewStrengthens(oldItem, newItem) {
-					continue
-				}
-				if collection == "skill_router_cells" && skillRouterCellStrengthens(oldItem, newItem) {
-					continue
-				}
-			}
-			mapping := replacements[collection+":"+id]
-			if mapping == nil {
-				if !exists {
-					return NonRegressionResult{}, fmt.Errorf("Baseline %sを削除・Scope外移動できません: %s", collection, id)
-				}
-				return NonRegressionResult{}, fmt.Errorf("Baseline %sのAssertion・閾値・予算・Platformを変更できません: %s", collection, id)
-			}
-			if err := validateReplacement(ctx, collection, oldItem, mapping, newItems); err != nil {
-				return NonRegressionResult{}, err
 			}
 		}
-		for _, item := range newItems {
+		for _, raw := range newValues {
+			item, _ := raw.(map[string]any)
 			if collection == "tests_labs" && item["enabled"] != true {
 				return NonRegressionResult{}, fmt.Errorf("Test/Labをskip・xfail・disabled化できません: %s", item["id"])
 			}
@@ -245,14 +268,15 @@ func verifyMonotonicBaselineRecapture(oldBaseline, newBaseline map[string]any) e
 	oldCollections, _ := oldBaseline["collections"].(map[string]any)
 	newCollections, _ := newBaseline["collections"].(map[string]any)
 	for collection, rawItems := range oldCollections {
-		newByID := indexBaselineItems(anySlice(newCollections[collection]))
+		newCounts := baselineIdentityCounts(anySlice(newCollections[collection]))
 		for _, raw := range anySlice(rawItems) {
 			item, _ := raw.(map[string]any)
 			id := stringValue(item["id"])
-			candidate := newByID[id]
-			if candidate == nil || candidate["fingerprint"] != item["fingerprint"] {
+			identity := baselineIdentity{id: id, fingerprint: stringValue(item["fingerprint"])}
+			if newCounts[identity] == 0 {
 				return fmt.Errorf("Baseline capture契約拡張で既存項目を削除・変更できません: %s:%s", collection, id)
 			}
+			newCounts[identity]--
 		}
 	}
 	return nil
@@ -1039,6 +1063,40 @@ func indexBaselineItems(values []any) map[string]map[string]any {
 	for _, raw := range values {
 		item, _ := raw.(map[string]any)
 		result[stringValue(item["id"])] = item
+	}
+	return result
+}
+
+func groupBaselineItems(values []any) map[string][]map[string]any {
+	result := map[string][]map[string]any{}
+	for _, raw := range values {
+		item, _ := raw.(map[string]any)
+		id := stringValue(item["id"])
+		result[id] = append(result[id], item)
+	}
+	return result
+}
+
+func matchingBaselineFingerprint(items []map[string]any, used []bool, fingerprint string) int {
+	for index, item := range items {
+		if !used[index] && stringValue(item["fingerprint"]) == fingerprint {
+			return index
+		}
+	}
+	return -1
+}
+
+type baselineIdentity struct {
+	id          string
+	fingerprint string
+}
+
+func baselineIdentityCounts(values []any) map[baselineIdentity]int {
+	result := map[baselineIdentity]int{}
+	for _, raw := range values {
+		item, _ := raw.(map[string]any)
+		identity := baselineIdentity{id: stringValue(item["id"]), fingerprint: stringValue(item["fingerprint"])}
+		result[identity]++
 	}
 	return result
 }

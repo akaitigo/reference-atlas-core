@@ -7,6 +7,7 @@
 - v1 Certificateを不変履歴へ移すMigrationと、独立Definitive Certificate生成・検証を追加した。
 - 公開mainのTest/Lab/Target/Claim/Proof/Evidence/Source/Skill Eval/Profile/Matrix/CIを単調下限として固定するNon-regression Gateを追加した。
 - Authority body candidate denominator、Human Review Queue、read-only Review Export、stale relock、Definitive Skill Routerを独立Gateとして追加した。
+- Non-regression Baselineの同一ID項目を`(id, fingerprint)` multisetとして保持し、Claim間で重複するProof Obligationを欠落なく比較する。
 
 ## v1.0.0 — 2026-08-28
 
