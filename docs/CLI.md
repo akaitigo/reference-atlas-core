@@ -11,6 +11,7 @@ atlas audit <atlas-directory> --gate authority-review
 atlas audit <atlas-directory> --gate authority-review-export
 atlas audit <atlas-directory> --gate authority-relock
 atlas audit <atlas-directory> --gate skill-router
+atlas audit <atlas-directory> --gate scenario-trace
 atlas baseline generate <atlas-directory> <output> --commit SHA [--captured-at RFC3339]
 atlas scaffold <directory> <atlas-id> <日本語title> [epoch]
 atlas generate skill-reference <atlas-directory>
@@ -36,3 +37,5 @@ atlas version
 `--gate authority-relock`はstale candidate reportとSource Lockを照合する。Lockが変わった場合だけ、人の明示選択、旧/new Lock、全旧IDのmapping、実行Proof、Migration Evidence、Non-regression Evidenceを持つ専用decisionを要求する。
 
 `--gate skill-router`は8 Outcome × 14 Surfaceのroute、実Target、Variant file digest、Authority Source Lock、Evidence Artifact、mutation authorization、5つのfail-closed境界を照合する。routing gap、partial Coverage、未実施Forward Evalは`completion_limited=true`として表示し、matrixの`result=pass`だけではSkillやSubjectをcompleteにしない。
+
+`--gate scenario-trace`はAuthority由来Behavior × 10 Scenarioのdenominator、個別row、source／harness／environment／runtime identity、統合Reference Systemの実行結果とTrace digestを照合する。stagingではGapを保持したまま集計の真正性を検証できるが、`--gate definitive`は全rowに専用Runtime ArtifactとAtomic Authority bindingを要求し、統合Traceの個別Proofへの流用を拒否する。

@@ -43,7 +43,7 @@
         "additionalProperties": false,
         "required": ["collection", "old_id", "new_ids", "equivalence", "reason", "execution_proof_evidence_ids", "migration_evidence_ids"],
         "properties": {
-          "collection": {"enum": ["tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"]},
+          "collection": {"enum": ["tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"]},
           "old_id": {"type": "string", "minLength": 1},
           "new_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
           "equivalence": {"const": "equal-or-stronger"},

@@ -90,6 +90,14 @@ func schemaFor(path string) (string, error) {
 		return "claim.schema.json", nil
 	case base == "definitive-skill-router.json" || base == "FE_DEFINITIVE_SKILL_ROUTER_REFERENCE.json":
 		return "definitive-skill-router.schema.json", nil
+	case base == "index.json" && filepath.Base(filepath.Dir(path)) == "scenarios":
+		return "scenario-proof-index.schema.json", nil
+	case strings.HasSuffix(base, ".proof.json") && strings.Contains(filepath.ToSlash(path), "/evidence/scenarios/"):
+		return "scenario-proof-row.schema.json", nil
+	case base == "manifest.json" && filepath.Base(filepath.Dir(path)) == "reference-system":
+		return "integrated-reference-system.schema.json", nil
+	case base == "results.json" && filepath.Base(filepath.Dir(path)) == "reference-system":
+		return "integrated-scenario-results.schema.json", nil
 	case strings.HasSuffix(base, ".skill-eval.yaml") || strings.HasSuffix(base, ".skill-eval.yml") || strings.HasSuffix(base, ".skill-eval.json"):
 		return "skill-eval.schema.json", nil
 	case base == "provenance.yaml" || base == "provenance.yml" || base == "provenance.json":

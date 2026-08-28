@@ -290,6 +290,7 @@ required_actions:
   - classify-all-surfaces
   - split-behavior-proofs
   - complete-scenario-matrix
+  - complete-integrated-scenario-trace-closure
   - collect-runtime-evidence
   - add-reference-system-if-applicable
   - add-comparisons-if-applicable

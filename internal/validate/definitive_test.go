@@ -108,6 +108,19 @@ func TestDefinitiveProofMatrixAcceptsExplicitBehaviorProofs(t *testing.T) {
 	}
 }
 
+func TestDefinitiveProofMatrixAcceptsLegacyRejectionSpelling(t *testing.T) {
+	ctx := proofMatrixFixture()
+	for _, raw := range ctx.matrix["rows"].([]any) {
+		row := raw.(map[string]any)
+		if row["scenario"] == "refusal" {
+			row["scenario"] = "rejection"
+		}
+	}
+	if _, _, _, err := auditDefinitiveProofMatrix(ctx); err != nil {
+		t.Fatalf("v2 pre-releaseのrejection識別子はrefusalへ互換正規化する必要があります: %v", err)
+	}
+}
+
 func TestDefinitiveRequiresIntegratedReferenceSystemWhenApplicable(t *testing.T) {
 	ctx := &definitiveContext{base: &auditContext{}, manifest: map[string]any{"reference_systems": []any{}, "comparisons": []any{}}, behaviors: map[string]map[string]any{
 		"counter.increment": {"surface_ids": []any{"architecture-design"}},
@@ -134,13 +147,13 @@ func proofMatrixFixture() *definitiveContext {
 	proofs := []any{
 		map[string]any{"id": "counter.increment.normal"},
 		map[string]any{"id": "counter.increment.boundary"},
-		map[string]any{"id": "counter.increment.rejection"},
+		map[string]any{"id": "counter.increment.refusal"},
 	}
 	evidence := map[string]map[string]any{}
 	rows := []any{}
 	for _, scenario := range definitiveScenarios {
 		row := map[string]any{"behavior_id": "counter.increment", "scenario": scenario, "applicability": "not-applicable", "proof_obligation_id": nil, "evidence_ids": []any{}, "execution_requirement": "not-applicable", "profile": nil}
-		if scenario == "normal" || scenario == "boundary" || scenario == "rejection" {
+		if scenario == "normal" || scenario == "boundary" || scenario == "refusal" {
 			evidenceID := "ev." + scenario
 			row["applicability"] = "required"
 			row["proof_obligation_id"] = "counter.increment." + scenario
@@ -155,7 +168,7 @@ func proofMatrixFixture() *definitiveContext {
 		rows = append(rows, row)
 	}
 	return &definitiveContext{
-		base:             &auditContext{evidence: evidence, targets: []any{map[string]any{"id": "counter.increment", "evidence_ids": []any{"ev.normal", "ev.boundary", "ev.rejection"}}}},
+		base:             &auditContext{evidence: evidence, targets: []any{map[string]any{"id": "counter.increment", "evidence_ids": []any{"ev.normal", "ev.boundary", "ev.refusal"}}}},
 		behaviors:        map[string]map[string]any{"counter.increment": behavior},
 		claimsByBehavior: map[string]map[string]any{"counter.increment": {"proof_obligations": proofs}}, matrix: map[string]any{"rows": rows},
 	}

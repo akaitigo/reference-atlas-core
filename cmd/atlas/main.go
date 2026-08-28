@@ -36,6 +36,14 @@ func run(args []string) error {
 		}
 		return nil
 	case "audit":
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "scenario-trace" {
+			result, err := validate.AuditScenarioTrace(args[1], "evidence/scenarios/index.json", false)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Integrated Scenario/Trace監査済み: %s patterns=%d rows=%d dedicated_artifacts=%d pattern_specific=%d runtime_identity=%d gaps=%d integrated_trace_rows=%d authority_atomic=%d completion_eligible=%d integrated_scenarios=%d completion_limited=%t\n", result.AtlasID, result.Patterns, result.Rows, result.DedicatedArtifactRows, result.PatternSpecificRows, result.RuntimeIdentityRows, result.PatternSpecificGaps, result.IntegratedTraceRows, result.AuthorityAtomicRows, result.CompletionEligibleRows, result.IntegratedScenarioTests, result.CompletionLimited)
+			return nil
+		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "skill-router" {
 			result, err := validate.AuditDefinitiveSkillRouter(args[1], "evals/definitive-skill-router.json", false)
 			if err != nil {
@@ -100,8 +108,8 @@ func run(args []string) error {
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Subject Definitive監査済み: %s completion_class=%s authority_surfaces=%d behaviors=%d proofs=%d required_matrix_rows=%d runtime_evidence=%d depth_parity_rows=%d reference_systems=%d comparisons=%d\n",
-				result.AtlasID, result.CompletionClass, result.AuthoritySurfaces, result.IncludedBehaviors, result.ProofObligations, result.RequiredMatrixRows, result.RuntimeEvidence, result.DepthParityRows, result.ReferenceSystems, result.Comparisons)
+			fmt.Printf("Subject Definitive監査済み: %s completion_class=%s authority_surfaces=%d behaviors=%d proofs=%d required_matrix_rows=%d runtime_evidence=%d scenario_proof_rows=%d depth_parity_rows=%d reference_systems=%d comparisons=%d\n",
+				result.AtlasID, result.CompletionClass, result.AuthoritySurfaces, result.IncludedBehaviors, result.ProofObligations, result.RequiredMatrixRows, result.RuntimeEvidence, result.ScenarioProofRows, result.DepthParityRows, result.ReferenceSystems, result.Comparisons)
 			return nil
 		}
 		if len(args) != 2 {
@@ -282,5 +290,5 @@ func baselineOptions(args []string) (string, string, error) {
 }
 
 func usageError() error {
-	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
+	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body|authority-review|authority-review-export|authority-relock|skill-router|scenario-trace] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
 }

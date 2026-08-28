@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/scenario-proof-index.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "id", "atlas_id", "generated_at", "status", "denominator", "tool_digest", "source_digests", "summary", "by_scenario", "files", "completion_limits"],
+  "properties": {
+    "schema_version": {"const": 1}, "id": {"type": "string", "minLength": 3}, "atlas_id": {"$ref": "#/$defs/id"}, "generated_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["incomplete-authority-atomic-and-runtime-closure", "incomplete-scenario-gaps", "completion-eligible"]}, "denominator": {"type": "string", "minLength": 10}, "tool_digest": {"$ref": "#/$defs/sha256"},
+    "source_digests": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+    "summary": {"$ref": "#/$defs/counts"},
+    "by_scenario": {"type": "object", "additionalProperties": false, "required": ["normal", "boundary", "refusal", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"], "properties": {
+      "normal": {"$ref": "#/$defs/scenarioCounts"}, "boundary": {"$ref": "#/$defs/scenarioCounts"}, "refusal": {"$ref": "#/$defs/scenarioCounts"}, "failure": {"$ref": "#/$defs/scenarioCounts"}, "recovery": {"$ref": "#/$defs/scenarioCounts"}, "migration": {"$ref": "#/$defs/scenarioCounts"}, "operations": {"$ref": "#/$defs/scenarioCounts"}, "security": {"$ref": "#/$defs/scenarioCounts"}, "performance": {"$ref": "#/$defs/scenarioCounts"}, "compatibility": {"$ref": "#/$defs/scenarioCounts"}
+    }},
+    "files": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["id", "pattern_id", "scenario", "path", "digest", "status"], "properties": {
+      "id": {"type": "string", "minLength": 3}, "pattern_id": {"type": "string", "minLength": 2}, "behavior_id": {"type": "string", "minLength": 2}, "scenario": {"$ref": "#/$defs/scenario"}, "path": {"type": "string", "pattern": "^evidence/scenarios/.+\\.proof\\.json$"}, "digest": {"$ref": "#/$defs/sha256"}, "status": {"enum": ["pattern-specific-gap", "bounded-capture-proof", "bounded-runtime-proof", "completion-eligible-runtime-proof", "not-applicable"]}
+    }}},
+    "completion_limits": {"type": "array", "items": {"type": "string", "minLength": 20}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}, "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "scenario": {"enum": ["normal", "boundary", "refusal", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"]},
+    "counts": {"type": "object", "additionalProperties": false, "required": ["patterns", "scenarios", "rows", "dedicated_artifacts", "pattern_specific_rows", "pattern_specific_runtime_rows", "pattern_specific_capture_rows", "pattern_specific_gaps", "integrated_trace_rows", "authority_atomic_rows", "completion_eligible_rows"], "properties": {"patterns": {"type": "integer", "minimum": 1}, "scenarios": {"const": 10}, "rows": {"type": "integer", "minimum": 1}, "dedicated_artifacts": {"type": "integer", "minimum": 0}, "pattern_specific_rows": {"type": "integer", "minimum": 0}, "pattern_specific_runtime_rows": {"type": "integer", "minimum": 0}, "pattern_specific_capture_rows": {"type": "integer", "minimum": 0}, "pattern_specific_gaps": {"type": "integer", "minimum": 0}, "integrated_trace_rows": {"type": "integer", "minimum": 0}, "authority_atomic_rows": {"type": "integer", "minimum": 0}, "completion_eligible_rows": {"type": "integer", "minimum": 0}}},
+    "scenarioCounts": {"type": "object", "additionalProperties": false, "required": ["rows", "pattern_specific", "runtime_identity", "integrated_pattern_mapped", "gaps"], "properties": {"rows": {"type": "integer", "minimum": 0}, "pattern_specific": {"type": "integer", "minimum": 0}, "runtime_identity": {"type": "integer", "minimum": 0}, "integrated_pattern_mapped": {"type": "integer", "minimum": 0}, "gaps": {"type": "integer", "minimum": 0}}}
+  }
+}

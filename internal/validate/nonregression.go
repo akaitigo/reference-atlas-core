@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
+var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
 
 type NonRegressionResult struct {
 	AtlasID       string
@@ -160,6 +160,9 @@ func AuditNonRegression(dir string) (NonRegressionResult, error) {
 						continue
 					}
 					if collection == "skill_router_cells" && skillRouterCellStrengthens(oldItem, newItem) {
+						continue
+					}
+					if collection == "scenario_proof_rows" && scenarioProofRowStrengthens(oldItem, newItem) {
 						continue
 					}
 				}
@@ -439,6 +442,7 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	}
 	collections["skill_eval_cases"] = evalItems
 	collections["skill_router_cells"] = captureSkillRouterCells(dir)
+	collections["scenario_proof_rows"] = captureScenarioProofRows(dir)
 	completion, _ := atlas["completion"].(map[string]any)
 	profileItems := []any{}
 	for _, raw := range anySlice(completion["required_profiles"]) {
@@ -812,6 +816,86 @@ func captureSkillRouterCells(dir string) []any {
 		}
 	}
 	return items
+}
+
+func captureScenarioProofRows(dir string) []any {
+	indexPath := filepath.Join(dir, "evidence", "scenarios", "index.json")
+	index, err := readDocument(indexPath)
+	if err != nil {
+		return []any{}
+	}
+	items := []any{}
+	for _, raw := range anySlice(index["files"]) {
+		record, _ := raw.(map[string]any)
+		row, err := readDocument(filepath.Join(dir, filepath.FromSlash(stringValue(record["path"]))))
+		if err != nil {
+			continue
+		}
+		closure, _ := row["closure"].(map[string]any)
+		runtime, _ := row["runtime_identity"].(map[string]any)
+		patternEvidence, _ := row["pattern_evidence"].(map[string]any)
+		stableDigest, _ := digestCanonical(map[string]any{"behavior_id": row["behavior_id"], "pattern_id": row["pattern_id"], "scenario": row["scenario"], "source_bindings": row["source_bindings"], "authority_binding": row["authority_binding"]})
+		gapDigest, _ := digestCanonical(row["gaps"])
+		items = append(items, baselineItem(stringValue(record["id"]), row, func(item map[string]any) {
+			item["path"] = record["path"]
+			item["stable_binding_digest"] = stableDigest
+			item["gap_digest"] = gapDigest
+			item["gap_count"] = len(anySlice(row["gaps"]))
+			item["runtime_execution_mode"] = runtime["execution_mode"]
+			item["runtime_profile"] = runtime["profile"]
+			item["runtime_source_digest"] = runtime["source_digest"]
+			item["runtime_harness_path"] = runtime["harness_path"]
+			item["runtime_harness_digest"] = runtime["harness_digest"]
+			item["runtime_environment_digest"] = runtime["environment_digest"]
+			item["runtime_artifact_path"] = runtime["artifact_path"]
+			item["runtime_artifact_digest"] = runtime["artifact_digest"]
+			item["capture_harness_digest"] = patternEvidence["capture_harness_digest"]
+			if patternEvidence["capture_environment_identity"] != nil {
+				captureEnvironmentDigest, _ := digestCanonical(patternEvidence["capture_environment_identity"])
+				item["capture_environment_digest"] = captureEnvironmentDigest
+			} else {
+				item["capture_environment_digest"] = ""
+			}
+			for _, key := range []string{"dedicated_row", "dedicated_artifact", "pattern_specific_evidence", "real_runtime_identity", "integrated_runtime_trace", "authority_atomic_behavior", "completion_eligible"} {
+				item[key] = closure[key]
+			}
+		}))
+	}
+	return items
+}
+
+func scenarioProofRowStrengthens(oldItem, newItem map[string]any) bool {
+	if oldItem["stable_binding_digest"] != newItem["stable_binding_digest"] || numberValue(newItem["gap_count"]) > numberValue(oldItem["gap_count"]) {
+		return false
+	}
+	for _, key := range []string{"dedicated_row", "dedicated_artifact", "pattern_specific_evidence", "real_runtime_identity", "integrated_runtime_trace", "authority_atomic_behavior", "completion_eligible"} {
+		if oldItem[key] == true && newItem[key] != true {
+			return false
+		}
+	}
+	if numberValue(newItem["gap_count"]) == numberValue(oldItem["gap_count"]) && oldItem["gap_digest"] != newItem["gap_digest"] {
+		return false
+	}
+	for _, key := range []string{"runtime_profile", "runtime_source_digest", "runtime_harness_path", "runtime_harness_digest", "runtime_environment_digest", "runtime_artifact_path", "runtime_artifact_digest", "capture_harness_digest", "capture_environment_digest"} {
+		if stringValue(oldItem[key]) != "" && oldItem[key] != newItem[key] {
+			return false
+		}
+	}
+	if scenarioExecutionRank(stringValue(newItem["runtime_execution_mode"])) < scenarioExecutionRank(stringValue(oldItem["runtime_execution_mode"])) {
+		return false
+	}
+	return true
+}
+
+func scenarioExecutionRank(mode string) int {
+	switch mode {
+	case "runtime", "platform":
+		return 2
+	case "fixture", "mock", "static", "compile-only":
+		return 1
+	default:
+		return 0
+	}
 }
 
 func skillRouterCellStrengthens(oldItem, newItem map[string]any) bool {

@@ -14,7 +14,7 @@
         "required": ["behavior_id", "scenario", "applicability", "rationale", "proof_obligation_id", "evidence_ids", "execution_requirement", "profile"],
         "properties": {
           "behavior_id": { "$ref": "#/$defs/dottedId" },
-          "scenario": { "enum": ["normal", "boundary", "rejection", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"] },
+          "scenario": { "enum": ["normal", "boundary", "refusal", "rejection", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"] },
           "applicability": { "enum": ["required", "not-applicable"] }, "rationale": { "type": "string", "minLength": 20 },
           "proof_obligation_id": { "type": ["string", "null"], "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
           "evidence_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/dottedId" } },

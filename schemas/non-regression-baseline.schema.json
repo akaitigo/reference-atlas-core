@@ -29,6 +29,7 @@
         "authority_body_inventory": {"$ref": "#/$defs/items"},
         "authority_review_queue": {"$ref": "#/$defs/items"},
         "skill_router_cells": {"$ref": "#/$defs/items"},
+        "scenario_proof_rows": {"$ref": "#/$defs/items"},
         "skill_eval_cases": {"$ref": "#/$defs/items"},
         "required_profiles": {"$ref": "#/$defs/items"},
         "matrix_rows": {"$ref": "#/$defs/items"},

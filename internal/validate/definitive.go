@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-var definitiveScenarios = []string{"normal", "boundary", "rejection", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"}
+var definitiveScenarios = []string{"normal", "boundary", "refusal", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"}
 
 var scenarioBySurface = map[string][]string{
 	"failure-recovery":                {"failure", "recovery"},
@@ -28,6 +28,7 @@ type DefinitiveAuditResult struct {
 	ReferenceSystems   int
 	Comparisons        int
 	DepthParityRows    int
+	ScenarioProofRows  int
 }
 
 type definitiveContext struct {
@@ -60,6 +61,10 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if err := auditReferenceSystemsAndComparisons(ctx); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
+	scenarioResult, err := AuditScenarioTrace(dir, stringValue(ctx.manifest["scenario_proofs"]), true)
+	if err != nil {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Integrated Scenario/Trace Gate: %w", err)
+	}
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
@@ -87,7 +92,8 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 		AuthoritySurfaces: authorityCount, IncludedBehaviors: len(ctx.behaviors), ProofObligations: proofCount,
 		RequiredMatrixRows: requiredRows, RuntimeEvidence: runtimeCount,
 		ReferenceSystems: len(anySlice(ctx.manifest["reference_systems"])), Comparisons: len(anySlice(ctx.manifest["comparisons"])),
-		DepthParityRows: depthRows,
+		DepthParityRows:   depthRows,
+		ScenarioProofRows: scenarioResult.Rows,
 	}, nil
 }
 
@@ -428,7 +434,7 @@ func auditDefinitiveProofMatrix(ctx *definitiveContext) (int, int, int, error) {
 	requiredRows, runtimeEvidence := 0, 0
 	for _, raw := range anySlice(ctx.matrix["rows"]) {
 		row, _ := raw.(map[string]any)
-		behaviorID, scenario := stringValue(row["behavior_id"]), stringValue(row["scenario"])
+		behaviorID, scenario := stringValue(row["behavior_id"]), normalizeDefinitiveScenario(stringValue(row["scenario"]))
 		if _, ok := ctx.behaviors[behaviorID]; !ok {
 			return 0, 0, 0, fmt.Errorf("Verification Matrixが未定義Behaviorを参照しています: %s", behaviorID)
 		}
@@ -494,7 +500,7 @@ func auditDefinitiveProofMatrix(ctx *definitiveContext) (int, int, int, error) {
 		}
 	}
 	for behaviorID, item := range ctx.behaviors {
-		required := map[string]bool{"normal": true, "boundary": true, "rejection": true}
+		required := map[string]bool{"normal": true, "boundary": true, "refusal": true}
 		for _, rawSurface := range anySlice(item["surface_ids"]) {
 			for _, scenario := range scenarioBySurface[stringValue(rawSurface)] {
 				required[scenario] = true
@@ -519,6 +525,15 @@ func auditDefinitiveProofMatrix(ctx *definitiveContext) (int, int, int, error) {
 		}
 	}
 	return len(proofOwner), requiredRows, runtimeEvidence, nil
+}
+
+// rejection is the v2 pre-release spelling retained for schema and fixture
+// compatibility. refusal is the canonical ten-scenario identifier.
+func normalizeDefinitiveScenario(scenario string) string {
+	if scenario == "rejection" {
+		return "refusal"
+	}
+	return scenario
 }
 
 func auditReferenceSystemsAndComparisons(ctx *definitiveContext) error {

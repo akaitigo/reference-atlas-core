@@ -141,6 +141,7 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 - Definitive Skill Routerは8 Outcome × 14 Surfaceの各cellを実Target、Variant file digest、Authority Source Lock、Runtime Evidenceへ接続する。mutation authorization、曖昧/未知Query、人手Authority decision、stale relockを独立したfail-closed境界にし、routing gap、partial Coverage、未実施Forward Evalが1件でもあればSkill/Subject Completionを拒否する。Router matrixのpassはTargetや実Project結果のpassを意味しない。
 - 各Behavior／Capabilityは専用required Target、専用accepted Claim、Scenarioごとの専用Proof Obligationを持つ。Target、Claim、Proof、Evidence、Artifactの共有による集約Closureを拒否する。
 - 全Behaviorに正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenario Rowを要求する。Surfaceから必須となるScenarioは`not-applicable`にできない。
+- Integrated Reference Systemの10 Scenario成功は統合境界の証拠であり、個別Surface／Atomic BehaviorのClosureへ加点しない。各Behavior × Scenario rowはsource、harness、environment、runtime identity、専用Evidence／Artifact、Atomic Authority bindingを独立して持ち、明示Gapを残せる。統合Traceや同一Runtime Artifactの複数row流用を拒否する。
 - required Scenarioは指定Profileの実RuntimeまたはPlatform Evidenceを必要とする。static、fixture、compile-only、KLIBやbytecode生成は代替にならない。
 - Architecture／Compatibility Surfaceでは複数Behaviorを接続するReference System、Decision Surfaceでは2方式以上のComparisonを要求する。
 - Skill Evalは8 Outcomeと14 Surfaceの全件、Coverage Gap応答、権限境界をpass Caseへ接続する。
@@ -152,3 +153,4 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 移行途中の`depth.parity.yaml`は`completion_status: incomplete`と`rows: []`、または`status: gap`のRowを保存できる。Schema適合はGapの正直な記録を許すが、Definitive Gateは`completion_status: parity`、全軸の専用Proof／Oracle／Evidence／Artifact／Trace、Gap 0が揃うまで失敗する。
 
 詳細な移行は`docs/MIGRATION_DEFINITIVE_V2.md`を正本とする。
+Integrated Scenario／Trace入力契約と参照値は`docs/FE_INTEGRATED_SCENARIO_TRACE_REFERENCE.md`に記録する。

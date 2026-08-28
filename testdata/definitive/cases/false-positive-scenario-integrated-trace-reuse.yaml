@@ -1,0 +1,3 @@
+mutation: scenario-integrated-trace-reuse
+want_error: 統合Reference System Traceを個別Behavior Proofへ流用できません
+refresh_bounded: false

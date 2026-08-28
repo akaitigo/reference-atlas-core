@@ -1,0 +1,3 @@
+mutation: scenario-authority-binding-forgery
+want_error: Scenario Proof rowのAtomic Authority bindingがInventoryと一致しません
+refresh_bounded: false
