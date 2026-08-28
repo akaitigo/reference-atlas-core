@@ -1,0 +1,3 @@
+mutation: scenario-capture-identity-substitution
+want_error: 未Closure実体をcompletion-eligibleと宣言しています
+refresh_bounded: false

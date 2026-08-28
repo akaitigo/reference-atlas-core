@@ -38,4 +38,4 @@ atlas version
 
 `--gate skill-router`は8 Outcome × 14 Surfaceのroute、実Target、Variant file digest、Authority Source Lock、Evidence Artifact、mutation authorization、5つのfail-closed境界を照合する。routing gap、partial Coverage、未実施Forward Evalは`completion_limited=true`として表示し、matrixの`result=pass`だけではSkillやSubjectをcompleteにしない。
 
-`--gate scenario-trace`はAuthority由来Behavior × 10 Scenarioのdenominator、個別row、source／harness／environment／runtime identity、統合Reference Systemの実行結果とTrace digestを照合する。stagingではGapを保持したまま集計の真正性を検証できるが、`--gate definitive`は全rowに専用Runtime ArtifactとAtomic Authority bindingを要求し、統合Traceの個別Proofへの流用を拒否する。
+`--gate scenario-trace`はAuthority由来Behavior × 10 Scenarioのdenominator、個別row、source／harness／environment／runtime identity、統合Reference Systemの実行結果とTrace digestを照合する。`runtime_identity`はboundedなCapture等を含む実行identity、`dedicated_scenario_runtime_rows`はexact Pattern＋Scenario＋全Variantをretry 0で駆動した専用suite Closureとして分けて表示する。stagingではGapを保持したまま集計の真正性を検証できるが、`--gate definitive`は全rowに専用Runtime Artifact、Scenario固有Oracle、Atomic Authority bindingを要求し、Capture補完と統合Traceの個別Proofへの流用を拒否する。

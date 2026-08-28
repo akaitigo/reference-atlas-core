@@ -3,6 +3,7 @@ package validate
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 var scenarioTraceScenarios = []string{"normal", "boundary", "refusal", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"}
@@ -16,6 +17,8 @@ type ScenarioTraceResult struct {
 	RuntimeIdentityRows     int
 	PatternSpecificGaps     int
 	IntegratedTraceRows     int
+	DedicatedScenarioRows   int
+	ScenarioClosureGaps     int
 	AuthorityAtomicRows     int
 	CompletionEligibleRows  int
 	IntegratedScenarioTests int
@@ -23,8 +26,15 @@ type ScenarioTraceResult struct {
 }
 
 type scenarioTraceAudit struct {
-	result ScenarioTraceResult
-	rows   map[string]map[string]any
+	result                ScenarioTraceResult
+	rows                  map[string]map[string]any
+	dedicatedScenarioRows map[string]bool
+}
+
+type patternScenarioReport struct {
+	document          map[string]any
+	environmentDigest string
+	records           map[string]map[string]any
 }
 
 func AuditScenarioTrace(dir, relative string, requireComplete bool) (ScenarioTraceResult, error) {
@@ -36,7 +46,7 @@ func AuditScenarioTrace(dir, relative string, requireComplete bool) (ScenarioTra
 		if audit.result.CompletionLimited {
 			return ScenarioTraceResult{}, fmt.Errorf("Scenario/TraceにCompletion limitまたは未Closure rowがあります")
 		}
-		if err := auditCompletionEligibleScenarioRows(dir, audit.rows); err != nil {
+		if err := auditCompletionEligibleScenarioRows(dir, audit.rows, audit.dedicatedScenarioRows); err != nil {
 			return ScenarioTraceResult{}, err
 		}
 	}
@@ -54,7 +64,8 @@ func auditScenarioTraceDocument(dir, relative string) (*scenarioTraceAudit, erro
 	}
 	atlasID := stringValue(index["atlas_id"])
 	verifiedSourceDocuments := []map[string]any{}
-	for path, rawDigest := range index["source_digests"].(map[string]any) {
+	sourceDigests := index["source_digests"].(map[string]any)
+	for path, rawDigest := range sourceDigests {
 		if err := verifyRelativeFileDigest(dir, path, stringValue(rawDigest), -1); err != nil {
 			return nil, fmt.Errorf("Scenario Proof source digest: %w", err)
 		}
@@ -83,6 +94,9 @@ func auditScenarioTraceDocument(dir, relative string) (*scenarioTraceAudit, erro
 		return nil, err
 	}
 	rows := map[string]map[string]any{}
+	dedicatedScenarioRows := map[string]bool{}
+	patternScenarioReports := map[string]*patternScenarioReport{}
+	usedDedicatedScenarioArtifacts := map[string]string{}
 	patterns := map[string]bool{}
 	byScenario := map[string]map[string]int{}
 	for _, scenario := range scenarioTraceScenarios {
@@ -150,6 +164,19 @@ func auditScenarioTraceDocument(dir, relative string) (*scenarioTraceAudit, erro
 			return nil, fmt.Errorf("Scenario Proofの統合Pattern mappingがManifestと一致しません: %s", key)
 		}
 		closure, _ := row["closure"].(map[string]any)
+		dedicatedScenario, artifacts, err := auditDedicatedScenarioRuntime(dir, row, sourceDigests, patternScenarioReports)
+		if err != nil {
+			return nil, fmt.Errorf("Scenario Proof %s dedicated runtime: %w", key, err)
+		}
+		if dedicatedScenario {
+			dedicatedScenarioRows[key] = true
+			for _, artifactPath := range artifacts {
+				if owner := usedDedicatedScenarioArtifacts[artifactPath]; owner != "" && owner != key {
+					return nil, fmt.Errorf("専用Scenario Runtime Artifactを複数rowへ流用できません: path=%s rows=%s,%s", artifactPath, owner, key)
+				}
+				usedDedicatedScenarioArtifacts[artifactPath] = key
+			}
+		}
 		stats := byScenario[scenario]
 		stats["rows"]++
 		if closure["dedicated_row"] == true && closure["dedicated_artifact"] == true {
@@ -208,11 +235,132 @@ func auditScenarioTraceDocument(dir, relative string) (*scenarioTraceAudit, erro
 			}
 		}
 	}
-	limited := gaps > 0 || authorityRows != len(rows) || eligibleRows != len(rows) || len(anySlice(index["completion_limits"])) > 0 || index["status"] != "completion-eligible"
-	if index["status"] == "completion-eligible" && (gaps > 0 || authorityRows != len(rows) || eligibleRows != len(rows) || len(anySlice(index["completion_limits"])) > 0) {
+	limited := gaps > 0 || len(dedicatedScenarioRows) != len(rows) || authorityRows != len(rows) || eligibleRows != len(rows) || len(anySlice(index["completion_limits"])) > 0 || index["status"] != "completion-eligible"
+	if index["status"] == "completion-eligible" && (gaps > 0 || len(dedicatedScenarioRows) != len(rows) || authorityRows != len(rows) || eligibleRows != len(rows) || len(anySlice(index["completion_limits"])) > 0) {
 		return nil, fmt.Errorf("Scenario Proof indexが未Closure実体をcompletion-eligibleと宣言しています")
 	}
-	return &scenarioTraceAudit{result: ScenarioTraceResult{AtlasID: atlasID, Patterns: len(patterns), Rows: len(rows), DedicatedArtifactRows: dedicated, PatternSpecificRows: patternSpecific, RuntimeIdentityRows: runtimeRows, PatternSpecificGaps: gaps, IntegratedTraceRows: integratedRows, AuthorityAtomicRows: authorityRows, CompletionEligibleRows: eligibleRows, IntegratedScenarioTests: len(referenceTests), CompletionLimited: limited}, rows: rows}, nil
+	return &scenarioTraceAudit{result: ScenarioTraceResult{AtlasID: atlasID, Patterns: len(patterns), Rows: len(rows), DedicatedArtifactRows: dedicated, PatternSpecificRows: patternSpecific, RuntimeIdentityRows: runtimeRows, PatternSpecificGaps: gaps, IntegratedTraceRows: integratedRows, DedicatedScenarioRows: len(dedicatedScenarioRows), ScenarioClosureGaps: len(rows) - len(dedicatedScenarioRows), AuthorityAtomicRows: authorityRows, CompletionEligibleRows: eligibleRows, IntegratedScenarioTests: len(referenceTests), CompletionLimited: limited}, rows: rows, dedicatedScenarioRows: dedicatedScenarioRows}, nil
+}
+
+func auditDedicatedScenarioRuntime(dir string, row map[string]any, sourceDigests map[string]any, cache map[string]*patternScenarioReport) (bool, []string, error) {
+	patternEvidence, _ := row["pattern_evidence"].(map[string]any)
+	reportPath := stringValue(patternEvidence["scenario_runtime_report"])
+	records := anySlice(patternEvidence["scenario_runtime_records"])
+	environment := patternEvidence["scenario_runtime_environment"]
+	if reportPath == "" && len(records) == 0 && environment == nil {
+		return false, nil, nil
+	}
+	if reportPath == "" || len(records) == 0 || environment == nil {
+		return false, nil, fmt.Errorf("report、environment、recordsを部分的に設定できません")
+	}
+	if stringValue(sourceDigests[reportPath]) == "" {
+		return false, nil, fmt.Errorf("専用Scenario Runtime reportがindex.source_digestsにありません: %s", reportPath)
+	}
+	report := cache[reportPath]
+	if report == nil {
+		document, err := readDocument(filepath.Join(dir, filepath.FromSlash(reportPath)))
+		if err != nil {
+			return false, nil, err
+		}
+		if document["status"] != "passed" || isNonRuntimeProfile(stringValue(document["profile"])) {
+			return false, nil, fmt.Errorf("専用Scenario suiteがpassした実Runtime Profileではありません")
+		}
+		reportEnvironment, _ := document["environment"].(map[string]any)
+		if int(numberValue(reportEnvironment["retries"])) != 0 || stringValue(reportEnvironment["trace_mode"]) != "on" {
+			return false, nil, fmt.Errorf("専用Scenario suiteはretry=0かつtrace=onである必要があります")
+		}
+		tests := anySlice(document["tests"])
+		counts, _ := document["counts"].(map[string]any)
+		if int(numberValue(counts["total"])) != len(tests) || int(numberValue(counts["passed"])) != len(tests) || numberValue(counts["failed"])+numberValue(counts["flaky"])+numberValue(counts["skipped"]) != 0 {
+			return false, nil, fmt.Errorf("専用Scenario suiteのcountsがfirst-attempt pass実体と一致しません")
+		}
+		report = &patternScenarioReport{document: document, records: map[string]map[string]any{}}
+		report.environmentDigest, _ = digestCanonical(reportEnvironment)
+		rowKeys, variantKeys := map[string]bool{}, map[string]bool{}
+		for _, rawRecord := range tests {
+			record, _ := rawRecord.(map[string]any)
+			key := scenarioRuntimeRecordKey(record)
+			if report.records[key] != nil {
+				return false, nil, fmt.Errorf("専用Scenario suite recordが重複しています: %s", key)
+			}
+			if err := auditScenarioRuntimeRecordArtifacts(dir, record); err != nil {
+				return false, nil, err
+			}
+			report.records[key] = record
+			rowKeys[stringValue(record["pattern_id"])+"\x00"+stringValue(record["scenario"])] = true
+			variantKeys[stringValue(record["pattern_id"])+"\x00"+stringValue(record["variant_id"])] = true
+		}
+		if int(numberValue(counts["rows"])) != len(rowKeys) || int(numberValue(counts["variants"])) != len(variantKeys) {
+			return false, nil, fmt.Errorf("専用Scenario suiteのrow/variant countsが実体と一致しません")
+		}
+		cache[reportPath] = report
+	}
+	environmentDigest, _ := digestCanonical(environment)
+	if environmentDigest != report.environmentDigest {
+		return false, nil, fmt.Errorf("rowのScenario Runtime environmentがreportと一致しません")
+	}
+	bindings := map[string]string{}
+	for _, rawBinding := range anySlice(row["source_bindings"]) {
+		binding, _ := rawBinding.(map[string]any)
+		bindings[stringValue(binding["variant_id"])] = stringValue(binding["digest"])
+	}
+	seen, artifacts := map[string]bool{}, []string{}
+	patternID, scenario := stringValue(row["pattern_id"]), stringValue(row["scenario"])
+	integrated, _ := row["integrated_reference"].(map[string]any)
+	integratedTrace, _ := integrated["trace"].(map[string]any)
+	for _, rawRecord := range records {
+		record, _ := rawRecord.(map[string]any)
+		variantID := stringValue(record["variant_id"])
+		if stringValue(record["pattern_id"]) != patternID || stringValue(record["scenario"]) != scenario || bindings[variantID] == "" || stringValue(record["source_digest"]) != bindings[variantID] || seen[variantID] {
+			return false, nil, fmt.Errorf("exact Pattern+Scenario+全Variant bindingではありません: pattern=%s scenario=%s variant=%s", patternID, scenario, variantID)
+		}
+		seen[variantID] = true
+		reportRecord := report.records[scenarioRuntimeRecordKey(record)]
+		rowDigest, _ := digestCanonical(record)
+		reportDigest, _ := digestCanonical(reportRecord)
+		if reportRecord == nil || rowDigest != reportDigest {
+			return false, nil, fmt.Errorf("row recordが固定report実体と一致しません: %s", scenarioRuntimeRecordKey(record))
+		}
+		if record["outcome"] != "expected" || int(numberValue(record["attempts"])) != 1 || record["final_status"] != "passed" || record["error"] != nil {
+			return false, nil, fmt.Errorf("専用Scenario recordがretryなしのpassではありません: %s", scenarioRuntimeRecordKey(record))
+		}
+		oracle, _ := record["oracle"].(map[string]any)
+		if len(oracle) == 0 || (oracle["scenario"] != nil && oracle["scenario"] != scenario) {
+			return false, nil, fmt.Errorf("専用Scenario recordにScenario固有Oracleがありません: %s", scenarioRuntimeRecordKey(record))
+		}
+		trace, _ := record["trace"].(map[string]any)
+		if trace["path"] == integratedTrace["path"] || trace["digest"] == integratedTrace["digest"] {
+			return false, nil, fmt.Errorf("統合Traceを専用Scenario Runtime Proofへ流用できません")
+		}
+		artifacts = append(artifacts, stringValue(trace["path"]))
+	}
+	if len(seen) != len(bindings) {
+		return false, nil, fmt.Errorf("専用Scenario suiteが全Variantを実行していません: expected=%d actual=%d", len(bindings), len(seen))
+	}
+	return true, artifacts, nil
+}
+
+func scenarioRuntimeRecordKey(record map[string]any) string {
+	return stringValue(record["pattern_id"]) + "\x00" + stringValue(record["scenario"]) + "\x00" + stringValue(record["variant_id"])
+}
+
+func auditScenarioRuntimeRecordArtifacts(dir string, record map[string]any) error {
+	trace, _ := record["trace"].(map[string]any)
+	screenshot, _ := record["screenshot"].(map[string]any)
+	for _, artifact := range []map[string]any{trace, screenshot} {
+		if err := verifyRelativeFileDigest(dir, stringValue(artifact["path"]), stringValue(artifact["digest"]), int64(numberValue(artifact["bytes"]))); err != nil {
+			return err
+		}
+	}
+	if trace["action_stream"] != true || trace["network_stream"] != true || trace["resource_stream"] != true {
+		return fmt.Errorf("専用Scenario Traceにaction/network/resource streamがありません")
+	}
+	return nil
+}
+
+func isNonRuntimeProfile(profile string) bool {
+	lower := strings.ToLower(profile)
+	return profile == "" || strings.Contains(lower, "static") || strings.Contains(lower, "mock") || strings.Contains(lower, "fixture") || strings.Contains(lower, "compile")
 }
 
 func auditIntegratedReferenceSystem(dir string, manifest, result map[string]any) (map[string]map[string]bool, map[string]map[string]any, error) {
@@ -257,7 +405,7 @@ func auditIntegratedReferenceSystem(dir string, manifest, result map[string]any)
 	return patterns, tests, nil
 }
 
-func auditCompletionEligibleScenarioRows(dir string, rows map[string]map[string]any) error {
+func auditCompletionEligibleScenarioRows(dir string, rows map[string]map[string]any, dedicatedScenarioRows map[string]bool) error {
 	ctx, err := loadAuditContext(dir)
 	if err != nil {
 		return err
@@ -283,6 +431,9 @@ func auditCompletionEligibleScenarioRows(dir string, rows map[string]map[string]
 			row := rows[key]
 			if row == nil {
 				return fmt.Errorf("Authority Atomic BehaviorのScenario Proof rowがありません: %s", key)
+			}
+			if !dedicatedScenarioRows[key] {
+				return fmt.Errorf("Scenario Proof rowにexact Pattern+Scenario+全Variantの専用Runtime suiteがありません: %s", key)
 			}
 			closure, _ := row["closure"].(map[string]any)
 			if row["behavior_scope"] != "authority-derived-atomic-behavior" || row["status"] != "completion-eligible-runtime-proof" || closure["dedicated_row"] != true || closure["dedicated_artifact"] != true || closure["pattern_specific_evidence"] != true || closure["real_runtime_identity"] != true || closure["authority_atomic_behavior"] != true || closure["completion_eligible"] != true || len(anySlice(row["gaps"])) != 0 {

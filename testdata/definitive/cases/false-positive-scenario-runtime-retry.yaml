@@ -1,0 +1,3 @@
+mutation: scenario-runtime-retry
+want_error: retry=0かつtrace=on
+refresh_bounded: false

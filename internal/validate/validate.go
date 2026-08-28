@@ -98,6 +98,8 @@ func schemaFor(path string) (string, error) {
 		return "integrated-reference-system.schema.json", nil
 	case base == "results.json" && filepath.Base(filepath.Dir(path)) == "reference-system":
 		return "integrated-scenario-results.schema.json", nil
+	case base == "results.json" && filepath.Base(filepath.Dir(path)) == "pattern-scenarios":
+		return "pattern-scenario-results.schema.json", nil
 	case strings.HasSuffix(base, ".skill-eval.yaml") || strings.HasSuffix(base, ".skill-eval.yml") || strings.HasSuffix(base, ".skill-eval.json"):
 		return "skill-eval.schema.json", nil
 	case base == "provenance.yaml" || base == "provenance.yml" || base == "provenance.json":

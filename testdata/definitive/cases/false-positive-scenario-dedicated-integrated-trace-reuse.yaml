@@ -1,0 +1,3 @@
+mutation: scenario-dedicated-integrated-trace-reuse
+want_error: 統合Traceを専用Scenario Runtime Proofへ流用できません
+refresh_bounded: false

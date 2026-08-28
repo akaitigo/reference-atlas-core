@@ -457,7 +457,7 @@ func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors 
 			t.Fatal(err)
 		}
 	}
-	manifestScenarios, resultTests, files := []any{}, []any{}, []any{}
+	manifestScenarios, resultTests, scenarioRuntimeTests, files := []any{}, []any{}, []any{}, []any{}
 	byScenario := map[string]any{}
 	referenceData, err := os.ReadFile(filepath.Join(dir, "reference", "counter-system.txt"))
 	if err != nil {
@@ -466,6 +466,7 @@ func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors 
 	referenceDigest := shaDigest(referenceData)
 	environment := map[string]any{"profile": "local", "manifest_digest": environmentManifestDigest, "runtime": "counter-v1"}
 	environmentIdentity, _ := digestCanonical(environment)
+	scenarioRuntimeEnvironment := map[string]any{"runtime": "counter-v1", "platform": "test", "architecture": "test", "version": "1", "worker": "single", "workers": 1, "retries": 0, "viewport": "none", "trace_mode": "on"}
 	coverage := mustReadYAML(t, filepath.Join(dir, "coverage.yaml"))
 	targets := coverage["targets"].([]any)
 	provenance := mustReadYAML(t, filepath.Join(dir, "provenance.yaml"))
@@ -487,6 +488,12 @@ func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors 
 			artifactPath := "evidence/reports/" + evidenceID + ".json"
 			artifactData := []byte(fmt.Sprintf("{\"behavior\":%q,\"scenario\":%q,\"runtime_identity\":\"counter-v1\",\"result\":\"pass\"}\n", behavior, scenario))
 			writeFile(artifactPath, artifactData)
+			dedicatedTracePath := "artifacts/pattern-scenarios/traces/" + strings.ReplaceAll(behavior, ".", "-") + "__" + scenario + ".trace.zip"
+			dedicatedScreenshotPath := "artifacts/pattern-scenarios/screenshots/" + strings.ReplaceAll(behavior, ".", "-") + "__" + scenario + ".png"
+			dedicatedTraceData := []byte("counter dedicated scenario trace " + behavior + " " + scenario + "\n")
+			dedicatedScreenshotData := []byte("counter dedicated scenario screenshot " + behavior + " " + scenario + "\n")
+			writeFile(dedicatedTracePath, dedicatedTraceData)
+			writeFile(dedicatedScreenshotPath, dedicatedScreenshotData)
 			sourceBindings := []any{map[string]any{"variant_id": behavior + ".default", "path": "reference/counter-system.txt", "digest": referenceDigest}}
 			sourceIdentity, _ := digestCanonical(sourceBindings)
 			evidenceRelative := "evidence/" + evidenceID + ".evidence.yaml"
@@ -499,11 +506,13 @@ func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors 
 				}
 			}
 			provenanceArtifacts = append(provenanceArtifacts, map[string]any{"path": artifactPath, "digest": shaDigest(artifactData), "kind": "test-report", "license": "Apache-2.0", "source_ids": []any{"reference-atlas-core-v1"}, "generated_by": "counter-scenario-runtime"})
+			scenarioRecord := map[string]any{"id": "runtime." + strings.ReplaceAll(behavior, ".", "-") + "." + scenario, "pattern_id": behavior, "variant_id": behavior + ".default", "scenario": scenario, "title": behavior + " " + scenario + " dedicated runtime", "file": "counter_scenario_test.go", "line": 1, "source_digest": referenceDigest, "outcome": "expected", "attempts": 1, "final_status": "passed", "error": nil, "oracle": map[string]any{"scenario": scenario, "assertion": "counter state matches"}, "trace": map[string]any{"path": dedicatedTracePath, "digest": shaDigest(dedicatedTraceData), "bytes": len(dedicatedTraceData), "action_stream": true, "network_stream": true, "resource_stream": true}, "screenshot": map[string]any{"path": dedicatedScreenshotPath, "digest": shaDigest(dedicatedScreenshotData), "bytes": len(dedicatedScreenshotData)}}
+			scenarioRuntimeTests = append(scenarioRuntimeTests, scenarioRecord)
 			row := map[string]any{
 				"schema_version": 1, "id": "proof." + strings.ReplaceAll(behavior, ".", "-") + "." + scenario, "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z",
 				"behavior_scope": "authority-derived-atomic-behavior", "pattern_id": behavior, "behavior_id": behavior, "target_id": behavior, "target_set": "foundation", "scenario": scenario, "applicability": "required", "status": "completion-eligible-runtime-proof",
 				"classification": map[string]any{"method": "authority-atomic-runtime-identity", "matcher_digest": referenceDigest, "state_ids": []any{scenario}, "semantic_scope_match": true}, "source_bindings": sourceBindings,
-				"pattern_evidence":     map[string]any{"capture_environment_identity": environment, "capture_harness_digest": harnessDigest, "capture_records": []any{}, "benchmark_environment": nil, "benchmark_records": []any{}, "compatibility_environment": nil, "compatibility_records": []any{}},
+				"pattern_evidence":     map[string]any{"capture_environment_identity": environment, "capture_harness_digest": harnessDigest, "capture_records": []any{}, "benchmark_environment": nil, "benchmark_records": []any{}, "compatibility_environment": nil, "compatibility_records": []any{}, "scenario_runtime_report": "artifacts/pattern-scenarios/results.json", "scenario_runtime_environment": scenarioRuntimeEnvironment, "scenario_runtime_records": []any{scenarioRecord}},
 				"integrated_reference": map[string]any{"manifest": "integrations/reference-system/manifest.json", "result": "artifacts/reference-system/results.json", "pattern_mapped": true, "runtime_boundaries": []any{"counter-runtime"}, "assertions": []any{"expected-state"}, "outcome": "expected", "attempts": 1, "trace": trace, "screenshot": screenshot},
 				"authority_binding":    map[string]any{"authority_artifact_id": "counter-protocol", "authority_surface_id": behavior, "atomic_behavior_id": behavior, "source_digest": authorityArtifactDigest},
 				"runtime_identity":     map[string]any{"evidence_id": evidenceID, "execution_mode": "runtime", "profile": "local", "source_digest": sourceIdentity, "harness_path": "harness.txt", "harness_digest": harnessDigest, "environment": environment, "environment_digest": environmentIdentity, "artifact_path": artifactPath, "artifact_digest": shaDigest(artifactData)},
@@ -538,7 +547,9 @@ func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors 
 	mustWriteJSON(t, filepath.Join(dir, "integrations", "reference-system", "manifest.json"), manifest)
 	result := map[string]any{"schema_version": 1, "id": "counter-reference-system-v1", "created_at": "2026-08-28T00:00:00Z", "status": "passed", "command": "counter reference runtime", "profile": "local-real-counter", "counts": map[string]any{"total": 10, "passed": 10, "failed": 0, "flaky": 0, "skipped": 0}, "duration_ms": 10, "source_digest": referenceDigest, "harness_digest": harnessDigest, "environment": map[string]any{"runtime": "counter-v1", "platform": "test", "architecture": "test", "version": "1", "worker": "single", "retries": 0, "viewport": "none", "trace_mode": "on"}, "trace_contract": map[string]any{"per_scenario": true, "required_streams": []any{"action", "network", "resource"}, "console_events": "inside-action-trace-stream"}, "completion_limits": []any{"統合成功は個別Behavior Proofの代替に使用しない。"}, "tests": resultTests}
 	mustWriteJSON(t, filepath.Join(dir, "artifacts", "reference-system", "results.json"), result)
-	sourceDigests := map[string]any{"integrations/reference-system/manifest.json": fileDigest(t, filepath.Join(dir, "integrations", "reference-system", "manifest.json")), "artifacts/reference-system/results.json": fileDigest(t, filepath.Join(dir, "artifacts", "reference-system", "results.json")), "reference/counter-system.txt": referenceDigest, "harness.txt": harnessDigest}
+	patternScenarioResult := map[string]any{"schema_version": 1, "id": "counter-pattern-scenario-runtime-v1", "created_at": "2026-08-28T00:00:00Z", "status": "passed", "command": "counter scenario runtime", "profile": "local-real-counter", "counts": map[string]any{"rows": len(behaviors) * 10, "variants": len(behaviors), "total": len(scenarioRuntimeTests), "passed": len(scenarioRuntimeTests), "failed": 0, "flaky": 0, "skipped": 0}, "source_digest": referenceDigest, "harness_digest": harnessDigest, "environment": scenarioRuntimeEnvironment, "tests": scenarioRuntimeTests}
+	mustWriteJSON(t, filepath.Join(dir, "artifacts", "pattern-scenarios", "results.json"), patternScenarioResult)
+	sourceDigests := map[string]any{"integrations/reference-system/manifest.json": fileDigest(t, filepath.Join(dir, "integrations", "reference-system", "manifest.json")), "artifacts/reference-system/results.json": fileDigest(t, filepath.Join(dir, "artifacts", "reference-system", "results.json")), "artifacts/pattern-scenarios/results.json": fileDigest(t, filepath.Join(dir, "artifacts", "pattern-scenarios", "results.json")), "reference/counter-system.txt": referenceDigest, "harness.txt": harnessDigest}
 	rows := len(behaviors) * 10
 	index := map[string]any{"schema_version": 1, "id": "counter-scenario-proof-matrix-v1", "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z", "status": "completion-eligible", "denominator": "authority-atomic-behaviors-x-10-scenarios", "tool_digest": referenceDigest, "source_digests": sourceDigests, "summary": map[string]any{"patterns": len(behaviors), "scenarios": 10, "rows": rows, "dedicated_artifacts": rows, "pattern_specific_rows": rows, "pattern_specific_runtime_rows": rows, "pattern_specific_capture_rows": 0, "pattern_specific_gaps": 0, "integrated_trace_rows": rows, "authority_atomic_rows": rows, "completion_eligible_rows": rows}, "by_scenario": byScenario, "files": files, "completion_limits": []any{}}
 	mustWriteJSON(t, filepath.Join(dir, "evidence", "scenarios", "index.json"), index)
@@ -706,6 +717,23 @@ func applyDefinitiveMutation(t *testing.T, dir, mutation string) {
 		mutateScenarioProofRow(t, dir, "counter.increment", "normal", func(row map[string]any) {
 			row["authority_binding"].(map[string]any)["atomic_behavior_id"] = "counter.reset"
 		})
+	case "scenario-capture-identity-substitution":
+		mutateScenarioProofRow(t, dir, "counter.increment", "normal", func(row map[string]any) {
+			patternEvidence := row["pattern_evidence"].(map[string]any)
+			patternEvidence["scenario_runtime_report"] = nil
+			patternEvidence["scenario_runtime_environment"] = nil
+			patternEvidence["scenario_runtime_records"] = []any{}
+		})
+	case "scenario-dedicated-integrated-trace-reuse":
+		mutateDedicatedScenarioProof(t, dir, "counter.increment", "normal", func(row map[string]any, rowRecord, reportRecord map[string]any, report map[string]any) {
+			trace := row["integrated_reference"].(map[string]any)["trace"]
+			rowRecord["trace"], reportRecord["trace"] = trace, trace
+		})
+	case "scenario-runtime-retry":
+		mutateDedicatedScenarioProof(t, dir, "counter.increment", "normal", func(row map[string]any, _, _ map[string]any, report map[string]any) {
+			row["pattern_evidence"].(map[string]any)["scenario_runtime_environment"].(map[string]any)["retries"] = 1
+			report["environment"].(map[string]any)["retries"] = 1
+		})
 	default:
 		t.Fatalf("未知のFixture mutation: %s", mutation)
 	}
@@ -723,6 +751,44 @@ func mutateScenarioProofRow(t *testing.T, dir, behavior, scenario string, mutati
 		rowPath := filepath.Join(dir, filepath.FromSlash(record["path"].(string)))
 		row := mustReadYAML(t, rowPath)
 		mutation(row)
+		mustWriteJSON(t, rowPath, row)
+		record["digest"] = fileDigest(t, rowPath)
+		mustWriteJSON(t, indexPath, index)
+		return
+	}
+	t.Fatalf("Scenario Proof rowが見つかりません: %s:%s", behavior, scenario)
+}
+
+func mutateDedicatedScenarioProof(t *testing.T, dir, behavior, scenario string, mutation func(map[string]any, map[string]any, map[string]any, map[string]any)) {
+	t.Helper()
+	indexPath := filepath.Join(dir, "evidence", "scenarios", "index.json")
+	index := mustReadYAML(t, indexPath)
+	for _, raw := range index["files"].([]any) {
+		record := raw.(map[string]any)
+		if record["behavior_id"] != behavior || record["scenario"] != scenario {
+			continue
+		}
+		rowPath := filepath.Join(dir, filepath.FromSlash(record["path"].(string)))
+		row := mustReadYAML(t, rowPath)
+		patternEvidence := row["pattern_evidence"].(map[string]any)
+		rowRecord := patternEvidence["scenario_runtime_records"].([]any)[0].(map[string]any)
+		reportRelative := patternEvidence["scenario_runtime_report"].(string)
+		reportPath := filepath.Join(dir, filepath.FromSlash(reportRelative))
+		report := mustReadYAML(t, reportPath)
+		var reportRecord map[string]any
+		for _, rawReportRecord := range report["tests"].([]any) {
+			candidate := rawReportRecord.(map[string]any)
+			if candidate["pattern_id"] == behavior && candidate["scenario"] == scenario && candidate["variant_id"] == rowRecord["variant_id"] {
+				reportRecord = candidate
+				break
+			}
+		}
+		if reportRecord == nil {
+			t.Fatalf("専用Scenario report recordが見つかりません: %s:%s", behavior, scenario)
+		}
+		mutation(row, rowRecord, reportRecord, report)
+		mustWriteJSON(t, reportPath, report)
+		index["source_digests"].(map[string]any)[reportRelative] = fileDigest(t, reportPath)
 		mustWriteJSON(t, rowPath, row)
 		record["digest"] = fileDigest(t, rowPath)
 		mustWriteJSON(t, indexPath, index)

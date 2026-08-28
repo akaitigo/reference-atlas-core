@@ -834,6 +834,16 @@ func captureScenarioProofRows(dir string) []any {
 		closure, _ := row["closure"].(map[string]any)
 		runtime, _ := row["runtime_identity"].(map[string]any)
 		patternEvidence, _ := row["pattern_evidence"].(map[string]any)
+		scenarioReportPath := stringValue(patternEvidence["scenario_runtime_report"])
+		scenarioRuntimeEnvironmentDigest := optionalCanonicalDigest(patternEvidence["scenario_runtime_environment"])
+		scenarioRuntimeRecordsDigest := optionalCanonicalDigest(patternEvidence["scenario_runtime_records"])
+		scenarioRuntimeSourceDigest, scenarioRuntimeHarnessDigest := "", ""
+		if scenarioReportPath != "" {
+			if report, reportErr := readDocument(filepath.Join(dir, filepath.FromSlash(scenarioReportPath))); reportErr == nil {
+				scenarioRuntimeSourceDigest = stringValue(report["source_digest"])
+				scenarioRuntimeHarnessDigest = stringValue(report["harness_digest"])
+			}
+		}
 		stableDigest, _ := digestCanonical(map[string]any{"behavior_id": row["behavior_id"], "pattern_id": row["pattern_id"], "scenario": row["scenario"], "source_bindings": row["source_bindings"], "authority_binding": row["authority_binding"]})
 		gapDigest, _ := digestCanonical(row["gaps"])
 		items = append(items, baselineItem(stringValue(record["id"]), row, func(item map[string]any) {
@@ -856,6 +866,12 @@ func captureScenarioProofRows(dir string) []any {
 			} else {
 				item["capture_environment_digest"] = ""
 			}
+			item["scenario_runtime_report"] = scenarioReportPath
+			item["scenario_runtime_environment_digest"] = scenarioRuntimeEnvironmentDigest
+			item["scenario_runtime_records_digest"] = scenarioRuntimeRecordsDigest
+			item["scenario_runtime_record_count"] = len(anySlice(patternEvidence["scenario_runtime_records"]))
+			item["scenario_runtime_source_digest"] = scenarioRuntimeSourceDigest
+			item["scenario_runtime_harness_digest"] = scenarioRuntimeHarnessDigest
 			for _, key := range []string{"dedicated_row", "dedicated_artifact", "pattern_specific_evidence", "real_runtime_identity", "integrated_runtime_trace", "authority_atomic_behavior", "completion_eligible"} {
 				item[key] = closure[key]
 			}
@@ -876,7 +892,7 @@ func scenarioProofRowStrengthens(oldItem, newItem map[string]any) bool {
 	if numberValue(newItem["gap_count"]) == numberValue(oldItem["gap_count"]) && oldItem["gap_digest"] != newItem["gap_digest"] {
 		return false
 	}
-	for _, key := range []string{"runtime_profile", "runtime_source_digest", "runtime_harness_path", "runtime_harness_digest", "runtime_environment_digest", "runtime_artifact_path", "runtime_artifact_digest", "capture_harness_digest", "capture_environment_digest"} {
+	for _, key := range []string{"runtime_profile", "runtime_source_digest", "runtime_harness_path", "runtime_harness_digest", "runtime_environment_digest", "runtime_artifact_path", "runtime_artifact_digest", "capture_harness_digest", "capture_environment_digest", "scenario_runtime_report", "scenario_runtime_environment_digest", "scenario_runtime_records_digest", "scenario_runtime_source_digest", "scenario_runtime_harness_digest"} {
 		if stringValue(oldItem[key]) != "" && oldItem[key] != newItem[key] {
 			return false
 		}
@@ -884,7 +900,23 @@ func scenarioProofRowStrengthens(oldItem, newItem map[string]any) bool {
 	if scenarioExecutionRank(stringValue(newItem["runtime_execution_mode"])) < scenarioExecutionRank(stringValue(oldItem["runtime_execution_mode"])) {
 		return false
 	}
+	if numberValue(newItem["scenario_runtime_record_count"]) < numberValue(oldItem["scenario_runtime_record_count"]) {
+		return false
+	}
 	return true
+}
+
+func optionalCanonicalDigest(value any) string {
+	if value == nil || len(anySlice(value)) == 0 {
+		if _, isSlice := value.([]any); isSlice {
+			return ""
+		}
+		if value == nil {
+			return ""
+		}
+	}
+	digest, _ := digestCanonical(value)
+	return digest
 }
 
 func scenarioExecutionRank(mode string) int {

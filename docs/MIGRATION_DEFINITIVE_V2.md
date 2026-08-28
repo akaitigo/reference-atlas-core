@@ -27,7 +27,7 @@ atlas migrate definitive-v2 <repository-root>
 11. 各Inventory項目へ専用required Target、専用Claim、Scenarioごとの反証可能Proofを割り当てる。
 12. 正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenarioを全Behaviorについて分類する。
 13. required Scenarioへ専用Runtime／Platform Evidenceと専用Artifactを接続する。KLIB、bytecode、compile-only、static fixtureは代替にしない。
-14. `evidence/scenarios/index.json`へAuthority由来Behavior × 10 Scenarioの全rowを列挙する。各rowをsource、harness、environment、runtime identity、専用Evidence／Artifact、Atomic Authority bindingへ接続し、未Closureは明示Gapとして残す。
+14. `evidence/scenarios/index.json`へAuthority由来Behavior × 10 Scenarioの全rowを列挙する。各rowをsource、harness、environment、runtime identity、専用Evidence／Artifact、Atomic Authority bindingへ接続し、未Closureは明示Gapとして残す。個別GapはPattern＋Scenario＋全Variantを駆動したretry 0の専用suite、first-attempt pass、Scenario固有Oracle、source／harness digest、Traceが揃う場合だけ閉じる。Capture identityで補完しない。
 15. Integrated Reference Systemのmanifest、10 Scenario runtime結果、action／network／resource streamを持つTraceを固定する。統合成功や統合Traceを個別Behavior Proofとして流用せず、同一Runtime Artifactの複数row共有もしない。
 16. Commit `4a0b2df8e2091a963bd0e0e1bbccef9c84b49a45`の`FE_DEPTH_REFERENCE.json`をDigest固定する。Frontendの現状は`incomplete`、1軸`satisfied`、17軸`partial`のまま保持する。
 17. 同Referenceの18軸を、Subject自身のAuthority由来denominatorについてBehavior/Variantごとの専用Proof、Oracle、Evidence、Artifact、Traceへ接続しGapを0にする。Frontend固有のTarget、Variant、Test件数を閾値として転用しない。

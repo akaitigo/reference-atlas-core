@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/pattern-scenario-results.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "id", "created_at", "status", "command", "profile", "counts", "source_digest", "harness_digest", "environment", "tests"],
+  "properties": {
+    "schema_version": {"const": 1}, "id": {"type": "string", "minLength": 3}, "created_at": {"type": "string", "format": "date-time"}, "status": {"enum": ["passed", "failed"]}, "command": {"type": "string", "minLength": 3}, "profile": {"type": "string", "minLength": 3},
+    "counts": {"type": "object", "additionalProperties": false, "required": ["rows", "variants", "total", "passed", "failed", "flaky", "skipped"], "properties": {"rows": {"type": "integer", "minimum": 0}, "variants": {"type": "integer", "minimum": 0}, "total": {"type": "integer", "minimum": 0}, "passed": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}, "flaky": {"type": "integer", "minimum": 0}, "skipped": {"type": "integer", "minimum": 0}}},
+    "source_digest": {"$ref": "#/$defs/sha256"}, "harness_digest": {"$ref": "#/$defs/sha256"}, "environment": {"type": "object", "minProperties": 8},
+    "tests": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}, "scenario": {"enum": ["normal", "boundary", "refusal", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"]},
+    "artifact": {"type": "object", "additionalProperties": false, "required": ["path", "digest", "bytes"], "properties": {"path": {"type": "string", "minLength": 1}, "digest": {"$ref": "#/$defs/sha256"}, "bytes": {"type": "integer", "minimum": 1}, "action_stream": {"type": "boolean"}, "network_stream": {"type": "boolean"}, "resource_stream": {"type": "boolean"}}},
+    "record": {"type": "object", "additionalProperties": false, "required": ["id", "pattern_id", "variant_id", "scenario", "title", "file", "line", "source_digest", "outcome", "attempts", "final_status", "error", "oracle", "trace", "screenshot"], "properties": {"id": {"type": "string", "minLength": 3}, "pattern_id": {"type": "string", "minLength": 2}, "variant_id": {"type": "string", "minLength": 1}, "scenario": {"$ref": "#/$defs/scenario"}, "title": {"type": "string", "minLength": 3}, "file": {"type": "string", "minLength": 1}, "line": {"type": "integer", "minimum": 1}, "source_digest": {"$ref": "#/$defs/sha256"}, "outcome": {"type": "string", "minLength": 1}, "attempts": {"type": "integer", "minimum": 1}, "final_status": {"enum": ["passed", "failed", "skipped", "flaky"]}, "error": {"type": ["string", "null"]}, "oracle": {"type": "object", "minProperties": 1}, "trace": {"$ref": "#/$defs/artifact"}, "screenshot": {"$ref": "#/$defs/artifact"}}}
+  }
+}

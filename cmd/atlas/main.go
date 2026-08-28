@@ -41,7 +41,7 @@ func run(args []string) error {
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Integrated Scenario/Trace監査済み: %s patterns=%d rows=%d dedicated_artifacts=%d pattern_specific=%d runtime_identity=%d gaps=%d integrated_trace_rows=%d authority_atomic=%d completion_eligible=%d integrated_scenarios=%d completion_limited=%t\n", result.AtlasID, result.Patterns, result.Rows, result.DedicatedArtifactRows, result.PatternSpecificRows, result.RuntimeIdentityRows, result.PatternSpecificGaps, result.IntegratedTraceRows, result.AuthorityAtomicRows, result.CompletionEligibleRows, result.IntegratedScenarioTests, result.CompletionLimited)
+			fmt.Printf("Integrated Scenario/Trace監査済み: %s patterns=%d rows=%d dedicated_artifacts=%d pattern_specific=%d runtime_identity=%d gaps=%d integrated_trace_rows=%d dedicated_scenario_runtime_rows=%d scenario_closure_gaps=%d authority_atomic=%d completion_eligible=%d integrated_scenarios=%d completion_limited=%t\n", result.AtlasID, result.Patterns, result.Rows, result.DedicatedArtifactRows, result.PatternSpecificRows, result.RuntimeIdentityRows, result.PatternSpecificGaps, result.IntegratedTraceRows, result.DedicatedScenarioRows, result.ScenarioClosureGaps, result.AuthorityAtomicRows, result.CompletionEligibleRows, result.IntegratedScenarioTests, result.CompletionLimited)
 			return nil
 		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "skill-router" {
