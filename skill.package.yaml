@@ -1,0 +1,10 @@
+schema_version: 1
+atlas_id: reference-atlas-core
+atlas_release: v1.0.0
+router:
+  id: reference-atlas-core
+  path: .agents/skills/reference-atlas-core/SKILL.md
+  description: 技術実証アトラスのSchema、監査、生成、移行、ReleaseをCanonical Core v1契約へ案内する。
+generated_from: [atlas.yaml, mastery.yaml, coverage.yaml, schemas]
+adapters: [codex, generic-agent-skills]
+evals: {path: evals/, minimum_pass_rate: 1.0}

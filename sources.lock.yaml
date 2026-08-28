@@ -1,0 +1,41 @@
+schema_version: 1
+atlas_id: reference-atlas-core
+epoch: "2026-08-28"
+generated_at: "2026-08-28T00:00:00+09:00"
+sources:
+  - id: json-schema-2020-12
+    kind: specification
+    title: JSON Schema Draft 2020-12
+    url: https://json-schema.org/draft/2020-12/json-schema-core.html
+    version: draft-2020-12
+    retrieved_at: "2026-08-28"
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    license: BSD-3-Clause
+    redistribution: link-only
+  - id: spdx-2.3
+    kind: specification
+    title: SPDX Specification 2.3
+    url: https://spdx.github.io/spdx-spec/v2.3/
+    version: "2.3"
+    retrieved_at: "2026-08-28"
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    license: CC-BY-3.0
+    redistribution: link-only
+  - id: developer-certificate-of-origin-1.1
+    kind: specification
+    title: Developer Certificate of Origin 1.1
+    url: https://developercertificate.org/
+    version: "1.1"
+    retrieved_at: "2026-08-28"
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    license: CC-BY-SA-4.0
+    redistribution: link-only
+  - id: go-modules-reference
+    kind: official-documentation
+    title: Go Modules Reference
+    url: https://go.dev/ref/mod
+    version: go1.26
+    retrieved_at: "2026-08-28"
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    license: BSD-3-Clause
+    redistribution: link-only

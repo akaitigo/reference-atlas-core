@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/completion-certificate.schema.json",
+  "title": "Atlas Completion Certificate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "atlas_release", "coverage_epoch", "authority_lock_digest", "core_policy_version", "required_profiles", "graph_digest", "evidence_set_digest", "skill_package_digest", "skill_eval", "sbom_digest", "provenance_digest", "issued_at", "commit", "signature"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "atlas_id": { "$ref": "#/$defs/id" },
+    "atlas_release": { "$ref": "#/$defs/version" },
+    "coverage_epoch": { "$ref": "#/$defs/date" },
+    "authority_lock_digest": { "$ref": "#/$defs/sha256" },
+    "core_policy_version": { "type": "string", "pattern": "^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$" },
+    "required_profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["profile", "result", "evidence_ids"],
+        "properties": {
+          "profile": { "enum": ["local", "container", "vm", "cluster", "simulator", "cloud-live", "hardware-in-the-loop"] },
+          "result": { "const": "pass" },
+          "evidence_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/dottedId" } }
+        }
+      }
+    },
+    "graph_digest": { "$ref": "#/$defs/sha256" },
+    "evidence_set_digest": { "$ref": "#/$defs/sha256" },
+    "skill_package_digest": { "$ref": "#/$defs/sha256" },
+    "skill_eval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "pass_rate"],
+      "properties": {
+        "digest": { "$ref": "#/$defs/sha256" },
+        "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "sbom_digest": { "$ref": "#/$defs/sha256" },
+    "provenance_digest": { "$ref": "#/$defs/sha256" },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "digest"],
+      "properties": {
+        "type": { "const": "payload-sha256" },
+        "digest": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "dottedId": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+    "version": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}

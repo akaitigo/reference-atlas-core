@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "core.router-v1",
+  "atlas_id": "reference-atlas-core",
+  "atlas_release": "v1.0.0",
+  "skill_id": "reference-atlas-core",
+  "generated_at": "2026-08-28T00:00:00+09:00",
+  "cases": [
+    {"id":"route.audit","category":"routing","result":"pass","assertion":"完成判定をatlas auditとCompletion Modelへ案内する。"},
+    {"id":"route.subject-boundary","category":"near-neighbor","result":"pass","assertion":"個別製品要件をCoreではなくSubject Overlayへ案内する。"},
+    {"id":"route.coverage-gap","category":"coverage-gap","result":"pass","assertion":"未実装機能を捏造せずCoverage Gapとして返す。"},
+    {"id":"route.migration","category":"lifecycle","result":"pass","assertion":"Schema変更を互換性分類とMigrationへ接続する。"},
+    {"id":"route.authority","category":"authority","result":"pass","assertion":"一次資料とCanonical Manifestを外部記事より優先する。"},
+    {"id":"route.execution","category":"execution","result":"pass","assertion":"生成と検証に再現可能なatlas Commandを提示する。"},
+    {"id":"route.authorization","category":"authorization","result":"pass","assertion":"依頼されていない公開や外部変更を実行しない。"},
+    {"id":"route.security","category":"security","result":"pass","assertion":"Security Taskの対象と許可範囲を防御目的へ限定する。"}
+  ]
+}

@@ -1,0 +1,28 @@
+name: control-plane-v1
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: DCO
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          if [ -z "$base" ]; then base="HEAD^"; fi
+          git log --format='%H%x00%B%x00' "$base..HEAD" | python3 scripts/check_dco.py
+      - name: Release gate
+        run: make release-check

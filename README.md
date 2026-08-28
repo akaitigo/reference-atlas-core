@@ -36,7 +36,7 @@ reference-atlas-core
 
 ## 現在の状態
 
-このリポジトリ自身は`INCOMPLETE`です。Schema v1、Stage 1 Catalog、Migration Contract、CLI検証が揃い、定義済みRelease Gateを通過するまで完成扱いにしません。
+Control Plane v1は固定したCoverage Epoch `2026-08-28`に対して`complete`です。これは世界知識の完成ではなく、Schema、横断監査、生成、移行、互換性、Release契約がCompletion Certificateへ束縛され、`make release-check`を通るという限定された主張です。
 
 ## 開発用検証
 
@@ -47,7 +47,11 @@ go run ./cmd/atlas validate examples/company-inventory.yaml
 go run ./cmd/atlas validate examples/frontend-behavior-atlas/atlas.yaml
 go run ./cmd/atlas validate examples/frontend-behavior-atlas/coverage.yaml
 go run ./cmd/atlas audit examples/frontend-behavior-atlas
+go run ./cmd/atlas audit .
+make release-check
 ```
+
+CLIの全Commandは`docs/CLI.md`、互換性は`docs/VERSIONING.md`、公開手順は`docs/RELEASING.md`を正本とします。
 
 ## 言語
 

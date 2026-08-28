@@ -1,2 +1,7 @@
 schema_version: 1
-artifacts: []
+artifacts:
+  - {id: jsonschema-v6, name: github.com/santhosh-tekuri/jsonschema/v6, kind: go-module, version: v6.0.2, source: https://github.com/santhosh-tekuri/jsonschema, license: Apache-2.0, redistribution: allowed}
+  - {id: yaml-v3, name: gopkg.in/yaml.v3, kind: go-module, version: v3.0.1, source: https://gopkg.in/yaml.v3, license: MIT AND Apache-2.0, redistribution: allowed}
+  - {id: x-text, name: golang.org/x/text, kind: go-module, version: v0.14.0, source: https://go.googlesource.com/text, license: BSD-3-Clause, redistribution: allowed}
+  - {id: actions-checkout, name: actions/checkout, kind: github-action, version: v4, source: https://github.com/actions/checkout, license: MIT, redistribution: link-only}
+  - {id: actions-setup-go, name: actions/setup-go, kind: github-action, version: v5, source: https://github.com/actions/setup-go, license: MIT, redistribution: link-only}

@@ -1,0 +1,11 @@
+schema_version: 1
+id: lifecycle.compatibility-release
+atlas_id: reference-atlas-core
+capability_id: lifecycle.compatibility-release
+statement: Core v1は既存v1 fixtureの互換性Test、SemVer変更分類、CI自己監査、再現可能なRelease手順を提供する。
+status: accepted
+source_ids: [go-modules-reference, developer-certificate-of-origin-1.1]
+proof_obligations:
+  - id: lifecycle.compatibility-release.gate
+    statement: Release候補でTest、Schema、Example Audit、Core自己監査を一括実行する。
+    acceptance_criteria: [make release-checkが全Gateを通りDCO付きCommit手順が文書化されること]

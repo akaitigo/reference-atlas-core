@@ -1,0 +1,11 @@
+schema_version: 1
+id: contracts.mastery
+atlas_id: reference-atlas-core
+capability_id: contracts.mastery
+statement: Core v1は8 Outcomeと14 Surfaceを有限なCoverage Target Setへ接続するMastery契約を強制する。
+status: accepted
+source_ids: [json-schema-2020-12]
+proof_obligations:
+  - id: contracts.mastery.exact
+    statement: 必須OutcomeとSurfaceの欠落や重複を拒否する。
+    acceptance_criteria: [Mastery Schemaと横断検証が8 Outcomeと14 Surfaceを全件要求すること]

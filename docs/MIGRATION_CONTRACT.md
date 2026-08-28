@@ -56,3 +56,7 @@ Repository名は原則`<subject>-reference-atlas`に統一します。既に適�
 - Skill Evalが新Router経由で通る。
 - Release前の権利・秘密・第三者素材Gateが通る。
 - Core v1依存が固定Releaseで指定される。
+
+## CLI
+
+`atlas migrate v1 <repository-root>`は既存`atlas.yaml`と`coverage.yaml`から、不足している`mastery.yaml`と`migrations/core-v1.yaml`のDraftだけを生成する。既存Fileは上書きせず、再実行は変更ゼロになる。生成後はOutcome／Surfaceの割当、旧IDのDisposition、互換期限を人が確認し、5 Manifestと移行Mapを`atlas validate`、Repository全体を`atlas audit`で検証する。

@@ -1,0 +1,22 @@
+schema_version: 1
+atlas_id: reference-atlas-core
+generated_at: "2026-08-28T00:00:00+09:00"
+artifacts:
+  - path: evidence/reports/release-check.txt
+    digest: sha256:da62048ef3ee627c5a44c350c5e14801a442b969f34af1741070effbb108448c
+    kind: test-report
+    license: Apache-2.0
+    source_ids: [go-modules-reference]
+    generated_by: make release-check
+  - path: evals/core.skill-eval.json
+    digest: sha256:2f9a6d516e77015439f7db1fefccba1fe736cabe434371948b8d125e9512abfc
+    kind: skill-eval
+    license: Apache-2.0
+    source_ids: [json-schema-2020-12]
+    generated_by: atlas-skill-eval
+  - path: sbom.spdx.json
+    digest: sha256:e96103992b62754e01b068dfc2200be3c808acb9c8c6e28bff7db6e66dfddb2d
+    kind: sbom
+    license: CC0-1.0
+    source_ids: [spdx-2.3]
+    generated_by: go-list

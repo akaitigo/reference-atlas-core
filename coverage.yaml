@@ -1,0 +1,35 @@
+schema_version: 1
+atlas_id: reference-atlas-core
+epoch: "2026-08-28"
+authority_lock_digest: sha256:f35634bf23db21fae2249262aaf8692ea0e5050fbe50a9287874f7772bfb8657
+target_sets:
+  - id: contracts
+    title: 共通契約と有限な完成境界
+    sequence: 1
+    completion_required: true
+    exit_criteria: [全Canonical ManifestがSchemaと横断制約で検証されること, MasteryとCompletionの意味論が機械Gateへ接続されること]
+  - id: assurance
+    title: 証拠・供給網・Certificate監査
+    sequence: 2
+    completion_required: true
+    exit_criteria: [ClaimからEvidence Artifactまで孤立Nodeなく検証されること, SBOMとProvenanceとCertificateのDigestが再計算されること]
+  - id: lifecycle
+    title: 生成・移行・互換性・Release
+    sequence: 3
+    completion_required: true
+    exit_criteria: [Subject ScaffoldとGeneratorと非破壊Migrationが利用できること, CIと互換性TestとVersioningとRelease手順が固定されること]
+  - id: skill
+    title: Agent Routerと評価
+    sequence: 4
+    completion_required: true
+    exit_criteria: [RouterがCanonical契約へ案内すること, 8分類のSkill Evalが最低合格率を満たすこと]
+targets:
+  - {id: contracts.schemas, title: Manifest Schema契約, target_set: contracts, kind: capability, requirement: required, state: covered, rationale: 共通ManifestとEntityを一貫して機械検証するために必要である。, claim_ids: [contracts.schemas], evidence_ids: [core.contracts]}
+  - {id: contracts.mastery, title: MasteryとCompletion契約, target_set: contracts, kind: concept, requirement: required, state: covered, rationale: 各分野を決定版にする有限な完成意味論を維持するために必要である。, claim_ids: [contracts.mastery], evidence_ids: [core.contracts]}
+  - {id: assurance.graph, title: Claim Evidence横断監査, target_set: assurance, kind: capability, requirement: required, state: covered, rationale: 宣言だけの完成と孤立したClaimやEvidenceを拒否するために必要である。, claim_ids: [assurance.graph], evidence_ids: [core.audit]}
+  - {id: assurance.artifacts, title: Artifact Digest検証, target_set: assurance, kind: security, requirement: required, state: covered, rationale: Evidenceが指す実体の改変や欠落を検出して証拠を固定するために必要である。, claim_ids: [assurance.artifacts], evidence_ids: [core.audit]}
+  - {id: assurance.publication, title: SBOM Provenance Certificate, target_set: assurance, kind: operation, requirement: required, state: covered, rationale: 公開物の供給網と完成証明を再計算可能なDigestへ束縛するために必要である。, claim_ids: [assurance.publication], evidence_ids: [core.audit]}
+  - {id: lifecycle.scaffold, title: Subject ScaffoldとGenerator, target_set: lifecycle, kind: construction, requirement: required, state: covered, rationale: Subjectが同じArchitectureから安全に開始し派生物を再生成するために必要である。, claim_ids: [lifecycle.scaffold], evidence_ids: [core.tooling]}
+  - {id: lifecycle.migration, title: 非破壊Core v1移行, target_set: lifecycle, kind: migration, requirement: required, state: covered, rationale: 既存Canonical情報と履歴を失わず共通契約へ移行するために必要である。, claim_ids: [lifecycle.migration], evidence_ids: [core.tooling]}
+  - {id: lifecycle.compatibility-release, title: 互換性とRelease運用, target_set: lifecycle, kind: compatibility, requirement: required, state: covered, rationale: Control Plane v1利用者を破壊せず変更分類とReleaseを反復するために必要である。, claim_ids: [lifecycle.compatibility-release], evidence_ids: [core.compatibility]}
+  - {id: skill.router-eval, title: Router Skillと評価, target_set: skill, kind: skill, requirement: required, state: covered, rationale: Agentが独自知識を捏造せずCanonical Atlas契約へ到達するために必要である。, claim_ids: [skill.router-eval], evidence_ids: [core.skill]}

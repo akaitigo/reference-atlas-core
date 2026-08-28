@@ -1,0 +1,11 @@
+schema_version: 1
+id: lifecycle.migration
+atlas_id: reference-atlas-core
+capability_id: lifecycle.migration
+statement: atlas migrate v1は既存Fileを上書きせずMasteryと旧ID対応表のDraftを追加できる。
+status: accepted
+source_ids: [go-modules-reference]
+proof_obligations:
+  - id: lifecycle.migration.nondestructive
+    statement: 同じMigrationを再実行して既存Fileの内容を変更しない。
+    acceptance_criteria: [初回は不足Fileだけを生成し再実行時の作成件数がゼロであること]

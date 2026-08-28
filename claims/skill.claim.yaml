@@ -1,0 +1,11 @@
+schema_version: 1
+id: skill.router-eval
+atlas_id: reference-atlas-core
+capability_id: skill.router-eval
+statement: Core Router Skillは既存ArchitectureとCanonical Sourceへ案内しCoverage外や無権限の変更を捏造しない。
+status: accepted
+source_ids: [json-schema-2020-12]
+proof_obligations:
+  - id: skill.router-eval.categories
+    statement: Routerを必須8分類のObservable Outcomeで評価する。
+    acceptance_criteria: [全8Categoryが存在しminimum_pass_rate 1.0を満たすこと]

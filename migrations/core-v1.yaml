@@ -1,0 +1,13 @@
+schema_version: 1
+atlas_id: reference-atlas-core
+from: pre-v1-manifests
+to: core-v1
+generated_at: "2026-08-28T00:00:00+09:00"
+id_mappings:
+  - {legacy_id: atlas.schema.v1, target_id: contracts.schemas, disposition: preserved}
+  - {legacy_id: mastery.contract.v1, target_id: contracts.mastery, disposition: preserved}
+  - {legacy_id: audit.basic, target_id: assurance.graph, disposition: split, reason: Claim実体、Artifact、Publicationの独立Gateへ分割した。}
+compatibility:
+  classification: additive
+  legacy_paths_preserved: true
+  sunset_date: null

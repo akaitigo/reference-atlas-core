@@ -1,0 +1,11 @@
+schema_version: 1
+id: assurance.artifacts
+atlas_id: reference-atlas-core
+capability_id: assurance.artifacts
+statement: complete AtlasのEvidenceはAuthority Lock、Harness、Artifactの実ファイルDigestとSizeへ束縛される。
+status: accepted
+source_ids: [json-schema-2020-12]
+proof_obligations:
+  - id: assurance.artifacts.digest
+    statement: ArtifactまたはHarnessの1 byte変更を監査が検出する。
+    acceptance_criteria: [SHA-256とArtifact SizeをRepository内実体から再計算すること]

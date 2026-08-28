@@ -25,6 +25,7 @@
     },
     "source_digest": { "$ref": "#/$defs/sha256" },
     "harness_digest": { "$ref": "#/$defs/sha256" },
+    "harness_path": { "type": "string", "pattern": "^[^/].*" },
     "artifact": {
       "type": "object",
       "additionalProperties": false,
@@ -45,4 +46,3 @@
     "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
   }
 }
-

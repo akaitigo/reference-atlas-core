@@ -116,4 +116,4 @@ Certificateは生成物であり手編集しません。
 - AtlasとSkill PackageのRouter ID・Pathが一致する。
 - `complete`の場合、必須Targetに`missing`、`planned`、`partial`、`expired`がない。
 
-将来のRelease Gateでは、Evidence IDの実体、Artifact Digest、Claim Graph、Skill Eval、SBOM、署名済みCertificateまで同じ監査へ加える。宣言だけを増やして完成扱いにはしない。
+Control Plane v1のRelease Gateは、Evidence IDの実体、Artifact Digest、Claim Graph、Skill Eval、SBOM、Provenance、Payload Digest付きCertificateまで同じ監査へ含める。宣言だけを増やして完成扱いにはしない。

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/third-party.schema.json",
+  "title": "Third Party Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "artifacts"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "kind", "version", "source", "license", "redistribution"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "name": { "type": "string", "minLength": 2 },
+          "kind": { "enum": ["go-module", "github-action", "source", "asset", "dataset", "model", "font", "media"] },
+          "version": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "format": "uri" },
+          "license": { "type": "string", "minLength": 2 },
+          "redistribution": { "enum": ["allowed", "link-only", "metadata-only", "review-required"] }
+        }
+      }
+    }
+  }
+}

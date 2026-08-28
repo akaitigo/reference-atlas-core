@@ -1,0 +1,29 @@
+schema_version: 1
+id: reference-atlas-core
+title: 技術実証アトラス Control Plane
+owner: {github: akaitigo}
+repository:
+  url: https://github.com/akaitigo/reference-atlas-core
+  visibility: public
+  default_branch: main
+archetypes: [control-plane]
+stage: 0
+status: complete
+language: {primary: ja, identifiers: en}
+coverage: {epoch: "2026-08-28", manifest: coverage.yaml}
+authority: {lockfile: sources.lock.yaml, policy: primary-first}
+mastery: {manifest: mastery.yaml, contract_version: 1.0.0}
+scope:
+  statement: 技術実証アトラス群の共通Schema、監査、生成、移行、Versioning、Release契約を安定したControl Plane v1として提供する。
+  exclusions:
+    - 個別Subject固有の機能一覧、製品実装、複数Subjectを組み合わせる統合試験
+skills:
+  router: {id: reference-atlas-core, path: .agents/skills/reference-atlas-core/SKILL.md}
+  package_manifest: skill.package.yaml
+  evals: evals/
+completion:
+  policy_version: 1.0.0
+  required_profiles: [local]
+  certificate: evidence/completion-certificate.json
+license: {default: Apache-2.0, notice: NOTICE, third_party_manifest: third_party/manifest.yaml, sbom: sbom.spdx.json}
+security: {disclosure: SECURITY.md, defensive_only: true}

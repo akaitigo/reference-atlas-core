@@ -73,3 +73,29 @@ func TestExampleAudit(t *testing.T) {
 		t.Fatalf("予期しない監査結果: %+v", result)
 	}
 }
+
+func TestV1CompatibilityFixtures(t *testing.T) {
+	root := filepath.Join("..", "..", "examples", "frontend-behavior-atlas")
+	for _, name := range []string{"atlas.yaml", "mastery.yaml", "coverage.yaml", "sources.lock.yaml", "skill.package.yaml", "sample.evidence.yaml"} {
+		if _, err := File(filepath.Join(root, name)); err != nil {
+			t.Fatalf("既存v1 fixtureとの互換性が壊れました (%s): %v", name, err)
+		}
+	}
+}
+
+func TestRelativeDigestRejectsTraversalAndTampering(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "artifact.txt")
+	if err := os.WriteFile(path, []byte("verified\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := verifyRelativeFileDigest(dir, "artifact.txt", digestBytes([]byte("verified\n")), 9); err != nil {
+		t.Fatal(err)
+	}
+	if err := verifyRelativeFileDigest(dir, "../artifact.txt", digestBytes([]byte("verified\n")), 9); err == nil {
+		t.Fatal("Path traversalは拒否する必要があります")
+	}
+	if err := verifyRelativeFileDigest(dir, "artifact.txt", digestBytes([]byte("tampered\n")), 9); err == nil {
+		t.Fatal("改変Digestは拒否する必要があります")
+	}
+}

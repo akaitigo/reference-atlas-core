@@ -1,0 +1,9 @@
+Reference Atlas Core v1 release evidence
+Coverage epoch: 2026-08-28
+Command: make release-check
+Result: PASS
+Assertions:
+- Go unit and compatibility tests passed.
+- Canonical schemas and examples validated.
+- Incomplete example audit passed without granting completion.
+- Complete Core self-audit and certificate verification passed.

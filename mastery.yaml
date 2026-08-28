@@ -1,0 +1,29 @@
+schema_version: 1
+atlas_id: reference-atlas-core
+epoch: "2026-08-28"
+promise: 技術実証アトラスの設計者、実装者、運用者、Reviewer、Agentが、共通Architectureを分岐させずにSubjectを構築・検証・移行・公開できる安定したControl Plane v1を、再実行可能な証拠とともに提供する。
+audiences: [learner, practitioner, architect, operator, maintainer, reviewer, educator, agent]
+outcomes:
+  - {id: understand, title: 境界と完成意味論を説明できる, target_sets: [contracts]}
+  - {id: choose, title: SchemaとArchetypeを選べる, target_sets: [contracts, lifecycle]}
+  - {id: build, title: Subjectを生成して構築できる, target_sets: [lifecycle]}
+  - {id: verify, title: 横断GateとCertificateを検証できる, target_sets: [assurance]}
+  - {id: operate, title: CIとRelease Gateを運用できる, target_sets: [lifecycle, assurance]}
+  - {id: troubleshoot, title: GraphとDigest不整合を診断できる, target_sets: [assurance]}
+  - {id: evolve, title: 互換性を分類して移行できる, target_sets: [lifecycle]}
+  - {id: delegate, title: Agentへ安全に委任できる, target_sets: [skill]}
+surfaces:
+  - {id: orientation-scope, title: 定義・目的・境界, applicability: required, rationale: CoreとSubjectとInteroperability Labの責任境界を固定するために必要である。, target_sets: [contracts], required_deliverables: [concept, decision]}
+  - {id: foundations-mechanics, title: 原理・内部機構, applicability: required, rationale: Canonical chainと有限なClosureの仕組みを説明するために必要である。, target_sets: [contracts], required_deliverables: [concept, lab]}
+  - {id: architecture-design, title: Architecture・設計, applicability: required, rationale: 既存Architectureと依存方向を安定して維持するために必要である。, target_sets: [contracts], required_deliverables: [decision, reference-implementation]}
+  - {id: implementation-construction, title: 実装・構築, applicability: required, rationale: CLIとScaffoldとGeneratorを実行可能に提供するために必要である。, target_sets: [lifecycle], required_deliverables: [reference-implementation, lab]}
+  - {id: testing-verification, title: 試験・検証, applicability: required, rationale: SchemaとGraphと生成物を自動試験で検証するために必要である。, target_sets: [assurance], required_deliverables: [test, evidence]}
+  - {id: failure-recovery, title: 失敗・診断・回復, applicability: required, rationale: 不整合を日本語の診断として返し安全に再生成するために必要である。, target_sets: [assurance], required_deliverables: [failure-catalog, runbook]}
+  - {id: operations-observability, title: 運用・Observability, applicability: required, rationale: CIとRelease手順からGate結果を観測するために必要である。, target_sets: [lifecycle], required_deliverables: [runbook, evidence]}
+  - {id: security-privacy-safety, title: Security・Privacy・Safety, applicability: required, rationale: Path traversalや権利不明素材や秘密の公開を拒否するために必要である。, target_sets: [assurance], required_deliverables: [security-review, test]}
+  - {id: performance-capacity-cost, title: 性能・容量・Cost, applicability: required, rationale: 多数Entityの監査を単一CLIで決定論的に完了させるために必要である。, target_sets: [assurance], required_deliverables: [benchmark, evidence]}
+  - {id: compatibility-integration, title: 互換性・Integration, applicability: required, rationale: v1 Manifest利用者との後方互換性をTestで固定するために必要である。, target_sets: [lifecycle], required_deliverables: [test, evidence]}
+  - {id: migration-evolution-deprecation, title: 移行・進化・廃止, applicability: required, rationale: 非破壊Migrationと変更分類を提供するために必要である。, target_sets: [lifecycle], required_deliverables: [migration-guide, test]}
+  - {id: decision-comparison, title: 選択・比較, applicability: required, rationale: Schema変更とOverlayの判断を同じPolicyで比較するために必要である。, target_sets: [contracts], required_deliverables: [decision, benchmark]}
+  - {id: provenance-rights, title: 出典・来歴・権利, applicability: required, rationale: Apache-2.0とDCOと第三者依存とArtifact来歴を追跡するために必要である。, target_sets: [assurance], required_deliverables: [provenance-record, evidence]}
+  - {id: agent-skill, title: Agent Skill・評価, applicability: required, rationale: AgentをCanonical契約へ案内し権限境界を評価するために必要である。, target_sets: [skill], required_deliverables: [skill-reference, skill-eval]}

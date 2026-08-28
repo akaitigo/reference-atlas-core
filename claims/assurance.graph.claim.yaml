@@ -1,0 +1,11 @@
+schema_version: 1
+id: assurance.graph
+atlas_id: reference-atlas-core
+capability_id: assurance.graph
+statement: complete AtlasではCoverage、accepted Claim、pass Evidenceの実体が双方向に接続され孤立Nodeが拒否される。
+status: accepted
+source_ids: [json-schema-2020-12]
+proof_obligations:
+  - id: assurance.graph.closure
+    statement: 欠落参照と孤立Entityと非pass証拠を検出する。
+    acceptance_criteria: [covered TargetのClaimとEvidenceが実体化し同じClaimを共有すること]

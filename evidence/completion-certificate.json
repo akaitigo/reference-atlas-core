@@ -1,0 +1,36 @@
+{
+  "atlas_id": "reference-atlas-core",
+  "atlas_release": "v1.0.0",
+  "authority_lock_digest": "sha256:f35634bf23db21fae2249262aaf8692ea0e5050fbe50a9287874f7772bfb8657",
+  "commit": "d5c0a6ce757fd5f43af837edd26f55c7325b811e",
+  "core_policy_version": "1.0.0",
+  "coverage_epoch": "2026-08-28",
+  "evidence_set_digest": "sha256:072f777d01a4ac264b892afce665affd35ed19c97a6336281b10f379016b429f",
+  "graph_digest": "sha256:505fb34b721aa0201e15edc209d210e956c21d987564b054b18de43161435c56",
+  "issued_at": "2026-08-28T00:00:00+09:00",
+  "provenance_digest": "sha256:25f4b96a46ae72f2c79f7290769f0465fecb9d4b29af11b73185cd2fe23c2f40",
+  "required_profiles": [
+    {
+      "evidence_ids": [
+        "core.audit",
+        "core.compatibility",
+        "core.contracts",
+        "core.skill",
+        "core.tooling"
+      ],
+      "profile": "local",
+      "result": "pass"
+    }
+  ],
+  "sbom_digest": "sha256:e96103992b62754e01b068dfc2200be3c808acb9c8c6e28bff7db6e66dfddb2d",
+  "schema_version": 1,
+  "signature": {
+    "digest": "sha256:d0a04e67668f5657b3d414bbf9d56e5b5613a47c39822b7726caa91b421f0ea7",
+    "type": "payload-sha256"
+  },
+  "skill_eval": {
+    "digest": "sha256:2f9a6d516e77015439f7db1fefccba1fe736cabe434371948b8d125e9512abfc",
+    "pass_rate": 1
+  },
+  "skill_package_digest": "sha256:3b91a7177910f3a7e3ecfc0c6aaabe1708a9e726462bbb08f25ae08379a8247a"
+}

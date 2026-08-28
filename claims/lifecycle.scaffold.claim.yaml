@@ -1,0 +1,11 @@
+schema_version: 1
+id: lifecycle.scaffold
+atlas_id: reference-atlas-core
+capability_id: lifecycle.scaffold
+statement: atlas scaffoldは既存Architectureに適合する未完成Subjectを生成し、Canonical CoverageからSkill Referenceを再生成できる。
+status: accepted
+source_ids: [go-modules-reference]
+proof_obligations:
+  - id: lifecycle.scaffold.valid
+    statement: 生成直後の5 ManifestがSchemaと不完全状態の横断監査を通る。
+    acceptance_criteria: [空でない出力先を上書きせず生成物がatlas auditを通ること]

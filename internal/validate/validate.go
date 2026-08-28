@@ -84,6 +84,18 @@ func schemaFor(path string) (string, error) {
 		return "company-inventory.schema.json", nil
 	case strings.HasSuffix(base, ".evidence.yaml") || strings.HasSuffix(base, ".evidence.yml") || strings.HasSuffix(base, ".evidence.json"):
 		return "evidence.schema.json", nil
+	case strings.HasSuffix(base, ".claim.yaml") || strings.HasSuffix(base, ".claim.yml") || strings.HasSuffix(base, ".claim.json"):
+		return "claim.schema.json", nil
+	case strings.HasSuffix(base, ".skill-eval.yaml") || strings.HasSuffix(base, ".skill-eval.yml") || strings.HasSuffix(base, ".skill-eval.json"):
+		return "skill-eval.schema.json", nil
+	case base == "provenance.yaml" || base == "provenance.yml" || base == "provenance.json":
+		return "provenance.schema.json", nil
+	case base == "core-v1.yaml" || base == "core-v1.yml" || base == "core-v1.json":
+		return "migration.schema.json", nil
+	case base == "completion-certificate.json":
+		return "completion-certificate.schema.json", nil
+	case base == "manifest.yaml" && filepath.Base(filepath.Dir(path)) == "third_party":
+		return "third-party.schema.json", nil
 	default:
 		return "", fmt.Errorf("%sに対応するSchemaを判定できません", path)
 	}

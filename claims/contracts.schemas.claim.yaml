@@ -1,0 +1,11 @@
+schema_version: 1
+id: contracts.schemas
+atlas_id: reference-atlas-core
+capability_id: contracts.schemas
+statement: Core v1はCanonical ManifestとClaim、Evidence、Skill Eval、Provenance、CertificateをSchema検証できる。
+status: accepted
+source_ids: [json-schema-2020-12]
+proof_obligations:
+  - id: contracts.schemas.validation
+    statement: 有効なv1 fixtureを受理し不正なfixtureを拒否する。
+    acceptance_criteria: [全組み込みSchemaがcompileされ代表Manifestが検証を通ること]

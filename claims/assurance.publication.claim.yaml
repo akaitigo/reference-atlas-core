@@ -1,0 +1,11 @@
+schema_version: 1
+id: assurance.publication
+atlas_id: reference-atlas-core
+capability_id: assurance.publication
+statement: complete AtlasはSPDX SBOM、Artifact Provenance、Skill Eval、Completion CertificateをDigestで固定し再検証できる。
+status: accepted
+source_ids: [spdx-2.3, developer-certificate-of-origin-1.1]
+proof_obligations:
+  - id: assurance.publication.verify
+    statement: CertificateのPayloadと現在のManifest群を再計算して比較する。
+    acceptance_criteria: [SBOMとProvenanceとCertificateの構造およびDigestが監査を通ること]
