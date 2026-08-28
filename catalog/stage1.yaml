@@ -1,0 +1,804 @@
+schema_version: 1
+catalog_id: stage1-programmable-computing
+owner: akaitigo
+coverage_epoch: "2026-08-28"
+scope_statement: >-
+  ソフトウェア、計算機システム、クラウド、データ、セキュリティ、AI、組込み・物理計算を、
+  実装、運用、失敗、安全性、性能、移行、Agent Skillまで実証可能な技術分野として凍結する。
+  個別製品の全列挙は行わず、代表製品を分野内で扱い、深掘り対象だけを製品アトラスへ分離する。
+control_repositories:
+  - reference-atlas-core
+  - executable-technology-atlas
+  - technology-atlas-skills
+  - atlas-interoperability-lab
+
+domains:
+  - id: foundations
+    title: 計算・ソフトウェアの基礎
+    subjects:
+      - id: algorithms-data-structures
+        title: アルゴリズムとデータ構造
+        repository: algorithms-data-structures-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 計算量、主要データ構造、探索、整列、グラフ、近似、実装上の選択を実証する。
+        excludes: [特定言語の標準ライブラリ全APIの列挙]
+      - id: mathematical-statistical-foundations
+        title: 数学・統計基礎
+        repository: mathematical-statistical-foundations-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 離散数学、線形代数、確率、統計、最適化を計算機実装との対応で実証する。
+        excludes: [純粋数学の未解決問題と証明研究の網羅]
+      - id: computational-mathematics-numerical
+        title: 計算数学・数値計算
+        repository: computational-mathematics-numerical-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 浮動小数点、誤差、数値線形代数、補間、積分、微分方程式を実証する。
+        excludes: [商用数値計算製品の全機能比較]
+      - id: formal-methods-verification
+        title: 形式手法・検証
+        repository: formal-methods-verification-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 形式仕様、モデル検査、定理証明、契約、プロパティ検査の適用境界を実証する。
+        excludes: [すべての証明支援系の完全習得]
+      - id: information-theory-coding
+        title: 情報理論・符号化
+        repository: information-theory-coding-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 情報量、圧縮、誤り訂正、通信路、符号化の基本性質と実装を実証する。
+        excludes: [通信規格ごとの全符号方式の列挙]
+      - id: artificial-intelligence-foundations
+        title: 人工知能基礎
+        repository: artificial-intelligence-foundations-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 探索、推論、知識表現、計画、学習の古典的基礎と限界を実証する。
+        excludes: [個別生成AI製品の使用手順]
+      - id: programming-language-foundations
+        title: プログラミング言語基礎
+        repository: programming-language-foundations-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 型、意味論、評価、抽象化、並行性、メモリモデルを小さな実装で実証する。
+        excludes: [全プログラミング言語の文法一覧]
+      - id: software-engineering-foundations
+        title: ソフトウェア工学基礎
+        repository: software-engineering-foundations-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ライフサイクル、設計原則、構成管理、測定、専門倫理の基礎を実証する。
+        excludes: [組織固有の人事評価制度]
+
+  - id: systems
+    title: 計算機システム
+    subjects:
+      - id: computer-architecture-digital-systems
+        title: 計算機アーキテクチャ・デジタルシステム
+        repository: computer-architecture-digital-systems-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 命令実行、メモリ階層、入出力、パイプライン、デジタル論理をシミュレータで実証する。
+        excludes: [半導体製造プロセスの実機再現]
+      - id: fpga-hdl-hardware-software-codesign
+        title: FPGA・HDL・ハードウェア協調設計
+        repository: fpga-hdl-hardware-software-codesign-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: HDL、合成、タイミング、検証、ソフトウェア連携を無償シミュレータ中心に実証する。
+        excludes: [高額な実機ボードを必須とする検証]
+      - id: operating-system-kernel-engineering
+        title: OS・カーネル工学
+        repository: operating-system-kernel-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: プロセス、メモリ、同期、ファイル、デバイス、分離、障害をVMと実装で実証する。
+        excludes: [全OSカーネルのソースコード解説]
+      - id: programming-languages-compilers-runtimes
+        title: 言語処理系・コンパイラ・ランタイム
+        repository: programming-languages-compilers-runtimes-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 字句解析から最適化、実行時、GC、JIT、FFIまでを小さな処理系で実証する。
+        excludes: [各言語の全仕様と全処理系の再実装]
+      - id: database-engine-internals
+        title: データベースエンジン内部
+        repository: database-engine-internals-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 格納、索引、問い合わせ最適化、トランザクション、復旧、レプリケーションを実証する。
+        excludes: [個別DB製品の運用機能の完全網羅]
+      - id: storage-filesystem-engineering
+        title: ストレージ・ファイルシステム工学
+        repository: storage-filesystem-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ブロック、ファイル、オブジェクト、整合性、耐久性、キャッシュ、故障復旧を実証する。
+        excludes: [ベンダー専用ストレージ筐体の実機検証]
+      - id: browser-engine-web-runtime
+        title: ブラウザエンジン・Webランタイム
+        repository: browser-engine-web-runtime-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 解析、レイアウト、描画、イベントループ、分離、キャッシュ、開発者APIの内部を実証する。
+        excludes: [ブラウザ製品ごとのUI機能比較]
+      - id: virtualization-emulation
+        title: 仮想化・エミュレーション
+        repository: virtualization-emulation-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ハイパーバイザ、VM、命令エミュレーション、デバイス仮想化、隔離と性能を実証する。
+        excludes: [商用仮想基盤の全管理画面解説]
+      - id: linux-systems-engineering
+        title: Linuxシステム工学
+        repository: linux-systems-engineering-reference-atlas
+        archetypes: [field, language-platform]
+        stage1_required: true
+        status: planned
+        scope: 起動、プロセス、権限、サービス、パッケージ、ネットワーク、診断と保守を実証する。
+        excludes: [全Linuxディストリビューションの差異一覧]
+      - id: networking-protocols
+        title: ネットワーク・プロトコル
+        repository: networking-protocols-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: L2からアプリ層、名前解決、ルーティング、輻輳、負荷分散、障害を実証する。
+        excludes: [通信事業者網の実機設備構築]
+      - id: distributed-systems
+        title: 分散システム
+        repository: distributed-systems-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 時間、整合性、合意、複製、分割、冪等性、故障モデルを再現可能に実証する。
+        excludes: [特定クラウドだけに依存する大規模負荷試験]
+      - id: parallel-hpc
+        title: 並列計算・HPC
+        repository: parallel-hpc-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: スレッド、SIMD、共有・分散メモリ、スケーリング、数値ワークロードを実証する。
+        excludes: [スーパーコンピュータ実機を必須とする計測]
+      - id: gpu-computing
+        title: GPU計算
+        repository: gpu-computing-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: GPU実行モデル、メモリ、カーネル、性能分析、移植性をローカルまたは代替環境で実証する。
+        excludes: [特定GPU購入を完了条件にすること]
+      - id: webassembly-wasi
+        title: WebAssembly・WASI
+        repository: webassembly-wasi-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: モジュール、ランタイム、ホスト連携、コンポーネント、安全境界、移植性を実証する。
+        excludes: [提案段階仕様を完成済みとして扱うこと]
+      - id: kotlin
+        title: Kotlin
+        repository: kotlin-reference-atlas
+        archetypes: [product, language-platform]
+        stage1_required: false
+        status: active
+        scope: Kotlin言語、JVMランタイム、並行処理、ビルド、相互運用、運用上の挙動を深掘りする。
+        excludes: [Kotlinで利用可能な全ライブラリの列挙]
+        representative_products: [Kotlin, JVM, Gradle]
+
+  - id: software-engineering
+    title: ソフトウェア設計・開発
+    subjects:
+      - id: requirements-engineering
+        title: 要求工学
+        repository: requirements-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 発見、分析、仕様化、検証、追跡、変更管理を実行可能な例と証拠で実証する。
+        excludes: [特定業界の全業務要件テンプレート]
+      - id: software-architecture
+        title: ソフトウェアアーキテクチャ
+        repository: software-architecture-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 品質特性、境界、分解、意思決定、進化、評価を比較可能な実装で実証する。
+        excludes: [図だけで動作証拠を持たないパターン集]
+      - id: api-integration-contracts
+        title: API・統合・契約
+        repository: api-integration-contracts-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: HTTP、RPC、イベント、スキーマ、互換性、認証、再試行、契約試験を実証する。
+        excludes: [公開APIサービスの全件カタログ]
+      - id: workflow-batch-orchestration
+        title: ワークフロー・バッチ・オーケストレーション
+        repository: workflow-batch-orchestration-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ジョブ、依存関係、再実行、補償、スケジュール、長期実行、失敗回復を実証する。
+        excludes: [業務固有の承認フロー全種類]
+      - id: software-quality-engineering
+        title: ソフトウェア品質工学
+        repository: software-quality-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 静的解析、各層の試験、プロパティ、変異、回帰、品質測定を実証する。
+        excludes: [ツールの導入だけで品質完了とみなすこと]
+      - id: software-maintenance-migration
+        title: 保守・モダナイゼーション・移行
+        repository: software-maintenance-migration-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 理解、依存更新、互換性、段階移行、データ移行、廃止、ロールバックを実証する。
+        excludes: [停止時間や復旧経路のない一括移行]
+
+  - id: client-applications
+    title: フロントエンド・クライアント
+    subjects:
+      - id: frontend-platform
+        title: Webフロントエンド基盤
+        repository: frontend-platform-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: HTML、CSS、DOM、ネットワーク、ストレージ、セキュリティ、ブラウザAPIの基盤を実証する。
+        excludes: [個別UI挙動パターンの重複収録]
+      - id: frontend-behavior
+        title: Webフロントエンド挙動
+        repository: frontend-behavior-atlas
+        archetypes: [field, construction]
+        stage1_required: true
+        status: existing
+        scope: UI挙動、状態、入力、失敗、アクセシビリティ、性能を実行可能なパターンで実証する。
+        excludes: [静的なデザイン見本だけの収録]
+        existing_repository: frontend-behavior-atlas
+      - id: frontend-application-architecture
+        title: Webアプリケーション設計
+        repository: frontend-application-architecture-reference-atlas
+        archetypes: [field, construction]
+        stage1_required: true
+        status: planned
+        scope: 状態管理、データ取得、ルーティング、境界、SSR、保守性、試験戦略を実証する。
+        excludes: [単一フレームワークだけを唯一解とすること]
+      - id: design-system-component-engineering
+        title: デザインシステム・コンポーネント工学
+        repository: design-system-component-engineering-reference-atlas
+        archetypes: [field, construction]
+        stage1_required: true
+        status: planned
+        scope: トークン、部品API、テーマ、合成、文書化、品質ゲート、配布を実証する。
+        excludes: [ブランド固有の完成ビジュアル資産]
+      - id: web-accessibility
+        title: Webアクセシビリティ
+        repository: web-accessibility-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: 知覚、操作、理解、堅牢性、支援技術、試験の要件と失敗を実証する。
+        excludes: [自動検査だけで適合を宣言すること]
+      - id: web-performance
+        title: Web性能工学
+        repository: web-performance-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 読込、描画、応答、メモリ、ネットワーク、測定、性能予算と劣化を実証する。
+        excludes: [再現条件のない単発ベンチマーク]
+      - id: android-platform-engineering
+        title: Androidプラットフォーム開発
+        repository: android-platform-engineering-reference-atlas
+        archetypes: [field, language-platform]
+        stage1_required: true
+        status: planned
+        scope: ライフサイクル、UI、データ、バックグラウンド、権限、配布、端末差を実証する。
+        excludes: [全Android端末での実機試験]
+      - id: apple-platforms-engineering
+        title: Appleプラットフォーム開発
+        repository: apple-platforms-engineering-reference-atlas
+        archetypes: [field, language-platform]
+        stage1_required: true
+        status: planned
+        scope: iOSとmacOSのライフサイクル、UI、データ、権限、性能、配布を実証する。
+        excludes: [有料端末購入を必須とする網羅試験]
+      - id: windows-platform-engineering
+        title: Windowsプラットフォーム開発
+        repository: windows-platform-engineering-reference-atlas
+        archetypes: [field, language-platform]
+        stage1_required: true
+        status: planned
+        scope: Windowsアプリ、システムAPI、配布、権限、サービス、互換性をVM中心に実証する。
+        excludes: [サポート終了済み全Windows版の実機保守]
+      - id: linux-desktop-platform-engineering
+        title: Linuxデスクトップ開発
+        repository: linux-desktop-platform-engineering-reference-atlas
+        archetypes: [field, language-platform]
+        stage1_required: true
+        status: planned
+        scope: GUIツールキット、デスクトップ統合、表示基盤、入力、配布、互換性を実証する。
+        excludes: [全デスクトップ環境の外観再現]
+      - id: cross-platform-client
+        title: クロスプラットフォームクライアント
+        repository: cross-platform-client-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 共有コード、ネイティブ境界、描画、配布、試験、性能、プラットフォーム差を実証する。
+        excludes: [個別フレームワークの全API解説]
+      - id: flutter
+        title: Flutter
+        repository: flutter-reference-atlas
+        archetypes: [product, language-platform]
+        stage1_required: false
+        status: active
+        scope: FlutterとDartの描画、状態、プラグイン、試験、性能、配布を製品深掘りとして実証する。
+        excludes: [公開パッケージ全件の評価]
+        representative_products: [Flutter, Dart]
+
+  - id: cloud-delivery-operations
+    title: クラウド・デリバリー・運用
+    subjects:
+      - id: oci-container-engineering
+        title: OCIコンテナ工学
+        repository: oci-container-engineering-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: イメージ、ランタイム、名前空間、cgroup、レジストリ、隔離、供給網を実証する。
+        excludes: [コンテナ編成全般の重複収録]
+      - id: container-orchestration
+        title: コンテナオーケストレーション
+        repository: container-orchestration-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 宣言状態、配置、サービス、構成、永続化、更新、障害復旧をローカルクラスタで実証する。
+        excludes: [特定マネージドサービスだけの手順集]
+      - id: cloud-architecture
+        title: クラウドアーキテクチャ
+        repository: cloud-architecture-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 責任分界、リージョン、可用性、ネットワーク、データ、管理面をベンダー横断で実証する。
+        excludes: [有料クラウド利用を必須とする完了条件]
+      - id: infrastructure-as-code-configuration
+        title: Infrastructure as Code・構成管理
+        repository: infrastructure-as-code-configuration-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 宣言、状態、差分、ドリフト、秘密、再利用、試験、変更安全性を実証する。
+        excludes: [本番認証情報を必要とする例]
+      - id: ci-cd-release-engineering
+        title: CI/CD・リリース工学
+        repository: ci-cd-release-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ビルド、試験、成果物、昇格、配備、ロールバック、承認、証跡を実証する。
+        excludes: [単一CI製品の設定項目一覧]
+      - id: software-supply-chain
+        title: ソフトウェアサプライチェーン
+        repository: software-supply-chain-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: 依存、SBOM、署名、来歴、再現ビルド、脆弱性、方針適用を実証する。
+        excludes: [検証不能な安全性の絶対保証]
+      - id: gitops-continuous-delivery
+        title: GitOps・継続的デリバリー
+        repository: gitops-continuous-delivery-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: Git宣言、調整、差分、昇格、秘密、マルチ環境、復旧をローカル環境で実証する。
+        excludes: [特定GitOps製品だけの運用手順]
+      - id: observability-engineering
+        title: オブザーバビリティ工学
+        repository: observability-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ログ、メトリクス、トレース、プロファイル、相関、計装、保管、診断を実証する。
+        excludes: [可視化画面の作成だけで完了とすること]
+      - id: sre-incident-operations
+        title: SRE・インシデント運用
+        repository: sre-incident-operations-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: SLI、SLO、エラー予算、当番、対応、振り返り、自動化、トイル削減を実証する。
+        excludes: [実在組織の未公開インシデント情報]
+      - id: resilience-continuity-disaster-recovery
+        title: レジリエンス・事業継続・災害復旧
+        repository: resilience-continuity-disaster-recovery-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 障害注入、冗長化、バックアップ、復元、RTO・RPO、演習、縮退を実証する。
+        excludes: [演習なしの机上計画だけで完了とすること]
+      - id: platform-engineering-developer-experience
+        title: プラットフォーム工学・開発者体験
+        repository: platform-engineering-developer-experience-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 内部開発基盤、セルフサービス、テンプレート、標準経路、測定、統治を実証する。
+        excludes: [ポータル製品導入だけで完了とすること]
+      - id: serverless-computing
+        title: サーバーレス計算
+        repository: serverless-computing-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 関数、イベント、状態、コールドスタート、制限、移植性、運用をエミュレータ中心に実証する。
+        excludes: [特定クラウド課金を必須とする試験]
+      - id: edge-computing
+        title: エッジ計算
+        repository: edge-computing-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 配置、遅延、切断、同期、資源制約、更新、中央連携をシミュレーションで実証する。
+        excludes: [世界規模の実エッジ拠点配備]
+      - id: performance-capacity-engineering
+        title: 性能・容量工学
+        repository: performance-capacity-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 負荷モデル、計測、待ち行列、ボトルネック、容量予測、劣化検知を実証する。
+        excludes: [再現不能なランキング目的ベンチマーク]
+      - id: finops-cost-engineering
+        title: FinOps・コスト工学
+        repository: finops-cost-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 配賦、単価、需要、予算、最適化、持続可能性、技術判断との接続を実証する。
+        excludes: [実在企業の非公開請求データ]
+      - id: service-networking-traffic-management
+        title: サービス間通信・トラフィック管理
+        repository: service-networking-traffic-management-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 発見、プロキシ、メッシュ、再試行、遮断、経路、暗号化、可観測性を実証する。
+        excludes: [単一サービスメッシュ製品だけの設定集]
+      - id: argocd
+        title: Argo CD
+        repository: argocd-reference-atlas
+        archetypes: [product]
+        stage1_required: false
+        status: active
+        scope: Argo CDの調整、Application、昇格、同期、差分、障害復旧を製品深掘りとして実証する。
+        excludes: [GitOps分野全般の重複収録]
+        representative_products: [Argo CD]
+
+  - id: data-messaging
+    title: データ・メッセージング
+    subjects:
+      - id: relational-database-sql
+        title: リレーショナルデータベース・SQL
+        repository: relational-database-sql-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: モデリング、SQL、制約、索引、トランザクション、計画、運用を実証する。
+        excludes: [特定RDBMSだけの管理コマンド一覧]
+      - id: operational-data-stores
+        title: 運用データストア
+        repository: operational-data-stores-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: Key-Value、文書、列、グラフ、時系列、キャッシュの選択と故障特性を実証する。
+        excludes: [市場に存在する全データベース製品の列挙]
+      - id: messaging-event-driven-systems
+        title: メッセージング・イベント駆動システム
+        repository: messaging-event-driven-systems-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: キュー、Pub/Sub、配送保証、順序、再試行、DLQ、冪等性、流量制御を実証する。
+        excludes: [イベントストリーミング基盤の内部実装の重複]
+      - id: event-streaming-cdc
+        title: イベントストリーミング・CDC
+        repository: event-streaming-cdc-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ログ、パーティション、消費位置、再処理、CDC、スキーマ進化、運用を実証する。
+        excludes: [単一製品の全コネクタ検証]
+      - id: information-retrieval-search
+        title: 情報検索・検索システム
+        repository: information-retrieval-search-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 索引、解析、ランキング、ベクトル検索、評価、更新、分散検索を実証する。
+        excludes: [公開Web全体を対象にした検索基盤]
+      - id: data-engineering-orchestration
+        title: データエンジニアリング・オーケストレーション
+        repository: data-engineering-orchestration-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 取込、変換、パイプライン、再実行、品質、スキーマ、依存関係、運用を実証する。
+        excludes: [実在企業の機密データ利用]
+      - id: analytics-data-platform
+        title: 分析データ基盤
+        repository: analytics-data-platform-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: DWH、レイク、レイクハウス、モデリング、クエリ、BI、セマンティクスを実証する。
+        excludes: [特定クラウドDWHへの有料投入を必須とすること]
+      - id: data-governance-quality-lineage
+        title: データガバナンス・品質・リネージ
+        repository: data-governance-quality-lineage-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 所有、分類、カタログ、品質契約、来歴、保持、アクセス統治を実証する。
+        excludes: [規程文書だけで技術的な強制を伴わない例]
+      - id: postgresql
+        title: PostgreSQL
+        repository: postgresql-reference-atlas
+        archetypes: [product]
+        stage1_required: false
+        status: active
+        scope: PostgreSQLのSQL、MVCC、計画、索引、復旧、複製、運用を製品深掘りとして実証する。
+        excludes: [全拡張機能の網羅]
+        representative_products: [PostgreSQL]
+      - id: rabbitmq
+        title: RabbitMQ
+        repository: rabbitmq-reference-atlas
+        archetypes: [product]
+        stage1_required: false
+        status: active
+        scope: RabbitMQの交換機、キュー、確認、再配送、クラスタ、障害、運用を製品深掘りとして実証する。
+        excludes: [AMQP以外を含む全メッセージ製品比較]
+        representative_products: [RabbitMQ]
+
+  - id: security-privacy
+    title: セキュリティ・プライバシー
+    subjects:
+      - id: security-engineering
+        title: セキュリティ工学・AppSec・DevSecOps
+        repository: security-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 脅威分析、安全設計、実装、検証、脆弱性管理、SDLC統合を防御目的で実証する。
+        excludes: [許可のない対象への攻撃手順]
+      - id: zero-trust
+        title: ゼロトラスト
+        repository: zero-trust-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: active
+        scope: 継続検証、最小権限、ポリシー決定・適用、端末、ID、通信、監査を実証する。
+        excludes: [単一ベンダー製品の導入だけで達成とすること]
+      - id: cryptography-engineering
+        title: 暗号工学
+        repository: cryptography-engineering-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: 共通鍵、公開鍵、ハッシュ、署名、プロトコル、乱数、実装失敗を安全に実証する。
+        excludes: [独自暗号を本番利用可能として推奨すること]
+      - id: identity-authentication-authorization
+        title: ID・認証・認可
+        repository: identity-authentication-authorization-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: IDライフサイクル、認証、連携、セッション、認可モデル、委任、監査を実証する。
+        excludes: [実在利用者の個人情報や認証情報]
+      - id: detection-response-forensics
+        title: 検知・対応・フォレンジック
+        repository: detection-response-forensics-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: テレメトリ、検知規則、トリアージ、封じ込め、証拠保全、復旧を安全なラボで実証する。
+        excludes: [実在組織への侵入や無許可調査]
+      - id: privacy-engineering
+        title: プライバシー工学
+        repository: privacy-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: データ最小化、目的制限、同意、匿名化、保持、権利対応、測定を実証する。
+        excludes: [法的助言や特定法域への適合保証]
+      - id: secrets-key-certificate-management
+        title: シークレット・鍵・証明書管理
+        repository: secrets-key-certificate-management-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 生成、保管、配布、ローテーション、失効、短命資格、監査をダミー資材で実証する。
+        excludes: [実在する秘密鍵や本番資格情報]
+      - id: network-platform-security
+        title: ネットワーク・プラットフォームセキュリティ
+        repository: network-platform-security-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 分離、境界防御、ホスト強化、制御面、安全な通信、設定検証を防御目的で実証する。
+        excludes: [公共ネットワークへの無許可スキャン]
+
+  - id: ai-data-science
+    title: AI・データサイエンス
+    subjects:
+      - id: data-science-statistical-learning
+        title: データサイエンス・統計学習
+        repository: data-science-statistical-learning-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 探索、特徴量、推定、検定、教師あり・なし学習、評価、再現性を実証する。
+        excludes: [出所不明または利用条件不明のデータセット]
+      - id: machine-learning-systems
+        title: 機械学習システム・MLOps
+        repository: machine-learning-systems-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: データ、学習、追跡、配備、監視、ドリフト、再学習、運用失敗を実証する。
+        excludes: [高額GPUクラスタを必須とする完了条件]
+      - id: generative-ai-rag
+        title: 生成AI・RAG
+        repository: generative-ai-rag-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 基盤モデル利用、プロンプト、検索拡張、構造化出力、キャッシュ、評価を実証する。
+        excludes: [モデル重みやデータの無許可再配布]
+      - id: agentic-systems
+        title: エージェントシステム
+        repository: agentic-systems-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ツール利用、計画、状態、委任、権限、失敗回復、人間介入、監査を実証する。
+        excludes: [無制限の外部操作権限を与える例]
+      - id: ai-evaluation-safety
+        title: AI評価・安全・ガバナンス
+        repository: ai-evaluation-safety-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 能力、品質、頑健性、公平性、セキュリティ、監視、リスク管理を評価可能に実証する。
+        excludes: [評価なしの安全性・公平性の断定]
+
+  - id: physical-media-interactive
+    title: 組込み・物理・メディア・対話
+    subjects:
+      - id: embedded-firmware-rtos
+        title: 組込み・ファームウェア・RTOS
+        repository: embedded-firmware-rtos-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 割込み、周辺機器、メモリ制約、RTOS、更新、デバッグ、故障をエミュレータで実証する。
+        excludes: [特定評価ボード購入を必須とすること]
+      - id: iot-device-connectivity
+        title: IoT・デバイス接続
+        repository: iot-device-connectivity-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: センサー、ゲートウェイ、接続、端末管理、更新、切断、セキュリティを模擬して実証する。
+        excludes: [実在施設への無許可設置や接続]
+      - id: real-time-safety-critical
+        title: リアルタイム・安全クリティカルシステム
+        repository: real-time-safety-critical-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 締切、スケジューリング、決定性、冗長性、ハザード、検証、証拠をシミュレーションで実証する。
+        excludes: [医療・車載・航空の認証取得を主張すること]
+      - id: control-systems-simulation
+        title: 制御システム・シミュレーション
+        repository: control-systems-simulation-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: モデル化、フィードバック、安定性、離散化、状態推定、HIL前段をシミュレータで実証する。
+        excludes: [危険な実機設備の直接制御]
+      - id: robotics-autonomous-systems
+        title: ロボティクス・自律システム
+        repository: robotics-autonomous-systems-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 知覚、位置推定、計画、制御、ミドルウェア、安全境界をシミュレータで実証する。
+        excludes: [公共空間での無許可自律走行]
+      - id: graphics-rendering
+        title: コンピュータグラフィックス・レンダリング
+        repository: graphics-rendering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 変換、ラスタライズ、シェーディング、照明、画像処理、GPUパイプラインを実証する。
+        excludes: [権利不明の3Dモデルやテクスチャ]
+      - id: game-engine-interactive-simulation
+        title: ゲームエンジン・対話シミュレーション
+        repository: game-engine-interactive-simulation-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: ゲームループ、入力、物理、ECS、ネットワーク、資産、ツール、決定性を実証する。
+        excludes: [市販ゲーム資産やコードの再配布]
+      - id: xr-spatial-computing
+        title: XR・空間コンピューティング
+        repository: xr-spatial-computing-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 座標、追跡、入力、描画、酔い対策、空間UI、性能をシミュレータ中心に実証する。
+        excludes: [特定ヘッドセット購入を必須とすること]
+      - id: media-codec-streaming
+        title: 音声・映像・コーデック・配信
+        repository: media-codec-streaming-reference-atlas
+        archetypes: [field, specification]
+        stage1_required: true
+        status: planned
+        scope: 収録、符号化、コンテナ、転送、同期、適応配信、遅延、品質を実証する。
+        excludes: [権利未確認の映像・音源利用]
+      - id: telecom-sdr
+        title: 通信システム・SDR
+        repository: telecom-sdr-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 変調、同期、チャネル、プロトコルスタック、SDR、ネットワーク機能を模擬して実証する。
+        excludes: [免許や許可を要する電波送信]
+
+  - id: emerging-specialized
+    title: 新興・専門計算
+    subjects:
+      - id: decentralized-systems-blockchain
+        title: 分散台帳・ブロックチェーン
+        repository: decentralized-systems-blockchain-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 台帳、合意、スマートコントラクト、鍵、ブリッジ、障害、運用をローカル網で実証する。
+        excludes: [実資産の投機や利益保証]
+      - id: quantum-computing
+        title: 量子計算
+        repository: quantum-computing-reference-atlas
+        archetypes: [field, hardware-simulation]
+        stage1_required: true
+        status: planned
+        scope: 量子ビット、回路、測定、代表アルゴリズム、誤り、古典連携をシミュレータで実証する。
+        excludes: [量子実機の優位性を無検証で断定すること]

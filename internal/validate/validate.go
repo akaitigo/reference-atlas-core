@@ -1,0 +1,88 @@
+package validate
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/akaitigo/reference-atlas-core/schemas"
+	"github.com/santhosh-tekuri/jsonschema/v6"
+	"gopkg.in/yaml.v3"
+)
+
+type Result struct {
+	Schema string
+}
+
+func File(path string) (Result, error) {
+	schemaName, err := schemaFor(path)
+	if err != nil {
+		return Result{}, err
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Result{}, fmt.Errorf("%sを読み込めません: %w", path, err)
+	}
+
+	var document any
+	if err := yaml.Unmarshal(data, &document); err != nil {
+		return Result{}, fmt.Errorf("%sは有効なYAML/JSONではありません: %w", path, err)
+	}
+	jsonData, err := json.Marshal(document)
+	if err != nil {
+		return Result{}, fmt.Errorf("%sをJSONへ正規化できません: %w", path, err)
+	}
+	if err := json.Unmarshal(jsonData, &document); err != nil {
+		return Result{}, fmt.Errorf("%sを検証用Documentへ変換できません: %w", path, err)
+	}
+
+	schemaData, err := schemas.FS.ReadFile(schemaName)
+	if err != nil {
+		return Result{}, fmt.Errorf("組み込みSchema %sを読み込めません: %w", schemaName, err)
+	}
+	var schemaDocument any
+	if err := json.Unmarshal(schemaData, &schemaDocument); err != nil {
+		return Result{}, fmt.Errorf("組み込みSchema %sは有効なJSONではありません: %w", schemaName, err)
+	}
+	compiler := jsonschema.NewCompiler()
+	if err := compiler.AddResource(schemaName, schemaDocument); err != nil {
+		return Result{}, fmt.Errorf("Schema %sを登録できません: %w", schemaName, err)
+	}
+	compiled, err := compiler.Compile(schemaName)
+	if err != nil {
+		return Result{}, fmt.Errorf("Schema %sをコンパイルできません: %w", schemaName, err)
+	}
+	if err := compiled.Validate(document); err != nil {
+		return Result{}, fmt.Errorf("%sは%sに適合しません: %w", path, schemaName, err)
+	}
+
+	if err := crossValidate(schemaName, document); err != nil {
+		return Result{}, fmt.Errorf("%sの横断制約に違反しています: %w", path, err)
+	}
+	return Result{Schema: schemaName}, nil
+}
+
+func schemaFor(path string) (string, error) {
+	base := filepath.Base(path)
+	switch {
+	case base == "atlas.yaml" || base == "atlas.yml" || base == "atlas.json":
+		return "atlas.schema.json", nil
+	case base == "coverage.yaml" || base == "coverage.yml" || base == "coverage.json":
+		return "coverage.schema.json", nil
+	case base == "sources.lock.yaml" || base == "sources.lock.yml" || base == "sources.lock.json":
+		return "sources-lock.schema.json", nil
+	case base == "skill.package.yaml" || base == "skill.package.yml" || base == "skill.package.json":
+		return "skill-package.schema.json", nil
+	case base == "stage1.yaml" || base == "stage1.yml" || base == "catalog.json":
+		return "catalog.schema.json", nil
+	case base == "company-inventory.yaml" || base == "company-inventory.yml" || base == "company-inventory.json":
+		return "company-inventory.schema.json", nil
+	case strings.HasSuffix(base, ".evidence.yaml") || strings.HasSuffix(base, ".evidence.yml") || strings.HasSuffix(base, ".evidence.json"):
+		return "evidence.schema.json", nil
+	default:
+		return "", fmt.Errorf("%sに対応するSchemaを判定できません", path)
+	}
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/catalog.schema.json",
+  "title": "Stage 1 Technology Atlas Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "catalog_id", "owner", "coverage_epoch", "scope_statement", "control_repositories", "domains"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "catalog_id": { "const": "stage1-programmable-computing" },
+    "owner": { "const": "akaitigo" },
+    "coverage_epoch": { "$ref": "#/$defs/date" },
+    "scope_statement": { "type": "string", "minLength": 50 },
+    "control_repositories": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/repository" }
+    },
+    "domains": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "subjects"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "title": { "type": "string", "minLength": 2 },
+          "subjects": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/subject" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "repository": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "repository", "archetypes", "stage1_required", "status", "scope", "excludes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 2 },
+        "repository": { "$ref": "#/$defs/repository" },
+        "archetypes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["field", "product", "specification", "language-platform", "construction", "hardware-simulation"] }
+        },
+        "stage1_required": { "type": "boolean" },
+        "status": { "enum": ["planned", "active", "existing", "complete", "deferred"] },
+        "scope": { "type": "string", "minLength": 20 },
+        "excludes": { "type": "array", "items": { "type": "string", "minLength": 5 } },
+        "representative_products": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "existing_repository": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
+

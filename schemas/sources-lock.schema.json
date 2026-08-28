@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/sources-lock.schema.json",
+  "title": "Authority Source Lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "epoch", "generated_at", "sources"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "atlas_id": { "$ref": "#/$defs/id" },
+    "epoch": { "$ref": "#/$defs/date" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "title", "url", "version", "retrieved_at", "digest", "redistribution"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "kind": { "enum": ["specification", "official-documentation", "release-notes", "security-advisory", "source", "runtime-inventory", "registry", "standard", "research"] },
+          "title": { "type": "string", "minLength": 3 },
+          "url": { "type": "string", "format": "uri" },
+          "version": { "type": "string", "minLength": 1 },
+          "retrieved_at": { "$ref": "#/$defs/date" },
+          "digest": { "$ref": "#/$defs/sha256" },
+          "license": { "type": ["string", "null"] },
+          "redistribution": { "enum": ["metadata-only", "link-only", "allowed", "review-required"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}
+

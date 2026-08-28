@@ -1,0 +1,18 @@
+schema_version: 1
+atlas_id: frontend-behavior-atlas
+atlas_release: v0.0.0
+router:
+  id: fe-behavior-advisor
+  path: .agents/skills/fe-behavior-advisor/SKILL.md
+  description: Web UI挙動の選定、実装、検証について、必要な実験と一次資料へ段階的に案内する。
+generated_from:
+  - coverage.yaml
+  - experiments/*/pattern.json
+adapters:
+  - generic-agent-skills
+  - codex
+  - claude-code
+  - cursor
+evals:
+  path: evals/
+  minimum_pass_rate: 0.9

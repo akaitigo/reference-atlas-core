@@ -1,0 +1,20 @@
+schema_version: 1
+id: sample.pointer-keyboard-equivalence
+atlas_id: frontend-behavior-atlas
+claim_ids: [behavior.pointer-keyboard-equivalence]
+kind: test-report
+producer: playwright
+command: pnpm test:e2e --grep keyboard-equivalence
+created_at: "2026-08-28T00:00:00+09:00"
+environment:
+  profile: container
+  manifest_digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+source_digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+harness_digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+artifact:
+  uri: evidence/sample/playwright-report.json
+  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+  media_type: application/json
+  size_bytes: 0
+verdict: inconclusive
+retention: git

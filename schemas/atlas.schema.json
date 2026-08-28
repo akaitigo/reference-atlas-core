@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/atlas.schema.json",
+  "title": "Technology Reference Atlas Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "owner",
+    "repository",
+    "archetypes",
+    "stage",
+    "status",
+    "language",
+    "coverage",
+    "authority",
+    "scope",
+    "skills",
+    "completion",
+    "license",
+    "security"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "#/$defs/repositoryId" },
+    "title": { "type": "string", "minLength": 3, "maxLength": 120 },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["github"],
+      "properties": {
+        "github": { "const": "akaitigo" }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "visibility", "default_branch"],
+      "properties": {
+        "url": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/akaitigo/" },
+        "visibility": { "const": "public" },
+        "default_branch": { "const": "main" }
+      }
+    },
+    "archetypes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["field", "product", "specification", "language-platform", "construction", "hardware-simulation", "control-plane"]
+      }
+    },
+    "stage": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "status": { "enum": ["planned", "active", "incomplete", "complete", "superseded", "archived"] },
+    "language": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "identifiers"],
+      "properties": {
+        "primary": { "const": "ja" },
+        "identifiers": { "const": "en" }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["epoch", "manifest"],
+      "properties": {
+        "epoch": { "$ref": "#/$defs/date" },
+        "manifest": { "const": "coverage.yaml" }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lockfile", "policy"],
+      "properties": {
+        "lockfile": { "const": "sources.lock.yaml" },
+        "policy": { "const": "primary-first" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "exclusions"],
+      "properties": {
+        "statement": { "type": "string", "minLength": 30 },
+        "exclusions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 10 }
+        }
+      }
+    },
+    "requires": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/repositoryId" }
+    },
+    "integrates_with": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/repositoryId" }
+    },
+    "skills": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["router", "package_manifest", "evals"],
+      "properties": {
+        "router": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "path"],
+          "properties": {
+            "id": { "$ref": "#/$defs/skillId" },
+            "path": { "type": "string", "pattern": "^\\.agents/skills/[^/]+/SKILL\\.md$" }
+          }
+        },
+        "package_manifest": { "const": "skill.package.yaml" },
+        "evals": { "type": "string", "pattern": "^evals/" }
+      }
+    },
+    "completion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_version", "required_profiles", "certificate"],
+      "properties": {
+        "policy_version": { "type": "string", "pattern": "^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$" },
+        "required_profiles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["local", "container", "vm", "cluster", "simulator", "cloud-live", "hardware-in-the-loop"] }
+        },
+        "certificate": { "const": "evidence/completion-certificate.json" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "notice", "third_party_manifest"],
+      "properties": {
+        "default": { "const": "Apache-2.0" },
+        "notice": { "const": "NOTICE" },
+        "third_party_manifest": { "const": "third_party/manifest.yaml" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disclosure", "defensive_only"],
+      "properties": {
+        "disclosure": { "const": "SECURITY.md" },
+        "defensive_only": { "const": true }
+      }
+    }
+  },
+  "$defs": {
+    "repositoryId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 100
+    },
+    "skillId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+

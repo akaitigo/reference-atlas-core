@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/skill-package.schema.json",
+  "title": "Atlas Skill Package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "atlas_release", "router", "generated_from", "adapters", "evals"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "atlas_id": { "$ref": "#/$defs/repositoryId" },
+    "atlas_release": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "router": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "description"],
+      "properties": {
+        "id": { "$ref": "#/$defs/skillId" },
+        "path": { "type": "string", "pattern": "^\\.agents/skills/[^/]+/SKILL\\.md$" },
+        "description": { "type": "string", "minLength": 20, "maxLength": 400 }
+      }
+    },
+    "generated_from": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "adapters": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["codex", "claude-code", "cursor", "generic-agent-skills"] }
+    },
+    "evals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "minimum_pass_rate"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^evals/" },
+        "minimum_pass_rate": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "repositoryId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "skillId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "maxLength": 64 }
+  }
+}
+

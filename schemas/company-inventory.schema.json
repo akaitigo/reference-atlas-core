@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/company-inventory.schema.json",
+  "title": "Sanitized Company Technology Inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "inventory_id", "generated_at", "scope", "redaction", "technologies", "integrations", "unknowns"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "inventory_id": { "$ref": "#/$defs/id" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root_kind", "repository_count", "excluded_repository_count"],
+      "properties": {
+        "root_kind": { "const": "multi-repository" },
+        "repository_count": { "type": "integer", "minimum": 0 },
+        "excluded_repository_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed", "removed_categories"],
+      "properties": {
+        "confirmed": { "const": true },
+        "removed_categories": {
+          "type": "array",
+          "minItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["organization", "repository-names", "filesystem-paths", "internal-urls", "customer-data", "personal-data", "secrets", "source-code", "business-domain", "vulnerability-details"]
+          }
+        }
+      }
+    },
+    "technologies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "category", "roles", "versions", "usage_count", "signals", "confidence", "stage1_subjects"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "category": { "$ref": "#/$defs/id" },
+          "roles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 2, "maxLength": 80 } },
+          "versions": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1, "maxLength": 50 } },
+          "usage_count": { "type": "integer", "minimum": 1 },
+          "signals": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/signal" } },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "stage1_subjects": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+          "notes": { "type": "string", "maxLength": 300 }
+        }
+      }
+    },
+    "integrations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "relation", "usage_count", "confidence"],
+        "properties": {
+          "from": { "$ref": "#/$defs/id" },
+          "to": { "$ref": "#/$defs/id" },
+          "relation": { "type": "string", "minLength": 3, "maxLength": 100 },
+          "usage_count": { "type": "integer", "minimum": 1 },
+          "confidence": { "enum": ["high", "medium", "low"] }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 10, "maxLength": 300 }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "signal": {
+      "enum": ["dependency-manifest", "lockfile", "build-config", "container", "ci-config", "iac", "runtime-config", "source-import", "database-migration", "documentation"]
+    }
+  }
+}

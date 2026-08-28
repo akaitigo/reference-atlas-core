@@ -1,0 +1,63 @@
+schema_version: 1
+atlas_id: frontend-behavior-atlas
+epoch: "2026-08-28"
+authority_lock_digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+target_sets:
+  - id: behavior
+    title: 利用者から観測できる挙動
+    sequence: 1
+    completion_required: true
+    exit_criteria:
+      - 正常系と主要な失敗系を再現できること
+      - キーボードと支援技術の期待動作を検証できること
+  - id: lifecycle
+    title: ライフサイクルと運用品質
+    sequence: 2
+    completion_required: true
+    exit_criteria:
+      - テストと証拠をクリーン環境で再生成できること
+      - 性能予算と劣化検出が自動化されていること
+  - id: skill
+    title: Agent Skillによる利用
+    sequence: 3
+    completion_required: true
+    exit_criteria:
+      - ルーターが適切な参照資料へ段階的に誘導すること
+      - 評価セットの合格率が規定値を満たすこと
+targets:
+  - id: behavior.pointer-keyboard-equivalence
+    title: ポインターとキーボードの操作同等性
+    target_set: behavior
+    kind: capability
+    requirement: required
+    state: partial
+    rationale: 入力方法に依存せず同じ機能へ到達できる必要があり、複数パターンの実行証拠を要する。
+    claim_ids: []
+    evidence_ids: []
+  - id: behavior.failure-recovery
+    title: 通信失敗からの回復
+    target_set: behavior
+    kind: failure
+    requirement: required
+    state: planned
+    rationale: 楽観更新や再試行が失敗した際も、状態を壊さず利用者が回復できる必要がある。
+    claim_ids: []
+    evidence_ids: []
+  - id: lifecycle.reproducible-evidence
+    title: 再現可能な証拠生成
+    target_set: lifecycle
+    kind: operation
+    requirement: required
+    state: planned
+    rationale: 完了判定は人の目視ではなく、固定環境から再生成できる証拠へ結び付ける必要がある。
+    claim_ids: []
+    evidence_ids: []
+  - id: skill.router-evaluation
+    title: ルーターSkill評価
+    target_set: skill
+    kind: skill
+    requirement: required
+    state: planned
+    rationale: Skillが質問、実装、レビューを誤った資料へ誘導しないことを反復評価する必要がある。
+    claim_ids: []
+    evidence_ids: []

@@ -1,0 +1,23 @@
+schema_version: 1
+atlas_id: frontend-behavior-atlas
+epoch: "2026-08-28"
+generated_at: "2026-08-28T00:00:00+09:00"
+sources:
+  - id: html-living-standard
+    kind: specification
+    title: HTML Living Standard
+    url: https://html.spec.whatwg.org/
+    version: living-2026-08-28
+    retrieved_at: "2026-08-28"
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    license: WHATWG copyright and license notice
+    redistribution: link-only
+  - id: wcag-2.2
+    kind: standard
+    title: Web Content Accessibility Guidelines 2.2
+    url: https://www.w3.org/TR/WCAG22/
+    version: W3C Recommendation 2024-12-12
+    retrieved_at: "2026-08-28"
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    license: W3C Document License
+    redistribution: link-only

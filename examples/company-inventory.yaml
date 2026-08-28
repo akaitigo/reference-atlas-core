@@ -1,0 +1,47 @@
+schema_version: 1
+inventory_id: company-technology-inventory-sanitized
+generated_at: "2026-08-28T00:00:00+09:00"
+scope:
+  root_kind: multi-repository
+  repository_count: 3
+  excluded_repository_count: 0
+redaction:
+  confirmed: true
+  removed_categories:
+    - organization
+    - repository-names
+    - filesystem-paths
+    - internal-urls
+    - customer-data
+    - personal-data
+    - secrets
+    - source-code
+    - business-domain
+    - vulnerability-details
+technologies:
+  - id: typescript
+    name: TypeScript
+    category: client-applications
+    roles: [フロントエンド実装]
+    versions: ["5.x"]
+    usage_count: 2
+    signals: [dependency-manifest, lockfile, source-import]
+    confidence: high
+    stage1_subjects: [frontend-platform, frontend-application-architecture]
+  - id: postgresql
+    name: PostgreSQL
+    category: data-messaging
+    roles: [永続データストア]
+    versions: ["16.x"]
+    usage_count: 1
+    signals: [container, database-migration]
+    confidence: high
+    stage1_subjects: [relational-database-sql, postgresql]
+integrations:
+  - from: typescript
+    to: postgresql
+    relation: サーバーAPIを介したデータ永続化
+    usage_count: 1
+    confidence: medium
+unknowns:
+  - 実行環境へ接続していないため、本番で実際に利用中かどうかは判定していない。
