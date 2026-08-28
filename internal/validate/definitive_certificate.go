@@ -119,6 +119,13 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if _, err := AuditDefinitiveSkillRouter(dir, stringValue(ctx.manifest["skill_router"]), true); err != nil {
 		return nil, "", err
 	}
+	dependencyResult, err := AuditEvidenceDependencyGraph(dir, stringValue(ctx.manifest["evidence_dependency_graph"]))
+	if err != nil {
+		return nil, "", fmt.Errorf("Definitive Evidence dependency Gate: %w", err)
+	}
+	if dependencyResult.AtlasID != stringValue(ctx.base.documents["atlas"]["id"]) {
+		return nil, "", fmt.Errorf("Definitive Evidence dependency Atlas IDが一致しません")
+	}
 	if _, err := AuditNonRegression(dir); err != nil {
 		return nil, "", fmt.Errorf("Definitive non-regression Gate: %w", err)
 	}
@@ -168,6 +175,10 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		return nil, "", err
 	}
 	evidenceDurabilityData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["evidence_durability"]))))
+	if err != nil {
+		return nil, "", err
+	}
+	evidenceDependencyData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["evidence_dependency_graph"]))))
 	if err != nil {
 		return nil, "", err
 	}
@@ -225,6 +236,7 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		"scenario_proof_digest":        digestBytes(scenarioProofData),
 		"scenario_closure_plan_digest": digestBytes(scenarioClosurePlanData),
 		"evidence_durability_digest":   digestBytes(evidenceDurabilityData),
+		"evidence_dependency_digest":   digestBytes(evidenceDependencyData),
 		"depth_parity_digest":          digestBytes(depthParityData),
 		"proof_graph_digest":           proofGraphDigest, "skill_eval_digest": skillContractDigest, "reference_system_digest": referenceDigest,
 		"non_regression_digest":   digestBytes(nonRegressionData),

@@ -32,6 +32,7 @@
         "scenario_proof_rows": {"$ref": "#/$defs/items"},
         "scenario_closure_plan": {"$ref": "#/$defs/items"},
         "evidence_durability": {"$ref": "#/$defs/items"},
+        "evidence_dependency_graph": {"$ref": "#/$defs/items"},
         "skill_eval_cases": {"$ref": "#/$defs/items"},
         "required_profiles": {"$ref": "#/$defs/items"},
         "matrix_rows": {"$ref": "#/$defs/items"},

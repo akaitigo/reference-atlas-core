@@ -81,6 +81,13 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if _, err := AuditDefinitiveSkillRouter(dir, stringValue(ctx.manifest["skill_router"]), true); err != nil {
 		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Skill Router Gate: %w", err)
 	}
+	dependencyResult, err := AuditEvidenceDependencyGraph(dir, stringValue(ctx.manifest["evidence_dependency_graph"]))
+	if err != nil {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Evidence dependency Gate: %w", err)
+	}
+	if dependencyResult.AtlasID != stringValue(ctx.base.documents["atlas"]["id"]) {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Evidence dependency Atlas IDが一致しません")
+	}
 	if _, err := AuditNonRegression(dir); err != nil {
 		return DefinitiveAuditResult{}, fmt.Errorf("Definitive non-regression Gate: %w", err)
 	}

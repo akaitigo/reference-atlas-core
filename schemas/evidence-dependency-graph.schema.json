@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/evidence-dependency-graph.schema.json",
+  "title": "Evidence Dependency Graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "generated_at", "status", "policy", "inputs", "outputs", "runs", "required_outputs", "structures"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "atlas_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["current", "stale"]},
+    "policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["transitive_staleness", "digest_only_closure_forbidden", "actual_rerun_required", "missing_rerun_targets_fail", "proof_structure_invariant", "closure_plan_structure_invariant"],
+      "properties": {
+        "transitive_staleness": {"const": true},
+        "digest_only_closure_forbidden": {"const": true},
+        "actual_rerun_required": {"const": true},
+        "missing_rerun_targets_fail": {"const": true},
+        "proof_structure_invariant": {"const": true},
+        "closure_plan_structure_invariant": {"const": true}
+      }
+    },
+    "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/input"}},
+    "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/output"}},
+    "runs": {"type": "array", "items": {"$ref": "#/$defs/run"}},
+    "required_outputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "structures": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/structure"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]*$"},
+    "input": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "members", "baseline_digest", "current_digest", "observed_at"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["source", "harness", "runtime", "profile"]},
+        "members": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "baseline_digest": {"$ref": "#/$defs/sha256"},
+        "current_digest": {"$ref": "#/$defs/sha256"},
+        "observed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "output": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "path", "digest", "depends_on", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["runtime-evidence", "platform-evidence", "capture", "benchmark", "compatibility", "reference-system", "scenario-proof", "closure-plan", "skill-eval", "derived-evidence"]},
+        "path": {"type": "string", "minLength": 1},
+        "digest": {"$ref": "#/$defs/sha256"},
+        "depends_on": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "status": {"enum": ["current", "stale"]},
+        "run_id": {"$ref": "#/$defs/id"}
+      }
+    },
+    "binding": {
+      "type": "object", "additionalProperties": false, "required": ["input_id", "digest"],
+      "properties": {"input_id": {"$ref": "#/$defs/id"}, "digest": {"$ref": "#/$defs/sha256"}}
+    },
+    "run": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "execution_kind", "command", "started_at", "completed_at", "result", "attempts", "input_bindings", "output_ids"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "execution_kind": {"enum": ["runtime", "platform", "derived"]},
+        "command": {"type": "string", "minLength": 3},
+        "started_at": {"type": "string", "format": "date-time"},
+        "completed_at": {"type": "string", "format": "date-time"},
+        "result": {"const": "passed"},
+        "attempts": {"const": 1},
+        "runtime_identity": {"type": "object", "minProperties": 1},
+        "input_bindings": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/binding"}},
+        "output_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}
+      }
+    },
+    "structure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "path", "baseline_digest"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["scenario-proof-index", "scenario-closure-plan"]},
+        "path": {"type": "string", "minLength": 1},
+        "baseline_digest": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

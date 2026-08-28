@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -426,7 +427,8 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		"matrix":          routerCells, "boundary_cases": routerBoundaries, "completion_limits": []any{}, "forward_eval": map[string]any{"status": "completed", "cases": 2, "passed": 2, "failed": 0, "artifact_path": "evidence/reports/skill-router-forward-eval.json", "artifact_digest": fileDigest(t, forwardEvalPath)},
 	})
 	writeCompletionEligibleScenarioFixture(t, dir, behaviors, authorityArtifactDigest, authorityLockDigest, environmentDigest, harnessDigest)
-	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nauthority_body_inventory: authority/body-inventory.snapshot.json\nauthority_body_review: authority/review-queue.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\nscenario_proofs: evidence/scenarios/index.json\nscenario_closure_plan: evidence/scenarios/closure-plan.json\nevidence_durability: artifacts/pattern-scenarios/results.json\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nskill_router: evals/definitive-skill-router.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
+	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nauthority_body_inventory: authority/body-inventory.snapshot.json\nauthority_body_review: authority/review-queue.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\nscenario_proofs: evidence/scenarios/index.json\nscenario_closure_plan: evidence/scenarios/closure-plan.json\nevidence_durability: artifacts/pattern-scenarios/results.json\nevidence_dependency_graph: evidence/dependency-graph.json\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nskill_router: evals/definitive-skill-router.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
+	writeFixtureEvidenceDependencyGraph(t, dir)
 	if _, err := GenerateCertificate(dir, "2026-08-28T00:00:00Z", strings.Repeat("a", 40)); err != nil {
 		t.Fatal(err)
 	}
@@ -444,6 +446,76 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return dir
+}
+
+func writeFixtureEvidenceDependencyGraph(t *testing.T, dir string) {
+	t.Helper()
+	inputSpecs := []struct{ id, kind, path string }{
+		{"source-fixture", "source", "reference/counter-system.txt"},
+		{"harness-fixture", "harness", "harness.txt"},
+		{"runtime-fixture", "runtime", "go.mod"},
+		{"profile-fixture", "profile", "coverage.yaml"},
+	}
+	inputs, bindings, inputIDs := []any{}, []any{}, []any{}
+	for _, spec := range inputSpecs {
+		digest, err := aggregateMemberDigest(dir, []any{spec.path})
+		if err != nil {
+			t.Fatal(err)
+		}
+		inputs = append(inputs, map[string]any{"id": spec.id, "kind": spec.kind, "members": []any{spec.path}, "baseline_digest": digest, "current_digest": digest, "observed_at": "2026-08-28T00:00:00Z"})
+		bindings = append(bindings, map[string]any{"input_id": spec.id, "digest": digest})
+		inputIDs = append(inputIDs, spec.id)
+	}
+	required, err := discoverRequiredEvidenceOutputs(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths := []string{}
+	for path := range required {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	outputs, outputIDs, requiredOutputs := []any{}, []any{}, []any{}
+	for index, relative := range paths {
+		data, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(relative)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		id := fmt.Sprintf("output-%04d", index+1)
+		kind := "derived-evidence"
+		switch {
+		case strings.Contains(relative, "pattern-scenarios/results"):
+			kind = "runtime-evidence"
+		case strings.Contains(relative, "reference-system"):
+			kind = "reference-system"
+		case strings.Contains(relative, "closure-plan"):
+			kind = "closure-plan"
+		case strings.Contains(relative, ".proof.json"), strings.HasSuffix(relative, "scenarios/index.json"):
+			kind = "scenario-proof"
+		case strings.Contains(relative, "skill"):
+			kind = "skill-eval"
+		}
+		outputs = append(outputs, map[string]any{"id": id, "kind": kind, "path": relative, "digest": shaDigest(data), "depends_on": inputIDs, "status": "current", "run_id": "rerun-001"})
+		outputIDs, requiredOutputs = append(outputIDs, id), append(requiredOutputs, relative)
+	}
+	proofStructure, err := evidenceStructureDigest(dir, "scenario-proof-index", "evidence/scenarios/index.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	planStructure, err := evidenceStructureDigest(dir, "scenario-closure-plan", "evidence/scenarios/closure-plan.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mustWriteJSON(t, filepath.Join(dir, "evidence", "dependency-graph.json"), map[string]any{
+		"schema_version": 1, "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T01:30:00Z", "status": "current",
+		"policy": map[string]any{"transitive_staleness": true, "digest_only_closure_forbidden": true, "actual_rerun_required": true, "missing_rerun_targets_fail": true, "proof_structure_invariant": true, "closure_plan_structure_invariant": true},
+		"inputs": inputs, "outputs": outputs, "required_outputs": requiredOutputs,
+		"runs": []any{map[string]any{"id": "rerun-001", "execution_kind": "runtime", "command": "go test ./...", "started_at": "2026-08-28T01:00:00Z", "completed_at": "2026-08-28T01:20:00Z", "result": "passed", "attempts": 1, "runtime_identity": map[string]any{"runtime": "go", "platform": "fixture"}, "input_bindings": bindings, "output_ids": outputIDs}},
+		"structures": []any{
+			map[string]any{"id": "proof-topology-v1", "kind": "scenario-proof-index", "path": "evidence/scenarios/index.json", "baseline_digest": proofStructure},
+			map[string]any{"id": "closure-topology-v1", "kind": "scenario-closure-plan", "path": "evidence/scenarios/closure-plan.json", "baseline_digest": planStructure},
+		},
+	})
 }
 
 func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors []string, authorityArtifactDigest, authorityLockDigest, environmentManifestDigest, harnessDigest string) {

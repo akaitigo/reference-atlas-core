@@ -293,6 +293,7 @@ required_actions:
   - complete-integrated-scenario-trace-closure
   - execute-bounded-scenario-closure-plan
   - verify-evidence-durability
+  - verify-evidence-dependency-reruns
   - collect-runtime-evidence
   - add-reference-system-if-applicable
   - add-comparisons-if-applicable

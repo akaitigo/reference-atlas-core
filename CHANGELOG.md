@@ -12,6 +12,7 @@
 - Scenario Closureをexact Pattern＋Scenario＋全Variantのretry 0専用Runtime suite、first-attempt pass、Oracle、source／harness digest、専用Traceへ限定し、Capture identity補完を拒否した。
 - 残存Scenario Gapをrisk順・最大4 Pattern row/trancheへ完全包含するClosure Plan Gateと、row削除・順序退避・batch肥大化を拒否するNon-regression Collectionを追加した。
 - 全run pass時だけstaging directoryを原子的に公開し、失敗時の直前成功保持、rollback、完全Artifact集合を検証するEvidence durability Gateを追加した。
+- Source／Harness／Runtime／Profile変更を依存Evidenceへ推移的にstale伝播し、変更後の実再実行、全output包含、Proof／Closure Plan構造不変を検証するEvidence dependency Gateを追加した。
 
 ## v1.0.0 — 2026-08-28
 

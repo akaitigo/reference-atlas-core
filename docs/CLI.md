@@ -14,6 +14,7 @@ atlas audit <atlas-directory> --gate skill-router
 atlas audit <atlas-directory> --gate scenario-trace
 atlas audit <atlas-directory> --gate scenario-plan
 atlas audit <atlas-directory> --gate evidence-durability
+atlas audit <atlas-directory> --gate evidence-dependency
 atlas baseline generate <atlas-directory> <output> --commit SHA [--captured-at RFC3339]
 atlas scaffold <directory> <atlas-id> <日本語title> [epoch]
 atlas generate skill-reference <atlas-directory>
@@ -45,3 +46,5 @@ atlas version
 `--gate scenario-plan`は残存`pattern-specific-gap`をrisk順に完全包含し、1 tranche最大4 Pattern row、全Variant実行数、次trancheを再計算する。Plan row削除、risk順から後段への退避、tranche肥大化、Proof／Variant／Gap契約の弱化を拒否する。
 
 `--gate evidence-durability`は専用Runtime Reportの公開Profileと、Report／Trace／Screenshotからなる1世代の完全Artifact集合を検証する。全run pass以外の公開、部分上書き、成功Evidence消去、新旧世代混在、directory外参照を拒否する。
+
+`--gate evidence-dependency`はSource／Harness／Runtime／ProfileからEvidenceへの推移依存を検証する。入力変更後はlocal／container E2E、Capture、Benchmark、Compatibility、Reference System、Scenario Proof等の到達可能な全outputをstale対象にし、現在の入力digestへ結ばれた変更観測後の実再実行が揃うまで失敗する。Digestだけの再固定、再実行対象漏れ、Proof／Closure Planの構造縮小を拒否する。

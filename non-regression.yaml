@@ -1,14 +1,14 @@
 schema_version: 2
 atlas_id: reference-atlas-core
 baseline:
-  path: baselines/main-b32f6af.evidence-durability-v1.non-regression-baseline.json
-  digest: sha256:784846a477f5dceafbe4e6284f0a6277936392ae63c7b9919df274c4c8ed960f
+  path: baselines/main-b32f6af.evidence-dependency-v1.non-regression-baseline.json
+  digest: sha256:7fe44be78a1730ece5413efb84ad6b9e496da432e63749781017b4bba860667e
 baseline_upgrade:
   mode: monotonic-capture-contract-extension
   from:
     path: baselines/main-b32f6af.non-regression-baseline.json
     digest: sha256:fca1ce072ad60887a6c66fc99c94c0ef38b82fe2365b9f76609303c751b674fd
-  reason: 既存項目を保持したままAuthority denominator、Human Review Queue、Skill Router、Scenario Proof row、段階的Closure Plan、Evidence durability Profileを含む監視Collectionを追加する。
+  reason: 既存項目を保持したままAuthority denominator、Human Review Queue、Skill Router、Scenario Proof row、段階的Closure Plan、Evidence durability Profile、Evidence Dependency Graph構造を含む監視Collectionを追加する。
   migration_evidence_ids: [core.tooling]
 replacements:
   - collection: tests_labs

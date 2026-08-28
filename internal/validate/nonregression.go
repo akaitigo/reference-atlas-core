@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "scenario_closure_plan", "evidence_durability", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
+var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "scenario_closure_plan", "evidence_durability", "evidence_dependency_graph", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
 
 type NonRegressionResult struct {
 	AtlasID       string
@@ -445,6 +445,7 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	collections["scenario_proof_rows"] = captureScenarioProofRows(dir)
 	collections["scenario_closure_plan"] = captureScenarioClosurePlan(dir)
 	collections["evidence_durability"] = captureEvidenceDurability(dir)
+	collections["evidence_dependency_graph"] = captureEvidenceDependencyGraph(dir)
 	completion, _ := atlas["completion"].(map[string]any)
 	profileItems := []any{}
 	for _, raw := range anySlice(completion["required_profiles"]) {
@@ -500,6 +501,45 @@ func captureEvidenceDurability(dir string) []any {
 				snapshot["path"], snapshot["kind"], snapshot["enabled"] = artifactPath, "durable-runtime-"+field, true
 			}))
 		}
+	}
+	return items
+}
+
+func captureEvidenceDependencyGraph(dir string) []any {
+	relative := "evidence/dependency-graph.json"
+	doc, err := readDocument(filepath.Join(dir, filepath.FromSlash(relative)))
+	if err != nil {
+		return []any{}
+	}
+	items := []any{}
+	policy, _ := doc["policy"].(map[string]any)
+	items = append(items, baselineItem("policy", policy, func(snapshot map[string]any) {
+		snapshot["kind"], snapshot["path"], snapshot["enabled"] = "evidence-dependency-policy", relative, true
+	}))
+	for _, raw := range anySlice(doc["inputs"]) {
+		input, _ := raw.(map[string]any)
+		id := stringValue(input["id"])
+		items = append(items, baselineItem("input:"+id, map[string]any{"kind": input["kind"], "members": input["members"]}, func(snapshot map[string]any) {
+			members := []string{}
+			for _, raw := range anySlice(input["members"]) {
+				members = append(members, stringValue(raw))
+			}
+			snapshot["kind"], snapshot["path"], snapshot["enabled"] = "evidence-dependency-input", strings.Join(members, ","), true
+		}))
+	}
+	for _, raw := range anySlice(doc["outputs"]) {
+		output, _ := raw.(map[string]any)
+		id := stringValue(output["id"])
+		items = append(items, baselineItem("output:"+id, map[string]any{"kind": output["kind"], "path": output["path"], "depends_on": output["depends_on"]}, func(snapshot map[string]any) {
+			snapshot["kind"], snapshot["path"], snapshot["enabled"] = "evidence-dependency-output", output["path"], true
+		}))
+	}
+	for _, raw := range anySlice(doc["structures"]) {
+		structure, _ := raw.(map[string]any)
+		id := stringValue(structure["id"])
+		items = append(items, baselineItem("structure:"+id, map[string]any{"kind": structure["kind"], "path": structure["path"], "baseline_digest": structure["baseline_digest"]}, func(snapshot map[string]any) {
+			snapshot["kind"], snapshot["path"], snapshot["enabled"] = "evidence-structure-invariant", structure["path"], true
+		}))
 	}
 	return items
 }

@@ -12,4 +12,6 @@ Gateを強める変更は、既存Certificateへの影響とMigration Guideを�
 
 Definitive Gate v2はv1 Certificate Schemaを変更せず、独立Manifestと独立Certificateを追加する。旧`complete`の意味は`bounded-complete`履歴として保持し、`subject-definitive`へ昇格しない。
 
+Evidence Dependency GraphはDefinitive v2 Manifest／CertificateだけのRequired契約である。既存v1 Manifestと発行済みv1 Certificateには遡及適用しない。v2移行Repositoryは`status: stale`で未再実行を保存できるが、Subject Definitive Certificateの発行には全依存Evidenceの実再実行が必要である。
+
 Non-regression baselineの`baseline` blockは`non-regression.yaml`が初めて追加されたGit Commitへ固定する。通常の変更でBaseline Commit／Path／Digestを更新できない。capture契約へCollectionを追加する場合だけ、旧Baselineを保存し、同じCommitの再採取結果が旧全項目、Scope、閾値を不変に保つことを`baseline_upgrade.mode=monotonic-capture-contract-extension`とMigration Evidenceで検証して新Pathへ移行できる。追加CoverageはBaseline collectionへ単調に上乗せし、同等以上の置換はMapping、Runtime Proof、Migration Evidence、理由で記録する。
