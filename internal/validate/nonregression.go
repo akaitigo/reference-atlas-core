@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
+var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "scenario_closure_plan", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
 
 type NonRegressionResult struct {
 	AtlasID       string
@@ -443,6 +443,7 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	collections["skill_eval_cases"] = evalItems
 	collections["skill_router_cells"] = captureSkillRouterCells(dir)
 	collections["scenario_proof_rows"] = captureScenarioProofRows(dir)
+	collections["scenario_closure_plan"] = captureScenarioClosurePlan(dir)
 	completion, _ := atlas["completion"].(map[string]any)
 	profileItems := []any{}
 	for _, raw := range anySlice(completion["required_profiles"]) {
@@ -875,6 +876,42 @@ func captureScenarioProofRows(dir string) []any {
 			for _, key := range []string{"dedicated_row", "dedicated_artifact", "pattern_specific_evidence", "real_runtime_identity", "integrated_runtime_trace", "authority_atomic_behavior", "completion_eligible"} {
 				item[key] = closure[key]
 			}
+		}))
+	}
+	return items
+}
+
+func captureScenarioClosurePlan(dir string) []any {
+	plan, err := readDocument(filepath.Join(dir, "evidence", "scenarios", "closure-plan.json"))
+	if err != nil {
+		return []any{}
+	}
+	items := []any{baselineItem("policy", map[string]any{"policy": plan["policy"], "baseline": plan["baseline"], "scope": plan["scope"]}, func(item map[string]any) {
+		item["kind"] = "policy"
+	})}
+	trancheByRow := map[string]string{}
+	for ordinal, raw := range anySlice(plan["tranches"]) {
+		tranche, _ := raw.(map[string]any)
+		id := stringValue(tranche["id"])
+		for _, rawRowID := range anySlice(tranche["row_ids"]) {
+			trancheByRow[stringValue(rawRowID)] = id
+		}
+		items = append(items, baselineItem("tranche:"+id, map[string]any{"tranche": tranche, "ordinal": ordinal + 1}, func(item map[string]any) {
+			item["kind"], item["ordinal"] = "tranche", ordinal+1
+		}))
+	}
+	for ordinal, raw := range anySlice(plan["rows"]) {
+		row, _ := raw.(map[string]any)
+		id := stringValue(row["id"])
+		items = append(items, baselineItem(id, map[string]any{"row": row, "ordinal": ordinal + 1, "tranche_id": trancheByRow[id]}, func(item map[string]any) {
+			item["kind"], item["ordinal"], item["tranche_id"] = "planned-row", ordinal+1, trancheByRow[id]
+		}))
+	}
+	for ordinal, raw := range anySlice(plan["completed_rows"]) {
+		row, _ := raw.(map[string]any)
+		id := "completed:" + stringValue(row["pattern_id"]) + ":" + stringValue(row["scenario"])
+		items = append(items, baselineItem(id, map[string]any{"row": row, "ordinal": ordinal + 1}, func(item map[string]any) {
+			item["kind"], item["ordinal"] = "completed-row", ordinal+1
 		}))
 	}
 	return items

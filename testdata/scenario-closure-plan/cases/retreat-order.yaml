@@ -1,0 +1,3 @@
+mutation: retreat-order
+plan_error: risk順またはProof実体と一致しません
+non_regression_error: Assertion・閾値・予算・Platformを変更できません

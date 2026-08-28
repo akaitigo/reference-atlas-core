@@ -28,13 +28,14 @@ atlas migrate definitive-v2 <repository-root>
 12. 正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenarioを全Behaviorについて分類する。
 13. required Scenarioへ専用Runtime／Platform Evidenceと専用Artifactを接続する。KLIB、bytecode、compile-only、static fixtureは代替にしない。
 14. `evidence/scenarios/index.json`へAuthority由来Behavior × 10 Scenarioの全rowを列挙する。各rowをsource、harness、environment、runtime identity、専用Evidence／Artifact、Atomic Authority bindingへ接続し、未Closureは明示Gapとして残す。個別GapはPattern＋Scenario＋全Variantを駆動したretry 0の専用suite、first-attempt pass、Scenario固有Oracle、source／harness digest、Traceが揃う場合だけ閉じる。Capture identityで補完しない。
-15. Integrated Reference Systemのmanifest、10 Scenario runtime結果、action／network／resource streamを持つTraceを固定する。統合成功や統合Traceを個別Behavior Proofとして流用せず、同一Runtime Artifactの複数row共有もしない。
-16. Commit `4a0b2df8e2091a963bd0e0e1bbccef9c84b49a45`の`FE_DEPTH_REFERENCE.json`をDigest固定する。Frontendの現状は`incomplete`、1軸`satisfied`、17軸`partial`のまま保持する。
-17. 同Referenceの18軸を、Subject自身のAuthority由来denominatorについてBehavior/Variantごとの専用Proof、Oracle、Evidence、Artifact、Traceへ接続しGapを0にする。Frontend固有のTarget、Variant、Test件数を閾値として転用しない。
-18. Architecture／Integration Surfaceがあれば複数Behaviorを接続するReference Systemを、Decision Surfaceがあれば複数方式Comparisonを追加する。
-19. Skill Evalに加えてDefinitive Skill Routerの112 cellを実Target、Variant、Authority、Runtime Evidence digestへ接続する。mutation authorization、人手Authority decision、stale relockの独立停止を検証し、routing gap、partial、未実施Forward Evalを正直なCompletion limitとして残す。
-20. `atlas certificate generate-definitive`でv1とは別のCertificateを発行する。
-21. `atlas audit <root> --gate definitive`が`completion_class=subject-definitive`を返すまで公開上は未完とする。
+15. 残存Gapを`evidence/scenarios/closure-plan.json`へrisk順で完全包含し、同一Scenario内を安定Pattern順、1 tranche最大4 Pattern rowへ分割する。各trancheを全Variantの専用Runtime ProofとNon-regression確認付きで閉じ、Plan row削除、順序退避、batch肥大化を行わない。
+16. Integrated Reference Systemのmanifest、10 Scenario runtime結果、action／network／resource streamを持つTraceを固定する。統合成功や統合Traceを個別Behavior Proofとして流用せず、同一Runtime Artifactの複数row共有もしない。
+17. Commit `4a0b2df8e2091a963bd0e0e1bbccef9c84b49a45`の`FE_DEPTH_REFERENCE.json`をDigest固定する。Frontendの現状は`incomplete`、1軸`satisfied`、17軸`partial`のまま保持する。
+18. 同Referenceの18軸を、Subject自身のAuthority由来denominatorについてBehavior/Variantごとの専用Proof、Oracle、Evidence、Artifact、Traceへ接続しGapを0にする。Frontend固有のTarget、Variant、Test件数を閾値として転用しない。
+19. Architecture／Integration Surfaceがあれば複数Behaviorを接続するReference Systemを、Decision Surfaceがあれば複数方式Comparisonを追加する。
+20. Skill Evalに加えてDefinitive Skill Routerの112 cellを実Target、Variant、Authority、Runtime Evidence digestへ接続する。mutation authorization、人手Authority decision、stale relockの独立停止を検証し、routing gap、partial、未実施Forward Evalを正直なCompletion limitとして残す。
+21. `atlas certificate generate-definitive`でv1とは別のCertificateを発行する。
+22. `atlas audit <root> --gate definitive`が`completion_class=subject-definitive`を返すまで公開上は未完とする。
 
 ## 互換性分類
 

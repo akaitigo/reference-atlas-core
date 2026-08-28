@@ -12,6 +12,7 @@ atlas audit <atlas-directory> --gate authority-review-export
 atlas audit <atlas-directory> --gate authority-relock
 atlas audit <atlas-directory> --gate skill-router
 atlas audit <atlas-directory> --gate scenario-trace
+atlas audit <atlas-directory> --gate scenario-plan
 atlas baseline generate <atlas-directory> <output> --commit SHA [--captured-at RFC3339]
 atlas scaffold <directory> <atlas-id> <日本語title> [epoch]
 atlas generate skill-reference <atlas-directory>
@@ -39,3 +40,5 @@ atlas version
 `--gate skill-router`は8 Outcome × 14 Surfaceのroute、実Target、Variant file digest、Authority Source Lock、Evidence Artifact、mutation authorization、5つのfail-closed境界を照合する。routing gap、partial Coverage、未実施Forward Evalは`completion_limited=true`として表示し、matrixの`result=pass`だけではSkillやSubjectをcompleteにしない。
 
 `--gate scenario-trace`はAuthority由来Behavior × 10 Scenarioのdenominator、個別row、source／harness／environment／runtime identity、統合Reference Systemの実行結果とTrace digestを照合する。`runtime_identity`はboundedなCapture等を含む実行identity、`dedicated_scenario_runtime_rows`はexact Pattern＋Scenario＋全Variantをretry 0で駆動した専用suite Closureとして分けて表示する。stagingではGapを保持したまま集計の真正性を検証できるが、`--gate definitive`は全rowに専用Runtime Artifact、Scenario固有Oracle、Atomic Authority bindingを要求し、Capture補完と統合Traceの個別Proofへの流用を拒否する。
+
+`--gate scenario-plan`は残存`pattern-specific-gap`をrisk順に完全包含し、1 tranche最大4 Pattern row、全Variant実行数、次trancheを再計算する。Plan row削除、risk順から後段への退避、tranche肥大化、Proof／Variant／Gap契約の弱化を拒否する。

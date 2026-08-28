@@ -1,0 +1,3 @@
+mutation: delete-row
+plan_error: 全Gap rowを完全包含していません
+non_regression_error: Baseline scenario_closure_plan

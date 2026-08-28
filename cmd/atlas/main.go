@@ -36,6 +36,14 @@ func run(args []string) error {
 		}
 		return nil
 	case "audit":
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "scenario-plan" {
+			result, err := validate.AuditScenarioClosurePlan(args[1], "evidence/scenarios/closure-plan.json")
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Scenario Closure Plan監査済み: %s remaining_rows=%d completed_rows=%d planned_tranches=%d maximum_rows_per_tranche=%d next_tranche=%s\n", result.AtlasID, result.RemainingRows, result.CompletedRows, result.PlannedTranches, result.MaximumRowsPerTranche, result.NextTranche)
+			return nil
+		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "scenario-trace" {
 			result, err := validate.AuditScenarioTrace(args[1], "evidence/scenarios/index.json", false)
 			if err != nil {
@@ -290,5 +298,5 @@ func baselineOptions(args []string) (string, string, error) {
 }
 
 func usageError() error {
-	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body|authority-review|authority-review-export|authority-relock|skill-router|scenario-trace] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
+	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body|authority-review|authority-review-export|authority-relock|skill-router|scenario-trace|scenario-plan] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
 }

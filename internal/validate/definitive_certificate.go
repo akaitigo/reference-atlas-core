@@ -103,6 +103,13 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if _, err := AuditScenarioTrace(dir, stringValue(ctx.manifest["scenario_proofs"]), true); err != nil {
 		return nil, "", err
 	}
+	closurePlan, err := AuditScenarioClosurePlan(dir, stringValue(ctx.manifest["scenario_closure_plan"]))
+	if err != nil {
+		return nil, "", err
+	}
+	if closurePlan.RemainingRows != 0 {
+		return nil, "", fmt.Errorf("Definitive Certificateは未実行Scenario Closure Planへ発行できません")
+	}
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return nil, "", err
 	}
@@ -150,6 +157,10 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		return nil, "", err
 	}
 	scenarioProofData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["scenario_proofs"]))))
+	if err != nil {
+		return nil, "", err
+	}
+	scenarioClosurePlanData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["scenario_closure_plan"]))))
 	if err != nil {
 		return nil, "", err
 	}
@@ -204,9 +215,10 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		"authority_body_inventory_digest": digestBytes(authorityBodyData),
 		"authority_body_review_digest":    authorityReviewDigest,
 		"surface_inventory_digest":        digestBytes(inventoryData), "verification_matrix_digest": digestBytes(matrixData),
-		"scenario_proof_digest": digestBytes(scenarioProofData),
-		"depth_parity_digest":   digestBytes(depthParityData),
-		"proof_graph_digest":    proofGraphDigest, "skill_eval_digest": skillContractDigest, "reference_system_digest": referenceDigest,
+		"scenario_proof_digest":        digestBytes(scenarioProofData),
+		"scenario_closure_plan_digest": digestBytes(scenarioClosurePlanData),
+		"depth_parity_digest":          digestBytes(depthParityData),
+		"proof_graph_digest":           proofGraphDigest, "skill_eval_digest": skillContractDigest, "reference_system_digest": referenceDigest,
 		"non_regression_digest":   digestBytes(nonRegressionData),
 		"historical_certificates": historical, "issued_at": issuedAt, "commit": commit,
 	}

@@ -65,6 +65,13 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if err != nil {
 		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Integrated Scenario/Trace Gate: %w", err)
 	}
+	closurePlan, err := AuditScenarioClosurePlan(dir, stringValue(ctx.manifest["scenario_closure_plan"]))
+	if err != nil {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Scenario Closure Plan Gate: %w", err)
+	}
+	if closurePlan.RemainingRows != 0 {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Scenario Closure Planに未実行rowがあります: %d", closurePlan.RemainingRows)
+	}
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return DefinitiveAuditResult{}, err
 	}

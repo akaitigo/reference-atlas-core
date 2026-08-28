@@ -1,0 +1,3 @@
+mutation: inflate-tranche
+plan_error: scenario-closure-plan.schema.jsonに適合しません
+non_regression_error: Assertion・閾値・予算・Platformを変更できません

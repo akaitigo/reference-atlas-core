@@ -1,14 +1,14 @@
 schema_version: 2
 atlas_id: reference-atlas-core
 baseline:
-  path: baselines/main-b32f6af.scenario-trace-v1.non-regression-baseline.json
-  digest: sha256:19da144aa79bd6bba46a21a8d5a331495bf0133640bcbafb75ada5cfe14a16e0
+  path: baselines/main-b32f6af.scenario-closure-plan-v1.non-regression-baseline.json
+  digest: sha256:7e7c31ced000500d6e218f70202dca803cd8d4e6acc6e6b8d19128c21a3e6dd6
 baseline_upgrade:
   mode: monotonic-capture-contract-extension
   from:
     path: baselines/main-b32f6af.non-regression-baseline.json
     digest: sha256:fca1ce072ad60887a6c66fc99c94c0ef38b82fe2365b9f76609303c751b674fd
-  reason: 既存項目を保持したままAuthority denominator、Human Review Queue、Skill Router、Scenario Proof rowを含む監視Collectionを追加する。
+  reason: 既存項目を保持したままAuthority denominator、Human Review Queue、Skill Router、Scenario Proof row、段階的Closure Planを含む監視Collectionを追加する。
   migration_evidence_ids: [core.tooling]
 replacements:
   - collection: tests_labs

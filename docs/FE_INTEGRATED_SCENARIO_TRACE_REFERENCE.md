@@ -42,3 +42,5 @@
 - Capture Browser identityの補完、Capture record、統合Reference System TraceだけでScenario Closureを閉じない。
 
 絶対件数、統合成功、Pattern mapping、Trace存在だけをDepth／Completion creditへ変換しない。
+
+残存Gapの段階的実行順とNon-regression契約は`docs/FE_SCENARIO_CLOSURE_PLAN_REFERENCE.md`に記録する。

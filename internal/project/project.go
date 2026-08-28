@@ -291,6 +291,7 @@ required_actions:
   - split-behavior-proofs
   - complete-scenario-matrix
   - complete-integrated-scenario-trace-closure
+  - execute-bounded-scenario-closure-plan
   - collect-runtime-evidence
   - add-reference-system-if-applicable
   - add-comparisons-if-applicable

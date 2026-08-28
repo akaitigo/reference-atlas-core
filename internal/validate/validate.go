@@ -92,6 +92,8 @@ func schemaFor(path string) (string, error) {
 		return "definitive-skill-router.schema.json", nil
 	case base == "index.json" && filepath.Base(filepath.Dir(path)) == "scenarios":
 		return "scenario-proof-index.schema.json", nil
+	case base == "closure-plan.json" && filepath.Base(filepath.Dir(path)) == "scenarios":
+		return "scenario-closure-plan.schema.json", nil
 	case strings.HasSuffix(base, ".proof.json") && strings.Contains(filepath.ToSlash(path), "/evidence/scenarios/"):
 		return "scenario-proof-row.schema.json", nil
 	case base == "manifest.json" && filepath.Base(filepath.Dir(path)) == "reference-system":

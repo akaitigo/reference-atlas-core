@@ -426,7 +426,7 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		"matrix":          routerCells, "boundary_cases": routerBoundaries, "completion_limits": []any{}, "forward_eval": map[string]any{"status": "completed", "cases": 2, "passed": 2, "failed": 0, "artifact_path": "evidence/reports/skill-router-forward-eval.json", "artifact_digest": fileDigest(t, forwardEvalPath)},
 	})
 	writeCompletionEligibleScenarioFixture(t, dir, behaviors, authorityArtifactDigest, authorityLockDigest, environmentDigest, harnessDigest)
-	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nauthority_body_inventory: authority/body-inventory.snapshot.json\nauthority_body_review: authority/review-queue.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\nscenario_proofs: evidence/scenarios/index.json\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nskill_router: evals/definitive-skill-router.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
+	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nauthority_body_inventory: authority/body-inventory.snapshot.json\nauthority_body_review: authority/review-queue.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\nscenario_proofs: evidence/scenarios/index.json\nscenario_closure_plan: evidence/scenarios/closure-plan.json\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nskill_router: evals/definitive-skill-router.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
 	if _, err := GenerateCertificate(dir, "2026-08-28T00:00:00Z", strings.Repeat("a", 40)); err != nil {
 		t.Fatal(err)
 	}
@@ -552,7 +552,28 @@ func writeCompletionEligibleScenarioFixture(t *testing.T, dir string, behaviors 
 	sourceDigests := map[string]any{"integrations/reference-system/manifest.json": fileDigest(t, filepath.Join(dir, "integrations", "reference-system", "manifest.json")), "artifacts/reference-system/results.json": fileDigest(t, filepath.Join(dir, "artifacts", "reference-system", "results.json")), "artifacts/pattern-scenarios/results.json": fileDigest(t, filepath.Join(dir, "artifacts", "pattern-scenarios", "results.json")), "reference/counter-system.txt": referenceDigest, "harness.txt": harnessDigest}
 	rows := len(behaviors) * 10
 	index := map[string]any{"schema_version": 1, "id": "counter-scenario-proof-matrix-v1", "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z", "status": "completion-eligible", "denominator": "authority-atomic-behaviors-x-10-scenarios", "tool_digest": referenceDigest, "source_digests": sourceDigests, "summary": map[string]any{"patterns": len(behaviors), "scenarios": 10, "rows": rows, "dedicated_artifacts": rows, "pattern_specific_rows": rows, "pattern_specific_runtime_rows": rows, "pattern_specific_capture_rows": 0, "pattern_specific_gaps": 0, "integrated_trace_rows": rows, "authority_atomic_rows": rows, "completion_eligible_rows": rows}, "by_scenario": byScenario, "files": files, "completion_limits": []any{}}
-	mustWriteJSON(t, filepath.Join(dir, "evidence", "scenarios", "index.json"), index)
+	indexPath := filepath.Join(dir, "evidence", "scenarios", "index.json")
+	mustWriteJSON(t, indexPath, index)
+	completedRows := []any{}
+	for _, scenario := range scenarioClosureRiskOrder {
+		for _, behavior := range behaviors {
+			completedRows = append(completedRows, map[string]any{"pattern_id": behavior, "scenario": scenario, "oracle_kinds": []any{"missing"}, "variant_ids": []any{behavior + ".default"}, "all_first_attempt_pass": true, "all_trace_streams": true})
+		}
+	}
+	zeroByScenario := map[string]any{}
+	for _, scenario := range scenarioClosureRiskOrder {
+		zeroByScenario[scenario] = 0
+	}
+	closurePlan := map[string]any{
+		"schema_version": 1, "id": "counter-pattern-scenario-closure-plan-v1", "generated_at": "2026-08-28T00:00:00Z", "status": "complete", "scope": "authority-atomic-counter-scenario-closure",
+		"policy":                 map[string]any{"risk_order": stringSliceToAny(scenarioClosureRiskOrder), "maximum_pattern_rows_per_tranche": 4, "monotonic_addition": true, "mass_closure_forbidden": true},
+		"source_digests":         map[string]any{"evidence/scenarios/index.json": fileDigest(t, indexPath), "artifacts/pattern-scenarios/results.json": fileDigest(t, filepath.Join(dir, "artifacts", "pattern-scenarios", "results.json"))},
+		"baseline":               map[string]any{"inherited_gap_rows_at_fixture": 0, "matrix_rows": rows, "patterns": len(behaviors), "scenarios": 10},
+		"summary":                map[string]any{"completed_dedicated_rows": rows, "remaining_rows": 0, "planned_tranches": 0, "by_scenario": zeroByScenario},
+		"independent_incomplete": map[string]any{"authority_atomic_rows": rows, "external_profiles": []any{}, "agent_forward_eval": "completed"},
+		"completed_rows":         completedRows, "next_tranche": nil, "tranches": []any{}, "rows": []any{},
+	}
+	mustWriteJSON(t, filepath.Join(dir, "evidence", "scenarios", "closure-plan.json"), closurePlan)
 }
 
 func applyDefinitiveMutation(t *testing.T, dir, mutation string) {

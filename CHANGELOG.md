@@ -10,6 +10,7 @@
 - Non-regression Baselineの同一ID項目を`(id, fingerprint)` multisetとして保持し、Claim間で重複するProof Obligationを欠落なく比較する。
 - Integrated Reference Systemの10 Scenario Traceと個別Atomic Behavior Proofを分離し、統合Trace流用、未結合Authority、source／harness／environment／runtime identity不足を拒否するScenario/Trace Gateを追加した。
 - Scenario Closureをexact Pattern＋Scenario＋全Variantのretry 0専用Runtime suite、first-attempt pass、Oracle、source／harness digest、専用Traceへ限定し、Capture identity補完を拒否した。
+- 残存Scenario Gapをrisk順・最大4 Pattern row/trancheへ完全包含するClosure Plan Gateと、row削除・順序退避・batch肥大化を拒否するNon-regression Collectionを追加した。
 
 ## v1.0.0 — 2026-08-28
 
