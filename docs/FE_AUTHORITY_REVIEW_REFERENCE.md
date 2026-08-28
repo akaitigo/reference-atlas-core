@@ -1,0 +1,9 @@
+# FE Authority Human Review参照契約
+
+参照元は`frontend-behavior-atlas` commit `de2f016b8b44ea67afdb08c0552044807505984e`である。`profiles/FE_AUTHORITY_REVIEW_QUEUE_REFERENCE.json`は同commitの`authority/review-queue.snapshot.json`をbyte-identicalで固定し、SHA-256は`7288e28e7c30b2c5a5fe3b80f7b96c465e105ee6d0b34513a4ea7230ec9a46fd`である。Decision Ledgerの固定Digestは`c65f73790aceeaa2069cf988cb53c50d82520d5e3edbce8fc11d9e4c610b4b89`である。
+
+参照状態は15,963 stable anchorの全件Queue包含、pending-human 15,963、Human decision 0、stale hold 3、semantic exhaustive falseである。この状態を完成扱いしない。Subjectは固有のselector contractとoffset unitを使用でき、単一Source Lockから複数documentを作成できる。HTMLの`document_url`形式と、固定Source tree等の`authority_url`＋`document_locator`形式を同じ契約で扱う。failed/unavailable documentはstaleとは別のholdに隔離する。
+
+参照元commit `6c2cfa41f0390ef23637fbfc8dd614a040f52618`のpriority-0 exportは80 packet、230 candidate Domain projection、113 machine proposal、Human decision 0である。これはレビュー操作を支援するread-only投影であり、件数をCompletion/Depthへ算入しない。元schemaのDigestはReview Exportが`62992e927528bcfad9b8349ac0a2b821397554a53b4ae40f57d27bf4821e2d8f`、packetが`ae7698ae1ce6809d49dade2bb8a23678f9f90442e880828f85cd727102f49448`である。
+
+stale relock candidate reportは提案だけを保存し、Lockを更新しない。更新には人の明示選択、`manual-primary-source`、旧/new Lock、旧→新ID mapping、実行Proof、Migration Evidence、Non-regression Evidenceが必要である。

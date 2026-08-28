@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-body-baseline.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["schema_version", "id", "captured_at", "source_entries", "unique_documents", "selector_contract", "documents"],
+  "properties": {"schema_version": {"const": 1}, "id": {"$ref": "#/$defs/id"}, "captured_at": {"type": "string", "format": "date-time"}, "tool_digest": {"$ref": "#/$defs/sha256"}, "source_entries": {"type": "integer", "minimum": 1}, "unique_documents": {"type": "integer", "minimum": 1},
+    "selector_contract": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "documents": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["id", "path", "locked_body_digest", "source_ids", "anchor_ids"], "properties": {
+      "id": {"type": "string", "pattern": "^document-[a-z0-9-]+$"}, "path": {"type": "string", "pattern": "^authority/body-inventory-draft/document-[a-z0-9-]+\\.json$"}, "locked_body_digest": {"$ref": "#/$defs/sha256"},
+      "source_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/dottedId"}}, "anchor_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^anchor-[a-z0-9-]+$"}}
+    }}}
+  }, "$defs": {"id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}, "dottedId": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"}, "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}}
+}

@@ -136,6 +136,9 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 - required Targetはすべて`covered`でなければならず、`excluded`／`infeasible`は未完として拒否する。
 - Authority Surface Artifactは一次資料Source IDとDigestへ束縛し、Inventoryの未分類を0にする。Authority由来項目をSubject都合で除外できない。
 - Authority Locator Extractionは第三者本文を保存せず、response/body/context/headingのDigest、Locator offset、Domain metadata digestだけを許可する。candidate reference edgeの分類完了をAuthority本文全体のexhaustive closureとして扱わず、stale／fetch failed／locator missing／locator deferred／Human review／eligibleを独立に閉じる。
+- Authority Body Inventoryのraw selector anchorはSurfaceではなくReview用denominatorであり、件数をDepth達成へ算入しない。stable anchor IDからinclude／exclude／merge／split／deferをHuman Review Queueで追跡し、`manual-primary-source`の人間reviewer、時刻、40文字以上の理由、source/tool digest、URLまたはAuthority URL＋document locator、old→new mapping、Surface/Atomic resultを照合する。staleとunavailable/failed documentは独立holdとして0になるまで未完であり、未Review anchorからCore v2 Artifactへの直接昇格を拒否する。
+- Review portal exportは`mode=read-only`、`write_decisions=false`、`promote_human_review=false`であり、machine proposalはHuman decisionの型を持たない。packet、deep-link、projection、clusterの件数はCompletion/Depth creditではない。
+- Definitive Skill Routerは8 Outcome × 14 Surfaceの各cellを実Target、Variant file digest、Authority Source Lock、Runtime Evidenceへ接続する。mutation authorization、曖昧/未知Query、人手Authority decision、stale relockを独立したfail-closed境界にし、routing gap、partial Coverage、未実施Forward Evalが1件でもあればSkill/Subject Completionを拒否する。Router matrixのpassはTargetや実Project結果のpassを意味しない。
 - 各Behavior／Capabilityは専用required Target、専用accepted Claim、Scenarioごとの専用Proof Obligationを持つ。Target、Claim、Proof、Evidence、Artifactの共有による集約Closureを拒否する。
 - 全Behaviorに正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenario Rowを要求する。Surfaceから必須となるScenarioは`not-applicable`にできない。
 - required Scenarioは指定Profileの実RuntimeまたはPlatform Evidenceを必要とする。static、fixture、compile-only、KLIBやbytecode生成は代替にならない。

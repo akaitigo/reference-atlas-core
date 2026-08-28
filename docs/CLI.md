@@ -6,6 +6,11 @@ atlas audit <atlas-directory>
 atlas audit <atlas-directory> --gate definitive
 atlas audit <atlas-directory> --gate non-regression
 atlas audit <atlas-directory> --gate authority-extraction
+atlas audit <atlas-directory> --gate authority-body
+atlas audit <atlas-directory> --gate authority-review
+atlas audit <atlas-directory> --gate authority-review-export
+atlas audit <atlas-directory> --gate authority-relock
+atlas audit <atlas-directory> --gate skill-router
 atlas baseline generate <atlas-directory> <output> --commit SHA [--captured-at RFC3339]
 atlas scaffold <directory> <atlas-id> <日本語title> [epoch]
 atlas generate skill-reference <atlas-directory>
@@ -25,3 +30,9 @@ atlas version
 `baseline generate`はTest関数、`examples/**`、`labs/**`、`testdata/**`、`evals/run.*`、主要`script` harness、Target／Target Set、Claim／Proof、Evidence、Source、Authority Extraction、Skill Eval、Required Profile、Verification Matrix、CI Jobを固定する。`--gate non-regression`は削除、skip、Scope退避、Target弱化、Assertion／閾値／Matrix／CI縮小、Runtime Evidenceのstatic化、失敗Evidenceの消去を拒否する。Authority Extractionはstale/deferredからmatched/located/reviewed/eligibleへの単調強化だけを許し、同一失敗状態の上書き、candidate contract削除、exhaustiveの後退を拒否する。
 
 `--gate authority-extraction`はmetadata-only SnapshotとSourceごとのDraftをSchema、Digest、Source Lock、fetch状態、Locator状態、集計値へ照合する。このGateの成功はstaging artifactの整合性を表し、`text_exhaustive=false`やHuman review 0をCompletionへ昇格しない。`--gate definitive`だけが全open stateのClosureを要求する。
+
+`--gate authority-body`は全locked documentのcandidate anchor denominatorと専用stable-ID baselineを検証する。`--gate authority-review`はQueue/Batch/Ledger、stale・unavailable hold、manual-primary-source、source/tool/locator binding、old→new mapping、Surface/Atomic resultを検証する。raw anchor、Queue、batch、clusterの件数はDepth達成へ算入しない。`--gate authority-review-export`はpriority packetのread-only投影を検証し、machine proposalとHuman decisionを分離し、decision書込やHuman review昇格を拒否する。
+
+`--gate authority-relock`はstale candidate reportとSource Lockを照合する。Lockが変わった場合だけ、人の明示選択、旧/new Lock、全旧IDのmapping、実行Proof、Migration Evidence、Non-regression Evidenceを持つ専用decisionを要求する。
+
+`--gate skill-router`は8 Outcome × 14 Surfaceのroute、実Target、Variant file digest、Authority Source Lock、Evidence Artifact、mutation authorization、5つのfail-closed境界を照合する。routing gap、partial Coverage、未実施Forward Evalは`completion_limited=true`として表示し、matrixの`result=pass`だけではSkillやSubjectをcompleteにしない。

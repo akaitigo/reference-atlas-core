@@ -242,7 +242,7 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 	write("authority/counter.authority-surfaces.yaml", authority)
 	authorityArtifactDigest := fileDigest(t, filepath.Join(dir, "authority/counter.authority-surfaces.yaml"))
 	lockedDigest := "sha256:" + strings.Repeat("0", 64)
-	sourceURL := "https://github.com/akaitigo/reference-atlas-core/releases/tag/v1.0.0"
+	sourceURL := "https://github.com/akaitigo/reference-atlas-core/releases/tag/v1.1.0"
 	draftCandidates := []any{}
 	for _, behavior := range behaviors {
 		short := strings.TrimPrefix(behavior, "counter.")
@@ -284,6 +284,70 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 			"locator_status": map[string]any{"root-document": 2},
 		}},
 	})
+	bodyToolDigest := "sha256:" + strings.Repeat("4", 64)
+	bodyAnchorIDs := []string{"anchor-root-counter", "anchor-counter-increment"}
+	bodyDocumentPath := filepath.Join(dir, "authority", "body-inventory-draft", "document-reference-atlas-core-counter.json")
+	if err := os.MkdirAll(filepath.Dir(bodyDocumentPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	mustWriteJSON(t, bodyDocumentPath, map[string]any{
+		"schema_version": 1, "document_id": "document-reference-atlas-core-counter", "fetch_url": sourceURL,
+		"source_ids": []any{"reference-atlas-core-v1"}, "locked_body_digest": lockedDigest,
+		"fetch":      map[string]any{"status": "matched", "fetched_digest": lockedDigest, "locked_digest_match": true, "http_status": 200, "final_url": sourceURL, "content_type": "text/html", "fetched_bytes": 1, "error_digest": nil},
+		"extraction": map[string]any{"method": "html-semantic-anchor-selector-v1", "tool": "counter-body-inventory-v1", "tool_digest": bodyToolDigest, "selector_contract": []any{"document-root", "h1"}, "selector_exhaustive_for_locked_body": true, "authority_semantics_exhaustive": false, "review_status": "automated-unreviewed", "body_storage": "digest-locator-and-offset-only"},
+		"anchors": []any{
+			map[string]any{"id": bodyAnchorIDs[0], "locator": "document-root", "locator_kind": "document-root", "semantic_kind": "document-root", "tag": "document", "heading_level": nil, "parent_anchor_id": nil, "context_start": 0, "context_end": 1, "context_unit": "utf16-code-unit", "context_digest": lockedDigest, "label_digest": nil, "classification_status": "pending-human", "surface_ids": []any{}},
+			map[string]any{"id": bodyAnchorIDs[1], "locator": "#counter", "locator_kind": "fragment", "semantic_kind": "heading", "tag": "h1", "heading_level": 1, "parent_anchor_id": bodyAnchorIDs[0], "context_start": 0, "context_end": 1, "context_unit": "utf16-code-unit", "context_digest": "sha256:" + strings.Repeat("5", 64), "label_digest": "sha256:" + strings.Repeat("6", 64), "classification_status": "pending-human", "surface_ids": []any{}},
+		},
+	})
+	bodyIndexPath := filepath.Join(dir, "authority", "body-inventory.snapshot.json")
+	mustWriteJSON(t, bodyIndexPath, map[string]any{
+		"schema_version": 1, "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z", "status": "incomplete-human-review-required",
+		"input_digest": lockedDigest, "tool_digest": bodyToolDigest, "body_storage": "digest-locator-and-offset-only", "selector_contract": []any{"document-root", "h1"},
+		"summary":   map[string]any{"source_entries": 1, "unique_documents": 1, "matched_documents": 1, "stale_documents": 0, "failed_documents": 0, "selector_exhaustive_documents": 1, "anchors": 2, "anchors_by_kind": map[string]any{"document-root": 1, "heading": 1}, "classified_anchors": 0, "unclassified_anchors": 2, "human_reviewed_anchors": 0, "core_v2_eligible_artifacts": 0, "authority_semantics_exhaustive": false},
+		"documents": []any{map[string]any{"id": "document-reference-atlas-core-counter", "path": "authority/body-inventory-draft/document-reference-atlas-core-counter.json", "digest": fileDigest(t, bodyDocumentPath), "fetch_status": "matched", "source_entries": 1, "anchors": 2, "anchors_by_kind": map[string]any{"document-root": 1, "heading": 1}}},
+	})
+	reviewToolDigest := "sha256:" + strings.Repeat("7", 64)
+	reviewBatchPath := filepath.Join(dir, "authority", "review-queue-draft", "review-p0-heading-00.json")
+	if err := os.MkdirAll(filepath.Dir(reviewBatchPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	reviewItems := []any{}
+	for index, anchorID := range bodyAnchorIDs {
+		locator, kind, tag, headingLevel, labelDigest := "document-root", "document-root", "document", any(nil), any(nil)
+		contextDigest := lockedDigest
+		if index == 1 {
+			locator, kind, tag, headingLevel, labelDigest = "#counter", "heading", "h1", 1, "sha256:"+strings.Repeat("6", 64)
+			contextDigest = "sha256:" + strings.Repeat("5", 64)
+		}
+		reviewItems = append(reviewItems, map[string]any{"anchor_id": anchorID, "document_id": "document-reference-atlas-core-counter", "document_url": sourceURL, "source_ids": []any{"reference-atlas-core-v1"}, "locked_source_digest": lockedDigest, "inventory_tool_digest": bodyToolDigest, "review_queue_tool_digest": reviewToolDigest, "locator": locator, "locator_kind": map[bool]string{true: "fragment", false: "document-root"}[index == 1], "semantic_kind": kind, "tag": tag, "heading_level": headingLevel, "parent_anchor_id": map[bool]any{true: bodyAnchorIDs[0], false: nil}[index == 1], "context_start": 0, "context_end": 1, "context_unit": "utf16-code-unit", "context_digest": contextDigest, "label_digest": labelDigest, "existing_reference_edge_ids": []any{}, "priority": 0, "priority_reasons": []any{"fixture-primary-source-review"}, "candidate_cluster_id": nil, "batch_id": "review-p0-heading-00", "state": "pending-human"})
+	}
+	mustWriteJSON(t, reviewBatchPath, map[string]any{"schema_version": 1, "queue_id": "authority-review-counter", "batch_id": "review-p0-heading-00", "status": "pending-human", "machine_assistance": "ordering-only", "semantic_decisions": "none", "items": reviewItems})
+	decisionBindings := func(anchorID, locator, contextDigest string) []any {
+		return []any{map[string]any{"anchor_id": anchorID, "document_id": "document-reference-atlas-core-counter", "document_url": sourceURL, "locked_source_digest": lockedDigest, "inventory_tool_digest": bodyToolDigest, "review_queue_tool_digest": reviewToolDigest, "locator": locator, "context_start": 0, "context_end": 1, "context_unit": "utf16-code-unit", "context_digest": contextDigest}}
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "authority", "reviews"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	mustWriteJSON(t, filepath.Join(dir, "authority", "reviews", "decisions.json"), map[string]any{"schema_version": 1, "atlas_id": "counter-reference-atlas", "queue_id": "authority-review-counter", "status": "closed", "decisions": []any{
+		map[string]any{"decision_id": "decision.counter.increment", "action": "include", "anchor_ids": []any{bodyAnchorIDs[0]}, "source_bindings": decisionBindings(bodyAnchorIDs[0], "document-root", lockedDigest), "rationale": "固定した一次資料の該当locatorを人が確認し、increment Surfaceへ昇格できる独立した意味境界であると判断した。", "reviewer": "fixture-reviewer", "reviewed_at": "2026-08-28T00:00:00Z", "review_method": "manual-primary-source", "mapping": []any{map[string]any{"old_anchor_id": bodyAnchorIDs[0], "new_item_ids": []any{"counter-protocol.counter.increment"}}}, "result_items": []any{map[string]any{"id": "counter-protocol.counter.increment", "item_type": "surface"}}},
+		map[string]any{"decision_id": "decision.counter.reset", "action": "include", "anchor_ids": []any{bodyAnchorIDs[1]}, "source_bindings": decisionBindings(bodyAnchorIDs[1], "#counter", "sha256:"+strings.Repeat("5", 64)), "rationale": "固定した一次資料の該当locatorを人が確認し、reset Surfaceへ昇格できる独立した意味境界であると判断した。", "reviewer": "fixture-reviewer", "reviewed_at": "2026-08-28T00:00:00Z", "review_method": "manual-primary-source", "mapping": []any{map[string]any{"old_anchor_id": bodyAnchorIDs[1], "new_item_ids": []any{"counter-protocol.counter.reset"}}}, "result_items": []any{map[string]any{"id": "counter-protocol.counter.reset", "item_type": "surface"}}},
+	}})
+	mustWriteJSON(t, filepath.Join(dir, "authority", "review-queue.snapshot.json"), map[string]any{
+		"schema_version": 1, "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z", "status": "closed", "queue_id": "authority-review-counter", "input_digest": fileDigest(t, bodyIndexPath), "tool_digest": reviewToolDigest, "decision_ledger": "authority/reviews/decisions.json", "body_storage": "digest-locator-and-offset-only", "machine_assistance": "ordering-only", "semantic_decisions": "human-only",
+		"summary": map[string]any{"eligible_documents": 1, "queued_anchors": 2, "pending_human": 0, "human_reviewed": 2, "priority_counts": map[string]any{"0": 2}, "candidate_clusters": 0, "clustered_anchors": 0, "batches": 1, "stale_document_holds": 0, "unavailable_document_holds": 0, "decisions": 2, "included": 2, "excluded": 0, "merged": 0, "split": 0, "deferred": 0, "authority_semantics_exhaustive": true, "queue_counts_as_depth_achievement": false},
+		"batches": []any{map[string]any{"id": "review-p0-heading-00", "path": "authority/review-queue-draft/review-p0-heading-00.json", "digest": fileDigest(t, reviewBatchPath), "priority": 0, "semantic_kind": "heading", "bucket": "00", "items": 2}}, "stale_holds": []any{}, "unavailable_holds": []any{},
+	})
+	for _, relative := range []string{"baselines", "migrations"} {
+		if err := os.MkdirAll(filepath.Join(dir, relative), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mustWriteJSON(t, filepath.Join(dir, "baselines", "authority-body-inventory-v1.json"), map[string]any{
+		"schema_version": 1, "id": "authority-body-inventory-v1-fixture", "captured_at": "2026-08-28T00:00:00Z", "source_entries": 1, "unique_documents": 1, "selector_contract": []any{"document-root", "h1"},
+		"documents": []any{map[string]any{"id": "document-reference-atlas-core-counter", "path": "authority/body-inventory-draft/document-reference-atlas-core-counter.json", "locked_body_digest": lockedDigest, "source_ids": []any{"reference-atlas-core-v1"}, "anchor_ids": []any{bodyAnchorIDs[0], bodyAnchorIDs[1]}}},
+	})
+	mustWriteJSON(t, filepath.Join(dir, "migrations", "authority-body-inventory-v1.json"), map[string]any{"schema_version": 1, "baseline_id": "authority-body-inventory-v1-fixture", "replacements": []any{}})
 	inventory := fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\nauthority_lock_digest: %s\nauthority_artifacts:\n  - {id: counter-protocol, source_id: reference-atlas-core-v1, path: authority/counter.authority-surfaces.yaml, digest: %s}\nitems:\n", authorityLockDigest, authorityArtifactDigest)
 	for _, behavior := range behaviors {
 		inventory += fmt.Sprintf("  - {id: %s, authority_artifact_id: counter-protocol, authority_surface_id: %s, locator: protocol/%s, kind: behavior, capability_id: %s, behavior_id: %s, variant_ids: [%s.default], target_id: %s, title: %s Behavior, surface_ids: [orientation-scope, testing-verification], classification: included, rationale: Authority ArtifactのBehaviorを省略せずInventoryへ分類する。, claim_ids: [%s]}\n", behavior, behavior, strings.TrimPrefix(behavior, "counter."), behavior, behavior, behavior, behavior, behavior, behavior)
@@ -319,7 +383,49 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 	allOutcomes := "understand, choose, build, verify, operate, troubleshoot, evolve, delegate"
 	allSurfaces := "orientation-scope, foundations-mechanics, architecture-design, implementation-construction, testing-verification, failure-recovery, operations-observability, security-privacy-safety, performance-capacity-cost, compatibility-integration, migration-evolution-deprecation, decision-comparison, provenance-rights, agent-skill"
 	write("evals/counter.definitive-skill-eval.json", fmt.Sprintf("{\"schema_version\":2,\"id\":\"counter.definitive-v2\",\"atlas_id\":\"counter-reference-atlas\",\"atlas_release\":\"v0.1.0\",\"skill_id\":\"counter-reference-atlas-advisor\",\"generated_at\":\"2026-08-28T00:00:00Z\",\"cases\":[{\"id\":\"all.contracts\",\"result\":\"pass\",\"outcome_ids\":[%s],\"surface_ids\":[%s],\"gap_behavior\":true,\"authorization_boundary\":true,\"assertion\":\"8 Outcomeと14 SurfaceとGapと権限境界を評価する。\"}]}\n", quoteList(allOutcomes), quoteList(allSurfaces)))
-	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
+	forwardEvalPath := filepath.Join(dir, "evidence", "reports", "skill-router-forward-eval.json")
+	write("evidence/reports/skill-router-forward-eval.json", "{\"cases\":2,\"passed\":2,\"failed\":0}\n")
+	fileBinding := func(id, relative string) map[string]any {
+		data, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(relative)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return map[string]any{"id": id, "path": relative, "digest": shaDigest(data), "bytes": len(data)}
+	}
+	routerCells := []any{}
+	for outcomeIndex, outcome := range strings.Split(allOutcomes, ", ") {
+		for surfaceIndex, surface := range strings.Split(allSurfaces, ", ") {
+			behavior := behaviors[(outcomeIndex+surfaceIndex)%len(behaviors)]
+			evidenceID := strings.TrimPrefix(behavior, "counter.") + ".normal"
+			evidenceRelative := "evidence/" + evidenceID + ".evidence.yaml"
+			routerCells = append(routerCells, map[string]any{
+				"id": "skill." + outcome + "." + surface, "status": "routed", "outcome": outcome, "surface": surface, "mode": "select", "query": outcome + " " + surface,
+				"pattern_id": behavior, "target_id": behavior, "target_set": "foundation", "target_set_allowed": true, "coverage_state": "covered", "coverage_disposition": "covered",
+				"required_deliverables": []any{"concept", "evidence"}, "required_output_fields": []any{"result", "evidence"}, "mutation_policy": "authorized", "mutation_status": "completed", "blocked_reasons": []any{},
+				"stop_conditions": []any{"coverage-gap", "unverified-evidence", "unauthorized-mutation", "external-human-decision-required", "stale-source-relock-explicit-procedure-required"}, "acceptance_criteria": []any{"固定Contractに対する実行結果とEvidenceが一致する。"},
+				"implementation_bindings": []any{fileBinding(strings.TrimPrefix(behavior, "counter.")+"-default", "reference/counter-system.txt")},
+				"source_bindings":         []any{map[string]any{"source_id": "reference-atlas-core-v1", "url": sourceURL, "digest": lockedDigest, "bytes": 1}},
+				"evidence_bindings":       []any{fileBinding(evidenceID+"-artifact", "evidence/reports/"+evidenceID+".json")}, "expected_pattern_id": behavior, "result": "pass", "support_status": "routed", "assertions": map[string]any{"permission_boundary": true, "authority_binding": true, "evidence_binding": true},
+				"variant_ids": []any{behavior + ".default"}, "authority_item_ids": []any{"counter-protocol." + behavior}, "runtime_evidence_bindings": []any{map[string]any{"evidence_id": evidenceID, "path": evidenceRelative, "digest": fileDigest(t, filepath.Join(dir, evidenceRelative))}},
+			})
+		}
+	}
+	boundary := func(id, status, mutationPolicy, mutationStatus string, blocked []any) map[string]any {
+		return map[string]any{"id": id, "status": status, "outcome": "understand", "surface": "orientation-scope", "mode": "review", "query": id, "coverage_state": "covered", "coverage_disposition": status, "required_deliverables": []any{"decision"}, "required_output_fields": []any{"status"}, "mutation_policy": mutationPolicy, "mutation_status": mutationStatus, "blocked_reasons": blocked, "stop_conditions": []any{"unauthorized-mutation", "external-human-decision-required", "stale-source-relock-explicit-procedure-required"}, "expected": map[string]any{"status": status}, "result": "pass"}
+	}
+	routerBoundaries := []any{
+		boundary("boundary.ambiguous", "coverage-gap", "read-only", "read-only", []any{}), boundary("boundary.unknown", "coverage-gap", "read-only", "read-only", []any{}),
+		boundary("boundary.unauthorized-build", "blocked", "explicit-authorization-required", "blocked", []any{"unauthorized-mutation"}),
+		boundary("boundary.human-authority-decision", "blocked", "explicit-authorization-required", "blocked", []any{"external-human-decision-required"}),
+		boundary("boundary.stale-relock", "blocked", "explicit-authorization-required", "blocked", []any{"stale-source-relock-explicit-procedure-required"}),
+	}
+	mustWriteJSON(t, filepath.Join(dir, "evals", "definitive-skill-router.json"), map[string]any{
+		"schema_version": 1, "id": "counter.definitive-router-v1", "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z", "status": "subject-skill-ready", "semantic_scope": "router-contract-and-independent-forward-eval",
+		"source_bindings": map[string]any{"router": fileBinding("router", "reference/counter-system.txt"), "skill": fileBinding("skill", "go.mod"), "evaluator": fileBinding("evaluator", "harness.txt"), "mastery_contract": fileBinding("mastery-contract", "coverage.yaml")},
+		"summary":         map[string]any{"outcomes": 8, "surfaces": 14, "matrix_cells": 112, "passed": 112, "failed": 0, "routed": 112, "mastery_routing_gaps": 0, "partial_coverage_cells": 0, "boundary_cases": 5, "boundary_passed": 5, "boundary_failed": 0},
+		"matrix":          routerCells, "boundary_cases": routerBoundaries, "completion_limits": []any{}, "forward_eval": map[string]any{"status": "completed", "cases": 2, "passed": 2, "failed": 0, "artifact_path": "evidence/reports/skill-router-forward-eval.json", "artifact_digest": fileDigest(t, forwardEvalPath)},
+	})
+	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nauthority_body_inventory: authority/body-inventory.snapshot.json\nauthority_body_review: authority/review-queue.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nskill_router: evals/definitive-skill-router.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
 	if _, err := GenerateCertificate(dir, "2026-08-28T00:00:00Z", strings.Repeat("a", 40)); err != nil {
 		t.Fatal(err)
 	}
@@ -426,6 +532,70 @@ func applyDefinitiveMutation(t *testing.T, dir, mutation string) {
 		summary := doc["summary"].(map[string]any)
 		summary["authority_text_surfaces_exhaustive"] = false
 		doc["status"] = "incomplete-human-review-required"
+		mustWriteJSON(t, path, doc)
+	case "authority-body-review-mapping-forgery":
+		path := filepath.Join(dir, "authority", "reviews", "decisions.json")
+		doc := mustReadYAML(t, path)
+		decisions := doc["decisions"].([]any)
+		decisions[0].(map[string]any)["mapping"].([]any)[0].(map[string]any)["new_item_ids"] = []any{"counter-protocol.forged.surface"}
+		decisions[0].(map[string]any)["result_items"].([]any)[0].(map[string]any)["id"] = "counter-protocol.forged.surface"
+		mustWriteJSON(t, path, doc)
+	case "automated-authority-reviewer":
+		path := filepath.Join(dir, "authority", "reviews", "decisions.json")
+		doc := mustReadYAML(t, path)
+		doc["decisions"].([]any)[0].(map[string]any)["reviewer"] = "automated-bot"
+		mustWriteJSON(t, path, doc)
+	case "zero-decision-semantic-exhaustive":
+		ledgerPath := filepath.Join(dir, "authority", "reviews", "decisions.json")
+		ledger := mustReadYAML(t, ledgerPath)
+		ledger["decisions"] = []any{}
+		mustWriteJSON(t, ledgerPath, ledger)
+		queuePath := filepath.Join(dir, "authority", "review-queue.snapshot.json")
+		queue := mustReadYAML(t, queuePath)
+		summary := queue["summary"].(map[string]any)
+		summary["pending_human"], summary["human_reviewed"], summary["decisions"], summary["included"] = 2, 0, 0, 0
+		mustWriteJSON(t, queuePath, queue)
+	case "review-queue-anchor-omission":
+		batchPath := filepath.Join(dir, "authority", "review-queue-draft", "review-p0-heading-00.json")
+		batch := mustReadYAML(t, batchPath)
+		batch["items"] = batch["items"].([]any)[:1]
+		mustWriteJSON(t, batchPath, batch)
+		queuePath := filepath.Join(dir, "authority", "review-queue.snapshot.json")
+		queue := mustReadYAML(t, queuePath)
+		record := queue["batches"].([]any)[0].(map[string]any)
+		record["digest"], record["items"] = fileDigest(t, batchPath), 1
+		mustWriteJSON(t, queuePath, queue)
+	case "review-result-id-sharing":
+		path := filepath.Join(dir, "authority", "reviews", "decisions.json")
+		doc := mustReadYAML(t, path)
+		second := doc["decisions"].([]any)[1].(map[string]any)
+		second["mapping"].([]any)[0].(map[string]any)["new_item_ids"] = []any{"counter-protocol.counter.increment"}
+		second["result_items"].([]any)[0].(map[string]any)["id"] = "counter-protocol.counter.increment"
+		mustWriteJSON(t, path, doc)
+	case "skill-router-gap":
+		path := filepath.Join(dir, "evals", "definitive-skill-router.json")
+		doc := mustReadYAML(t, path)
+		cell := doc["matrix"].([]any)[0].(map[string]any)
+		cell["support_status"], cell["coverage_state"], cell["status"] = "mastery-routing-gap", "partial", "mastery-routing-gap"
+		summary := doc["summary"].(map[string]any)
+		summary["routed"], summary["mastery_routing_gaps"], summary["partial_coverage_cells"] = 111, 1, 1
+		doc["status"], doc["completion_limits"] = "incomplete-mastery-routing-gaps", []any{"Authority由来のrouting gapが残っているためSkill Completionを主張できない。"}
+		mustWriteJSON(t, path, doc)
+	case "skill-router-forward-eval-missing":
+		path := filepath.Join(dir, "evals", "definitive-skill-router.json")
+		doc := mustReadYAML(t, path)
+		doc["forward_eval"] = map[string]any{"status": "not-run", "cases": 0, "passed": 0, "failed": 0, "artifact_path": nil, "artifact_digest": nil}
+		doc["status"], doc["completion_limits"] = "incomplete-forward-eval-required", []any{"独立Agentによる実Project Forward Evalが未実施のためSkill Completionを主張できない。"}
+		mustWriteJSON(t, path, doc)
+	case "skill-router-human-authority-bypass":
+		path := filepath.Join(dir, "evals", "definitive-skill-router.json")
+		doc := mustReadYAML(t, path)
+		for _, raw := range doc["boundary_cases"].([]any) {
+			item := raw.(map[string]any)
+			if item["id"] == "boundary.human-authority-decision" {
+				item["status"], item["mutation_policy"], item["mutation_status"], item["blocked_reasons"] = "routed", "authorized", "completed", []any{}
+			}
+		}
 		mustWriteJSON(t, path, doc)
 	default:
 		t.Fatalf("未知のFixture mutation: %s", mutation)

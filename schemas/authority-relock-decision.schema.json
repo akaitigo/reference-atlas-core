@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-relock-decision.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "decision_id", "document_id", "choice", "review_method", "reviewer", "reviewed_at", "reason", "old_lock", "new_lock", "old_to_new_mappings", "execution_proof_ids", "migration_evidence_ids", "non_regression_evidence_id"],
+  "properties": {
+    "schema_version": {"const": 1}, "atlas_id": {"$ref": "#/$defs/id"}, "decision_id": {"type": "string", "pattern": "^relock-decision\\.[a-z0-9.-]+$"}, "document_id": {"type": "string", "pattern": "^document-[a-z0-9-]+$"},
+    "choice": {"enum": ["same-url-updated-body", "immutable-artifact-alternative"]}, "review_method": {"const": "manual-primary-source"}, "reviewer": {"type": "string", "minLength": 2, "not": {"pattern": "^(?:[aA][uU][tT][oO](?:[mM][aA][tT][eE][dD])?|[aA][gG][eE][nN][tT]|[bB][oO][tT]|[sS][yY][sS][tT][eE][mM]|[mM][aA][cC][hH][iI][nN][eE])(?:$|[-_. ])"}}, "reviewed_at": {"type": "string", "format": "date-time"}, "reason": {"type": "string", "minLength": 40},
+    "old_lock": {"$ref": "#/$defs/lock"}, "new_lock": {"$ref": "#/$defs/lock"},
+    "old_to_new_mappings": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["old_id", "new_ids", "reason"], "properties": {"old_id": {"$ref": "#/$defs/id"}, "new_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}, "reason": {"type": "string", "minLength": 40}}}},
+    "execution_proof_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}, "migration_evidence_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}, "non_regression_evidence_id": {"$ref": "#/$defs/id"}
+  },
+  "$defs": {"id": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"}, "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}, "lock": {"type": "object", "additionalProperties": false, "required": ["url", "digest"], "properties": {"url": {"type": "string", "format": "uri"}, "digest": {"$ref": "#/$defs/sha256"}}}}
+}

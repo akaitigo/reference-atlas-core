@@ -2,11 +2,11 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "reference-atlas-core-v1.0.0",
-  "documentNamespace": "https://github.com/akaitigo/reference-atlas-core/sbom/v1.0.0/2026-08-28",
+  "name": "reference-atlas-core-v1.1.0",
+  "documentNamespace": "https://github.com/akaitigo/reference-atlas-core/sbom/v1.1.0/2026-08-28",
   "creationInfo": {"created": "2026-08-28T00:00:00Z", "creators": ["Tool: go-list", "Organization: akaitigo"]},
   "packages": [
-    {"name":"reference-atlas-core","SPDXID":"SPDXRef-Package-Core","versionInfo":"1.0.0","downloadLocation":"https://github.com/akaitigo/reference-atlas-core","filesAnalyzed":false,"licenseConcluded":"Apache-2.0","licenseDeclared":"Apache-2.0","copyrightText":"Copyright 2026 akaitigo"},
+    {"name":"reference-atlas-core","SPDXID":"SPDXRef-Package-Core","versionInfo":"1.1.0","downloadLocation":"https://github.com/akaitigo/reference-atlas-core","filesAnalyzed":false,"licenseConcluded":"Apache-2.0","licenseDeclared":"Apache-2.0","copyrightText":"Copyright 2026 akaitigo"},
     {"name":"github.com/santhosh-tekuri/jsonschema/v6","SPDXID":"SPDXRef-Package-Jsonschema","versionInfo":"6.0.2","downloadLocation":"https://github.com/santhosh-tekuri/jsonschema","filesAnalyzed":false,"licenseConcluded":"Apache-2.0","licenseDeclared":"Apache-2.0","copyrightText":"Copyright jsonschema contributors"},
     {"name":"gopkg.in/yaml.v3","SPDXID":"SPDXRef-Package-Yaml","versionInfo":"3.0.1","downloadLocation":"https://gopkg.in/yaml.v3","filesAnalyzed":false,"licenseConcluded":"MIT AND Apache-2.0","licenseDeclared":"MIT AND Apache-2.0","copyrightText":"Copyright YAML contributors"},
     {"name":"golang.org/x/text","SPDXID":"SPDXRef-Package-XText","versionInfo":"0.14.0","downloadLocation":"https://go.googlesource.com/text","filesAnalyzed":false,"licenseConcluded":"BSD-3-Clause","licenseDeclared":"BSD-3-Clause","copyrightText":"Copyright The Go Authors"}

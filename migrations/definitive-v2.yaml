@@ -11,6 +11,10 @@ status: inventory-required
 required_actions:
   - lock-authority-artifacts
   - extract-authority-locators
+  - inventory-authority-body-anchors
+  - review-authority-body-anchors
+  - lock-authority-body-baseline
+  - review-stale-relock-explicitly
   - review-authority-text-surfaces
   - lock-non-regression-baseline
   - classify-all-surfaces
@@ -20,4 +24,5 @@ required_actions:
   - add-reference-system-if-applicable
   - add-comparisons-if-applicable
   - upgrade-skill-eval
+  - complete-skill-router-forward-eval
   - issue-definitive-certificate

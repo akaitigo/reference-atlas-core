@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/definitive-skill-router.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "atlas_id", "generated_at", "status", "semantic_scope", "source_bindings", "summary", "matrix", "boundary_cases", "completion_limits"],
+  "properties": {
+    "schema_version": {"const": 1}, "id": {"$ref": "#/$defs/dottedId"}, "atlas_id": {"$ref": "#/$defs/id"}, "generated_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["incomplete-mastery-routing-gaps", "incomplete-partial-coverage", "incomplete-forward-eval-required", "subject-skill-ready"]},
+    "semantic_scope": {"type": "string", "minLength": 10},
+    "source_bindings": {"type": "object", "minProperties": 4, "additionalProperties": {"$ref": "#/$defs/fileBinding"}},
+    "summary": {"type": "object", "additionalProperties": false, "required": ["outcomes", "surfaces", "matrix_cells", "passed", "failed", "routed", "mastery_routing_gaps", "partial_coverage_cells", "boundary_cases", "boundary_passed", "boundary_failed"], "properties": {"outcomes": {"const": 8}, "surfaces": {"const": 14}, "matrix_cells": {"const": 112}, "passed": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}, "routed": {"type": "integer", "minimum": 0}, "mastery_routing_gaps": {"type": "integer", "minimum": 0}, "partial_coverage_cells": {"type": "integer", "minimum": 0}, "boundary_cases": {"type": "integer", "minimum": 5}, "boundary_passed": {"type": "integer", "minimum": 0}, "boundary_failed": {"type": "integer", "minimum": 0}}},
+    "matrix": {"type": "array", "minItems": 112, "maxItems": 112, "items": {"$ref": "#/$defs/cell"}},
+    "boundary_cases": {"type": "array", "minItems": 5, "items": {"$ref": "#/$defs/cell"}},
+    "completion_limits": {"type": "array", "items": {"type": "string", "minLength": 20}},
+    "forward_eval": {"type": "object", "additionalProperties": false, "required": ["status", "cases", "passed", "failed", "artifact_path", "artifact_digest"], "properties": {"status": {"enum": ["not-run", "completed"]}, "cases": {"type": "integer", "minimum": 0}, "passed": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}, "artifact_path": {"type": ["string", "null"]}, "artifact_digest": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}, "dottedId": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"}, "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "fileBinding": {"type": "object", "additionalProperties": false, "required": ["path", "digest"], "properties": {"path": {"type": "string", "minLength": 1}, "digest": {"$ref": "#/$defs/sha256"}, "bytes": {"type": "integer", "minimum": 1}, "claim_scope": {"type": "string", "minLength": 1}, "id": {"type": "string", "minLength": 1}}},
+    "sourceBinding": {"type": "object", "additionalProperties": false, "required": ["url", "digest", "bytes"], "properties": {"source_id": {"$ref": "#/$defs/dottedId"}, "url": {"type": "string", "format": "uri"}, "digest": {"$ref": "#/$defs/sha256"}, "bytes": {"type": "integer", "minimum": 1}}},
+    "runtimeEvidenceBinding": {"type": "object", "additionalProperties": false, "required": ["evidence_id", "path", "digest"], "properties": {"evidence_id": {"$ref": "#/$defs/dottedId"}, "path": {"type": "string", "minLength": 1}, "digest": {"$ref": "#/$defs/sha256"}}},
+    "cell": {"type": "object", "additionalProperties": false, "required": ["id", "status", "outcome", "surface", "mode", "query", "coverage_state", "coverage_disposition", "required_deliverables", "required_output_fields", "mutation_policy", "mutation_status", "blocked_reasons", "stop_conditions", "result"], "properties": {
+      "id": {"$ref": "#/$defs/dottedId"}, "status": {"type": "string", "minLength": 2}, "outcome": {"type": "string", "minLength": 2}, "surface": {"type": "string", "minLength": 2}, "mode": {"type": "string", "minLength": 2}, "query": {"type": "string", "minLength": 2}, "pattern_id": {"type": ["string", "null"]}, "target_id": {"type": ["string", "null"]}, "target_set": {"type": ["string", "null"]}, "target_set_allowed": {"type": "boolean"},
+      "coverage_state": {"type": "string"}, "coverage_disposition": {"type": "string"}, "required_deliverables": {"type": "array", "items": {"type": "string"}}, "required_output_fields": {"type": "array", "items": {"type": "string"}}, "mutation_policy": {"enum": ["read-only", "explicit-authorization-required", "authorized"]}, "mutation_status": {"enum": ["read-only", "blocked", "authorized", "authorized-for-request-scope", "completed"]}, "blocked_reasons": {"type": "array", "items": {"type": "string"}}, "stop_conditions": {"type": "array", "items": {"type": "string"}},
+      "acceptance_criteria": {"type": "array", "items": {"type": "string"}}, "implementation_bindings": {"type": "array", "items": {"$ref": "#/$defs/fileBinding"}}, "source_bindings": {"type": "array", "items": {"$ref": "#/$defs/sourceBinding"}}, "evidence_bindings": {"type": "array", "items": {"$ref": "#/$defs/fileBinding"}}, "evidence_records": {"type": "object"}, "expected_pattern_id": {"type": ["string", "null"]}, "expected": {"type": "object"}, "assertions": {"type": "object", "additionalProperties": {"type": "boolean"}}, "support_status": {"type": "string"},
+      "variant_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/dottedId"}}, "authority_item_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/dottedId"}}, "runtime_evidence_bindings": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/runtimeEvidenceBinding"}}, "result": {"enum": ["pass", "fail"]}
+    }}
+  }
+}

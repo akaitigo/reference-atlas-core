@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "skill_eval_cases", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
+var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
 
 type NonRegressionResult struct {
 	AtlasID       string
@@ -84,7 +84,7 @@ func AuditNonRegression(dir string) (NonRegressionResult, error) {
 	if err := verifyBaselineAgainstGit(dir, baseline); err != nil {
 		return NonRegressionResult{}, err
 	}
-	if err := verifyBaselineAnchor(dir, baselineRef); err != nil {
+	if err := verifyBaselineAnchor(dir, policy, baseline); err != nil {
 		return NonRegressionResult{}, err
 	}
 	current, err := captureNonRegressionState(dir, stringValue(baseline["baseline_commit"]), stringValue(baseline["captured_at"]))
@@ -132,6 +132,15 @@ func AuditNonRegression(dir string) (NonRegressionResult, error) {
 				if collection == "authority_extraction" && authorityExtractionStrengthens(oldItem, newItem) {
 					continue
 				}
+				if collection == "authority_body_inventory" && authorityBodyStrengthens(oldItem, newItem) {
+					continue
+				}
+				if collection == "authority_review_queue" && authorityReviewStrengthens(oldItem, newItem) {
+					continue
+				}
+				if collection == "skill_router_cells" && skillRouterCellStrengthens(oldItem, newItem) {
+					continue
+				}
 			}
 			mapping := replacements[collection+":"+id]
 			if mapping == nil {
@@ -166,7 +175,7 @@ func AuditNonRegression(dir string) (NonRegressionResult, error) {
 	return NonRegressionResult{AtlasID: stringValue(current["atlas_id"]), BaselineItems: baselineCount, CurrentItems: currentCount, Replacements: len(replacements)}, nil
 }
 
-func verifyBaselineAnchor(dir string, current map[string]any) error {
+func verifyBaselineAnchor(dir string, policy, currentBaseline map[string]any) error {
 	if err := exec.Command("git", "-C", dir, "ls-files", "--error-unmatch", "non-regression.yaml").Run(); err != nil {
 		return nil
 	}
@@ -189,9 +198,62 @@ func verifyBaselineAnchor(dir string, current map[string]any) error {
 	}
 	anchor, _ := anchorPolicy["baseline"].(map[string]any)
 	anchorDigest, _ := digestCanonical(anchor)
+	current, _ := policy["baseline"].(map[string]any)
 	currentDigest, _ := digestCanonical(current)
 	if anchorDigest != currentDigest {
-		return fmt.Errorf("ユーザー明示承認なしに初回公開Baseline anchorを変更できません: anchor_commit=%s", anchorCommit)
+		upgrade, _ := policy["baseline_upgrade"].(map[string]any)
+		from, _ := upgrade["from"].(map[string]any)
+		fromDigest, _ := digestCanonical(from)
+		if upgrade["mode"] != "monotonic-capture-contract-extension" || fromDigest != anchorDigest || current["path"] == anchor["path"] {
+			return fmt.Errorf("ユーザー明示承認なしに初回公開Baseline anchorを変更できません: anchor_commit=%s", anchorCommit)
+		}
+		if err := verifyRelativeFileDigest(dir, stringValue(from["path"]), stringValue(from["digest"]), -1); err != nil {
+			return fmt.Errorf("旧Baseline履歴が保存されていません: %w", err)
+		}
+		oldBaseline, err := readJSONDocument(filepath.Join(dir, filepath.FromSlash(stringValue(from["path"]))))
+		if err != nil {
+			return err
+		}
+		if err := verifyMonotonicBaselineRecapture(oldBaseline, currentBaseline); err != nil {
+			return err
+		}
+		ctx, err := loadAuditContext(dir)
+		if err != nil {
+			return err
+		}
+		for _, raw := range anySlice(upgrade["migration_evidence_ids"]) {
+			id := stringValue(raw)
+			if ctx.evidence[id] == nil || ctx.evidence[id]["verdict"] != "pass" {
+				return fmt.Errorf("Baseline capture契約拡張のMigration Evidenceがpassではありません: %s", id)
+			}
+		}
+	}
+	return nil
+}
+
+func verifyMonotonicBaselineRecapture(oldBaseline, newBaseline map[string]any) error {
+	for _, field := range []string{"atlas_id", "baseline_commit", "scope_statement_fingerprint", "minimum_skill_pass_rate"} {
+		if oldBaseline[field] != newBaseline[field] {
+			return fmt.Errorf("Baseline capture契約拡張で%sを変更できません", field)
+		}
+	}
+	oldExclusions, _ := digestCanonical(anySlice(oldBaseline["scope_exclusions"]))
+	newExclusions, _ := digestCanonical(anySlice(newBaseline["scope_exclusions"]))
+	if oldExclusions != newExclusions {
+		return fmt.Errorf("Baseline capture契約拡張でScope exclusionsを変更できません")
+	}
+	oldCollections, _ := oldBaseline["collections"].(map[string]any)
+	newCollections, _ := newBaseline["collections"].(map[string]any)
+	for collection, rawItems := range oldCollections {
+		newByID := indexBaselineItems(anySlice(newCollections[collection]))
+		for _, raw := range anySlice(rawItems) {
+			item, _ := raw.(map[string]any)
+			id := stringValue(item["id"])
+			candidate := newByID[id]
+			if candidate == nil || candidate["fingerprint"] != item["fingerprint"] {
+				return fmt.Errorf("Baseline capture契約拡張で既存項目を削除・変更できません: %s:%s", collection, id)
+			}
+		}
 	}
 	return nil
 }
@@ -333,11 +395,26 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	if len(authorityExtraction) > 0 {
 		collections["authority_extraction"] = authorityExtraction
 	}
+	authorityBody, err := captureAuthorityBodyState(dir)
+	if err != nil {
+		return nil, err
+	}
+	if len(authorityBody) > 0 {
+		collections["authority_body_inventory"] = authorityBody
+	}
+	authorityReview, err := captureAuthorityReviewState(dir)
+	if err != nil {
+		return nil, err
+	}
+	if len(authorityReview) > 0 {
+		collections["authority_review_queue"] = authorityReview
+	}
 	evalItems, minimum, err := captureSkillEval(dir, skill)
 	if err != nil {
 		return nil, err
 	}
 	collections["skill_eval_cases"] = evalItems
+	collections["skill_router_cells"] = captureSkillRouterCells(dir)
 	completion, _ := atlas["completion"].(map[string]any)
 	profileItems := []any{}
 	for _, raw := range anySlice(completion["required_profiles"]) {
@@ -355,6 +432,9 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	}
 	collections["ci_jobs"] = ciItems
 	for _, name := range nonRegressionCollections {
+		if collections[name] == nil {
+			collections[name] = []any{}
+		}
 		sortBaselineItems(anySlice(collections[name]))
 	}
 	scope, _ := atlas["scope"].(map[string]any)
@@ -523,6 +603,220 @@ func authorityExtractionStatusRank(status string) int {
 	default:
 		return 0
 	}
+}
+
+func captureAuthorityBodyState(dir string) ([]any, error) {
+	path := filepath.Join(dir, "authority", "body-inventory.snapshot.json")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return []any{}, nil
+	} else if err != nil {
+		return nil, err
+	}
+	result, err := AuditAuthorityBodyInventory(dir, false)
+	if err != nil {
+		return nil, err
+	}
+	index, err := readDocument(path)
+	if err != nil {
+		return nil, err
+	}
+	stable := map[string]any{}
+	stable["contract:tool"] = index["tool_digest"]
+	stable["contract:selector"], _ = digestCanonical(index["selector_contract"])
+	for _, raw := range anySlice(index["documents"]) {
+		record, _ := raw.(map[string]any)
+		id := stringValue(record["id"])
+		full, err := readDocument(filepath.Join(dir, filepath.FromSlash(stringValue(record["path"]))))
+		if err != nil {
+			return nil, err
+		}
+		stable["document:"+id], _ = digestCanonical(map[string]any{
+			"id": id, "fetch_url": full["fetch_url"], "authority_url": full["authority_url"], "document_locator": full["document_locator"], "source_ids": full["source_ids"], "locked_source_digest": full["locked_source_digest"], "locked_body_digest": full["locked_body_digest"],
+		})
+		for _, rawAnchor := range anySlice(full["anchors"]) {
+			anchor, _ := rawAnchor.(map[string]any)
+			anchorID := stringValue(anchor["id"])
+			stable["anchor:"+anchorID], _ = digestCanonical(map[string]any{"document_id": id, "locator": anchor["locator"], "raw_selector": anchor["raw_selector"], "semantic_kind": anchor["semantic_kind"], "context_start": anchor["context_start"], "context_end": anchor["context_end"], "context_unit": anchor["context_unit"], "context_digest": anchor["context_digest"]})
+		}
+	}
+	item := baselineItem("candidate-anchor-denominator", map[string]any{"index": index, "reviewed_surfaces": sortedKeys(result.EligibleSurfaceIDs)}, func(item map[string]any) {
+		item["path"] = "authority/body-inventory.snapshot.json"
+		item["stable_documents"] = stable
+		item["source_entries"] = result.SourceEntries
+		item["unique_documents"] = result.UniqueDocuments
+		item["matched_documents"] = result.MatchedDocuments
+		item["stale_documents"] = result.StaleDocuments
+		item["failed_documents"] = result.FailedDocuments
+		item["anchors"] = result.Anchors
+		item["classified_anchors"] = result.ClassifiedAnchors
+		item["unclassified_anchors"] = result.UnclassifiedAnchors
+		item["human_reviewed_anchors"] = result.HumanReviewedAnchors
+		item["deferred_anchors"] = result.DeferredAnchors
+		item["core_v2_eligible_artifacts"] = result.CoreV2EligibleArtifacts
+		item["authority_semantics_exhaustive"] = result.AuthoritySemanticsExhaustive
+		item["baseline_present"] = result.BaselinePresent
+		item["state"] = authorityBodyFingerprint(result)
+	})
+	return []any{item}, nil
+}
+
+func authorityBodyStrengthens(oldItem, newItem map[string]any) bool {
+	for _, key := range []string{"source_entries", "unique_documents", "matched_documents", "anchors"} {
+		if numberValue(newItem[key]) < numberValue(oldItem[key]) {
+			return false
+		}
+	}
+	for _, key := range []string{"stale_documents", "failed_documents"} {
+		if numberValue(newItem[key]) > numberValue(oldItem[key]) {
+			return false
+		}
+	}
+	if numberValue(newItem["classified_anchors"]) != 0 || numberValue(newItem["human_reviewed_anchors"]) != 0 || numberValue(newItem["core_v2_eligible_artifacts"]) != 0 || newItem["authority_semantics_exhaustive"] != false {
+		return false
+	}
+	oldStable, _ := oldItem["stable_documents"].(map[string]any)
+	newStable, _ := newItem["stable_documents"].(map[string]any)
+	if numberValue(newItem["anchors"]) > numberValue(oldItem["anchors"]) && len(newStable) <= len(oldStable) {
+		return false
+	}
+	if oldItem["baseline_present"] == true && newItem["baseline_present"] != true {
+		return false
+	}
+	return mapSubsetEqual(oldItem["stable_documents"], newItem["stable_documents"])
+}
+
+func captureAuthorityReviewState(dir string) ([]any, error) {
+	path := filepath.Join(dir, "authority", "review-queue.snapshot.json")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return []any{}, nil
+	} else if err != nil {
+		return nil, err
+	}
+	result, err := AuditAuthorityReviewQueue(dir, false)
+	if err != nil {
+		return nil, err
+	}
+	anchors, _, _, _, _, _, err := loadAuthorityReviewInputs(dir)
+	if err != nil {
+		return nil, err
+	}
+	stableAnchors := map[string]any{}
+	for id, anchor := range anchors {
+		stableAnchors[id], _ = digestCanonical(map[string]any{"document_id": anchor.documentID, "authority_url": anchor.authorityURL, "document_locator": anchor.documentLocator, "document_url": anchor.documentURL, "locked_source_digest": anchor.lockedSourceDigest, "locator": anchor.locator, "context_start": anchor.contextStart, "context_end": anchor.contextEnd, "context_unit": anchor.contextUnit, "context_digest": anchor.contextDigest})
+	}
+	index, err := readDocument(path)
+	if err != nil {
+		return nil, err
+	}
+	ledger, err := readDocument(filepath.Join(dir, "authority", "reviews", "decisions.json"))
+	if err != nil {
+		return nil, err
+	}
+	item := baselineItem("human-review-queue", map[string]any{"queue": index, "ledger": ledger}, func(item map[string]any) {
+		item["path"] = "authority/review-queue.snapshot.json"
+		item["stable_anchors"] = stableAnchors
+		item["queued_anchors"] = result.QueuedAnchors
+		item["pending_human"] = result.PendingHuman
+		item["human_reviewed"] = result.HumanReviewed
+		item["deferred"] = result.Deferred
+		item["stale_holds"] = result.StaleHolds
+		item["unavailable_holds"] = result.UnavailableHolds
+		item["decisions"] = result.Decisions
+		item["surface_ids"] = sortedKeys(result.SurfaceIDs)
+		item["atomic_behavior_ids"] = sortedKeys(result.AtomicBehaviorIDs)
+		item["authority_semantics_exhaustive"] = result.AuthoritySemanticsExhaustive
+		item["depth_credit"] = false
+		item["state"] = authorityReviewFingerprint(result)
+	})
+	return []any{item}, nil
+}
+
+func authorityReviewStrengthens(oldItem, newItem map[string]any) bool {
+	for _, key := range []string{"queued_anchors", "human_reviewed", "decisions"} {
+		if numberValue(newItem[key]) < numberValue(oldItem[key]) {
+			return false
+		}
+	}
+	for _, key := range []string{"pending_human", "deferred", "stale_holds", "unavailable_holds"} {
+		if numberValue(newItem[key]) > numberValue(oldItem[key]) {
+			return false
+		}
+	}
+	if oldItem["authority_semantics_exhaustive"] == true && newItem["authority_semantics_exhaustive"] != true {
+		return false
+	}
+	if newItem["depth_credit"] != false || !mapSubsetEqual(oldItem["stable_anchors"], newItem["stable_anchors"]) {
+		return false
+	}
+	return stringSliceSubset(oldItem["surface_ids"], newItem["surface_ids"]) && stringSliceSubset(oldItem["atomic_behavior_ids"], newItem["atomic_behavior_ids"])
+}
+
+func stringSliceSubset(oldValue, newValue any) bool {
+	newSet := stringSet(anySlice(newValue))
+	for _, raw := range anySlice(oldValue) {
+		if !newSet[stringValue(raw)] {
+			return false
+		}
+	}
+	return true
+}
+
+func captureSkillRouterCells(dir string) []any {
+	path := filepath.Join(dir, "evals", "definitive-skill-router.json")
+	doc, err := readDocument(path)
+	if err != nil {
+		return []any{}
+	}
+	items := []any{}
+	for _, group := range []string{"matrix", "boundary_cases"} {
+		for _, raw := range anySlice(doc[group]) {
+			cell, _ := raw.(map[string]any)
+			stable := map[string]any{}
+			for _, field := range []string{"id", "outcome", "surface", "mode", "target_id", "target_set", "required_deliverables", "required_output_fields", "stop_conditions", "implementation_bindings", "source_bindings", "evidence_bindings", "variant_ids", "authority_item_ids", "runtime_evidence_bindings"} {
+				stable[field] = cell[field]
+			}
+			stableDigest, _ := digestCanonical(stable)
+			items = append(items, baselineItem(stringValue(cell["id"]), cell, func(item map[string]any) {
+				item["kind"] = group
+				item["stable_binding_digest"] = stableDigest
+				item["coverage_state"] = cell["coverage_state"]
+				item["support_status"] = cell["support_status"]
+				item["result"] = cell["result"]
+				item["mutation_policy"] = cell["mutation_policy"]
+				item["mutation_status"] = cell["mutation_status"]
+			}))
+		}
+	}
+	return items
+}
+
+func skillRouterCellStrengthens(oldItem, newItem map[string]any) bool {
+	if oldItem["stable_binding_digest"] != newItem["stable_binding_digest"] || oldItem["mutation_policy"] != newItem["mutation_policy"] {
+		return false
+	}
+	coverageRank := func(value string) int {
+		switch value {
+		case "covered":
+			return 2
+		case "partial":
+			return 1
+		default:
+			return 0
+		}
+	}
+	supportRank := func(value string) int {
+		if value == "routed" {
+			return 1
+		}
+		return 0
+	}
+	resultRank := func(value string) int {
+		if value == "pass" {
+			return 1
+		}
+		return 0
+	}
+	return coverageRank(stringValue(newItem["coverage_state"])) >= coverageRank(stringValue(oldItem["coverage_state"])) && supportRank(stringValue(newItem["support_status"])) >= supportRank(stringValue(oldItem["support_status"])) && resultRank(stringValue(newItem["result"])) >= resultRank(stringValue(oldItem["result"])) && oldItem["mutation_status"] == newItem["mutation_status"]
 }
 
 func captureTestsAndLabs(dir string) ([]any, error) {

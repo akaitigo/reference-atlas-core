@@ -34,9 +34,9 @@ generated_at: %q
 sources:
   - id: reference-atlas-core-v1
     kind: specification
-    title: Reference Atlas Core v1 Contract
-    url: https://github.com/akaitigo/reference-atlas-core/releases/tag/v1.0.0
-    version: v1.0.0
+    title: Reference Atlas Core v1.1 Contract
+    url: https://github.com/akaitigo/reference-atlas-core/releases/tag/v1.1.0
+    version: v1.1.0
     retrieved_at: %q
     digest: sha256:%064d
     license: Apache-2.0
@@ -281,6 +281,10 @@ status: inventory-required
 required_actions:
   - lock-authority-artifacts
   - extract-authority-locators
+  - inventory-authority-body-anchors
+  - review-authority-body-anchors
+  - lock-authority-body-baseline
+  - review-stale-relock-explicitly
   - review-authority-text-surfaces
   - lock-non-regression-baseline
   - classify-all-surfaces
@@ -290,6 +294,7 @@ required_actions:
   - add-reference-system-if-applicable
   - add-comparisons-if-applicable
   - upgrade-skill-eval
+  - complete-skill-router-forward-eval
   - issue-definitive-certificate
 `, id, generatedAt, historicalRelative, sha256.Sum256(certificateData))
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {

@@ -1,0 +1,2 @@
+mutation: review-queue-anchor-omission
+want_error: stable anchorを完全包含

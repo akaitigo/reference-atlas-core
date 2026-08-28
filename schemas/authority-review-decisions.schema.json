@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-review-decisions.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "queue_id", "status", "decisions"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "atlas_id": {"$ref": "#/$defs/id"},
+    "queue_id": {"$ref": "#/$defs/id"},
+    "status": {"enum": ["incomplete-human-review-required", "closed"]},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "action", "anchor_ids", "source_bindings", "rationale", "reviewer", "reviewed_at", "review_method", "mapping", "result_items"],
+        "properties": {
+          "decision_id": {"type": "string", "pattern": "^decision\\.[a-z0-9.-]+$"},
+          "action": {"enum": ["include", "exclude", "merge", "split", "defer"]},
+          "anchor_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^anchor-[a-z0-9-]+$"}},
+          "source_bindings": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/binding"}},
+          "rationale": {"type": "string", "minLength": 40},
+          "reviewer": {"type": "string", "minLength": 2},
+          "reviewed_at": {"type": "string", "format": "date-time"},
+          "review_method": {"const": "manual-primary-source"},
+          "mapping": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["old_anchor_id", "new_item_ids"],
+              "properties": {
+                "old_anchor_id": {"type": "string", "pattern": "^anchor-[a-z0-9-]+$"},
+                "new_item_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/dottedId"}}
+              }
+            }
+          },
+          "result_items": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "item_type"],
+              "properties": {
+                "id": {"$ref": "#/$defs/dottedId"},
+                "item_type": {"enum": ["surface", "atomic-behavior"]}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "dottedId": {"type": "string", "pattern": "^[a-z][a-z0-9.-]+$"},
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_id", "document_id", "locked_source_digest", "inventory_tool_digest", "review_queue_tool_digest", "locator", "context_start", "context_end", "context_unit", "context_digest"],
+      "properties": {
+        "anchor_id": {"type": "string", "pattern": "^anchor-[a-z0-9-]+$"},
+        "document_id": {"type": "string", "pattern": "^document-[a-z0-9-]+$"},
+        "document_url": {"type": "string", "format": "uri"},
+        "authority_url": {"type": "string", "format": "uri"},
+        "document_locator": {"type": "string", "minLength": 1},
+        "locked_source_digest": {"$ref": "#/$defs/sha256"},
+        "inventory_tool_digest": {"$ref": "#/$defs/sha256"},
+        "review_queue_tool_digest": {"$ref": "#/$defs/sha256"},
+        "locator": {"type": "string", "minLength": 1},
+        "context_start": {"type": "integer", "minimum": 0},
+        "context_end": {"type": "integer", "minimum": 1},
+        "context_unit": {"enum": ["byte", "utf16-code-unit", "unicode-code-point"]},
+        "context_digest": {"$ref": "#/$defs/sha256"}
+      },
+      "oneOf": [{"required": ["document_url"]}, {"required": ["authority_url", "document_locator"]}]
+    }
+  }
+}

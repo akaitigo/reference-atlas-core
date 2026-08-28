@@ -11,6 +11,7 @@
     "generated_at": {"type": "string", "format": "date-time"},
     "status": {"enum": ["incomplete-human-review-required", "incomplete-source-state", "eligible-for-core-v2"]},
     "input_digest": {"$ref": "#/$defs/sha256"},
+    "tool_digest": {"$ref": "#/$defs/sha256"},
     "body_storage": {"const": "digest-and-locator-context-digest-only"},
     "summary": {
       "type": "object",

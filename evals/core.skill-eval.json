@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "core.router-v1",
   "atlas_id": "reference-atlas-core",
-  "atlas_release": "v1.0.0",
+  "atlas_release": "v1.1.0",
   "skill_id": "reference-atlas-core",
   "generated_at": "2026-08-28T00:00:00+09:00",
   "cases": [

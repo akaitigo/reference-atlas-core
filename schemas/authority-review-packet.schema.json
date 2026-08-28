@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-review-packet.schema.json",
+  "title": "Authority priority-zero human review packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "packet_id",
+    "queue_id",
+    "priority",
+    "status",
+    "read_only",
+    "semantic_decision",
+    "source_binding",
+    "semantic_hint",
+    "deep_link",
+    "candidate_domain_projections",
+    "proposed_cluster_ids",
+    "review_prompts",
+    "decision_boundary"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract_id": { "const": "authority-review-packet-v1" },
+    "packet_id": { "type": "string", "pattern": "^packet-anchor-[a-z0-9-]+$" },
+    "queue_id": { "type": "string", "pattern": "^authority-review-[a-z0-9-]+$" },
+    "priority": { "const": 0 },
+    "status": { "enum": ["pending-human", "human-reviewed"] },
+    "read_only": { "const": true },
+    "semantic_decision": { "const": "none-by-export" },
+    "source_binding": { "$ref": "#/$defs/sourceBinding" },
+    "semantic_hint": { "$ref": "#/$defs/semanticHint" },
+    "deep_link": { "$ref": "#/$defs/deepLink" },
+    "candidate_domain_projections": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/candidateProjection" } },
+    "proposed_cluster_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^proposal\\.(?:anchor|pattern)\\.[a-f0-9]{20}$" } },
+    "review_prompts": { "type": "array", "minItems": 4, "items": { "$ref": "#/$defs/reviewPrompt" } },
+    "decision_boundary": { "$ref": "#/$defs/decisionBoundary" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "sourceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_id", "document_id", "source_ids", "locked_source_digest", "inventory_tool_digest", "review_queue_tool_digest", "locator", "locator_kind", "context_start", "context_end", "context_unit", "context_digest"],
+      "properties": {
+        "anchor_id": { "type": "string", "pattern": "^anchor-[a-z0-9-]+$" },
+        "document_id": { "type": "string", "pattern": "^document-[a-z0-9-]+$" },
+        "document_url": { "type": "string", "format": "uri" },
+        "authority_url": { "type": "string", "format": "uri" },
+        "document_locator": { "type": "string", "minLength": 1 },
+        "source_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "locked_source_digest": { "$ref": "#/$defs/sha256" },
+        "inventory_tool_digest": { "$ref": "#/$defs/sha256" },
+        "review_queue_tool_digest": { "$ref": "#/$defs/sha256" },
+        "locator": { "type": "string", "minLength": 1 },
+        "locator_kind": { "type": "string", "minLength": 1 },
+        "context_start": { "type": "integer", "minimum": 0 },
+        "context_end": { "type": "integer", "minimum": 1 },
+        "context_unit": { "enum": ["byte", "utf16-code-unit", "unicode-code-point"] },
+        "context_digest": { "$ref": "#/$defs/sha256" }
+      },
+      "oneOf": [{"required": ["document_url"]}, {"required": ["authority_url", "document_locator"]}]
+    },
+    "semanticHint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parent_anchor_id"],
+      "properties": {
+        "semantic_kind": { "type": "string", "minLength": 1 },
+        "tag": { "type": "string", "minLength": 1 },
+        "raw_selector": { "type": "string", "minLength": 1 },
+        "element_name": { "type": "string", "minLength": 1 },
+        "heading_level": { "type": ["integer", "null"], "minimum": 1, "maximum": 6 },
+        "parent_anchor_id": { "type": ["string", "null"] },
+        "label_digest": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+      },
+      "oneOf": [{"required": ["semantic_kind", "tag", "heading_level", "label_digest"]}, {"required": ["raw_selector", "element_name"]}]
+    },
+    "deepLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "kind", "resolves_from_locked_locator"],
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "kind": { "type": "string", "minLength": 1 },
+        "resolves_from_locked_locator": { "const": true }
+      }
+    },
+    "candidateProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edge_id", "reference_url", "pattern_id", "pattern_kind", "candidate_behavior_id", "capability_id", "target_id", "claim_id", "variant_ids", "surface_ids", "classification_basis"],
+      "properties": {
+        "edge_id": { "type": "string", "minLength": 1 },
+        "reference_url": { "type": "string", "format": "uri" },
+        "pattern_id": { "type": "string", "minLength": 1 },
+        "pattern_kind": { "enum": ["atomic", "compound", "systemic"] },
+        "candidate_behavior_id": { "type": "string", "minLength": 1 },
+        "capability_id": { "type": "string", "minLength": 1 },
+        "target_id": { "type": "string", "minLength": 1 },
+        "claim_id": { "type": "string", "minLength": 1 },
+        "variant_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "surface_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "classification_basis": { "const": "domain-contract-projection-unreviewed" }
+      }
+    },
+    "reviewPrompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "prompt_ja"],
+      "properties": {
+        "id": { "enum": ["observable-behavior", "classification-action", "atomic-boundary", "cluster-equivalence"] },
+        "prompt_ja": { "type": "string", "minLength": 20 }
+      }
+    },
+    "decisionBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ledger_path", "write_mode", "accepted_actions", "required_fields", "decision_ids", "human_decision_recorded"],
+      "properties": {
+        "ledger_path": { "type": "string", "minLength": 1 },
+        "write_mode": { "const": "external-human-input-only" },
+        "accepted_actions": { "const": ["include", "exclude", "merge", "split"] },
+        "required_fields": { "type": "array", "minItems": 7, "uniqueItems": true, "items": { "type": "string" } },
+        "decision_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^decision\\.[a-z0-9.-]+$" } },
+        "human_decision_recorded": { "type": "boolean" }
+      }
+    }
+  }
+}

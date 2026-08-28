@@ -88,6 +88,8 @@ func schemaFor(path string) (string, error) {
 		return "evidence.schema.json", nil
 	case strings.HasSuffix(base, ".claim.yaml") || strings.HasSuffix(base, ".claim.yml") || strings.HasSuffix(base, ".claim.json"):
 		return "claim.schema.json", nil
+	case base == "definitive-skill-router.json" || base == "FE_DEFINITIVE_SKILL_ROUTER_REFERENCE.json":
+		return "definitive-skill-router.schema.json", nil
 	case strings.HasSuffix(base, ".skill-eval.yaml") || strings.HasSuffix(base, ".skill-eval.yml") || strings.HasSuffix(base, ".skill-eval.json"):
 		return "skill-eval.schema.json", nil
 	case base == "provenance.yaml" || base == "provenance.yml" || base == "provenance.json":
@@ -106,6 +108,28 @@ func schemaFor(path string) (string, error) {
 		return "authority-extraction.schema.json", nil
 	case strings.HasSuffix(base, ".json") && filepath.Base(filepath.Dir(path)) == "surfaces-draft":
 		return "authority-surface-draft.schema.json", nil
+	case base == "body-inventory.snapshot.json" || base == "FE_AUTHORITY_BODY_DENOMINATOR_REFERENCE.json":
+		return "authority-body-inventory.schema.json", nil
+	case strings.HasSuffix(base, ".json") && filepath.Base(filepath.Dir(path)) == "body-inventory-draft":
+		return "authority-body-document.schema.json", nil
+	case base == "review-queue.snapshot.json" || base == "FE_AUTHORITY_REVIEW_QUEUE_REFERENCE.json":
+		return "authority-review-queue.schema.json", nil
+	case (base == "decisions.json" && filepath.Base(filepath.Dir(path)) == "reviews") || base == "FE_AUTHORITY_REVIEW_DECISIONS_REFERENCE.json":
+		return "authority-review-decisions.schema.json", nil
+	case strings.HasSuffix(base, ".json") && filepath.Base(filepath.Dir(path)) == "review-queue-draft":
+		return "authority-review-batch.schema.json", nil
+	case base == "review-export.v1.json" && filepath.Base(filepath.Dir(path)) == "portal":
+		return "authority-review-export.schema.json", nil
+	case strings.HasPrefix(base, "packet-anchor-") && filepath.Base(filepath.Dir(filepath.Dir(path))) == "review-packets":
+		return "authority-review-packet.schema.json", nil
+	case base == "stale-relock-candidates.json":
+		return "authority-stale-relock-candidates.schema.json", nil
+	case strings.HasPrefix(base, "relock-decision.") && filepath.Base(filepath.Dir(path)) == "relock-decisions":
+		return "authority-relock-decision.schema.json", nil
+	case base == "authority-body-inventory-v1.json" && filepath.Base(filepath.Dir(path)) == "baselines":
+		return "authority-body-baseline.schema.json", nil
+	case base == "authority-body-inventory-v1.json" && filepath.Base(filepath.Dir(path)) == "migrations":
+		return "authority-body-migration.schema.json", nil
 	case base == "verification.matrix.yaml":
 		return "verification-matrix.schema.json", nil
 	case base == "depth.parity.yaml":

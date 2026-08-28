@@ -63,6 +63,9 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
+	if _, err := AuditDefinitiveSkillRouter(dir, stringValue(ctx.manifest["skill_router"]), true); err != nil {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Skill Router Gate: %w", err)
+	}
 	if _, err := AuditNonRegression(dir); err != nil {
 		return DefinitiveAuditResult{}, fmt.Errorf("Definitive non-regression Gate: %w", err)
 	}
@@ -246,8 +249,23 @@ func auditSurfaceInventory(ctx *definitiveContext) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Authority Extraction Gate: %w", err)
 	}
+	if stringValue(ctx.manifest["authority_body_inventory"]) != "authority/body-inventory.snapshot.json" || stringValue(ctx.manifest["authority_body_review"]) != "authority/review-queue.snapshot.json" {
+		return 0, fmt.Errorf("subject-definitiveにはAuthority body denominatorとReview Queueが必要です")
+	}
+	_, err = AuditAuthorityBodyInventory(ctx.base.dir, true)
+	if err != nil {
+		return 0, fmt.Errorf("Authority Body Denominator Gate: %w", err)
+	}
+	reviewResult, err := AuditAuthorityReviewQueue(ctx.base.dir, true)
+	if err != nil {
+		return 0, fmt.Errorf("Authority Human Review Gate: %w", err)
+	}
+	if _, err := AuditAuthorityRelock(ctx.base.dir); err != nil {
+		return 0, fmt.Errorf("Authority stale relock Gate: %w", err)
+	}
 	type extractedSurface struct{ item map[string]any }
 	extracted := map[string]extractedSurface{}
+	qualifiedExtracted := map[string]bool{}
 	artifactIDs := map[string]bool{}
 	sourceArtifacts := map[string]bool{}
 	for _, raw := range anySlice(ctx.inventory["authority_artifacts"]) {
@@ -284,6 +302,11 @@ func auditSurfaceInventory(ctx *definitiveContext) (int, error) {
 				return 0, fmt.Errorf("Authority Surfaceが重複しています: %s", key)
 			}
 			extracted[key] = extractedSurface{item: surface}
+			qualified := qualifiedAuthoritySurfaceID(artifactID, stringValue(surface["id"]))
+			if qualifiedExtracted[qualified] {
+				return 0, fmt.Errorf("qualified Authority Surface IDが重複しています: %s", qualified)
+			}
+			qualifiedExtracted[qualified] = true
 		}
 	}
 	for sourceID := range ctx.base.sources {
@@ -363,7 +386,27 @@ func auditSurfaceInventory(ctx *definitiveContext) (int, error) {
 	if extractionResult.CoreV2EligibleSurfaces != len(extracted) {
 		return 0, fmt.Errorf("Authority Extractionのeligible Surface数がreview済みArtifact実体と一致しません: eligible=%d artifacts=%d", extractionResult.CoreV2EligibleSurfaces, len(extracted))
 	}
+	if !sameBoolKeys(qualifiedExtracted, reviewResult.SurfaceIDs) {
+		return 0, fmt.Errorf("Core v2 Authority ArtifactはHuman Review Queueのold→new mappingからだけ昇格できます: reviewed_surfaces=%d artifacts=%d", len(reviewResult.SurfaceIDs), len(qualifiedExtracted))
+	}
+	for behaviorID := range reviewResult.AtomicBehaviorIDs {
+		if ctx.behaviors[behaviorID] == nil {
+			return 0, fmt.Errorf("Human Review QueueのAtomic Behavior resultがSurface Inventoryにありません: %s", behaviorID)
+		}
+	}
 	return len(extracted), nil
+}
+
+func sameBoolKeys(left, right map[string]bool) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for key := range left {
+		if !right[key] {
+			return false
+		}
+	}
+	return true
 }
 
 func auditDefinitiveProofMatrix(ctx *definitiveContext) (int, int, int, error) {

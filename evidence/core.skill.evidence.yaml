@@ -10,6 +10,6 @@ environment: {profile: local, manifest_digest: sha256:5b73c0f45f61d67b44b609e171
 source_digest: sha256:f35634bf23db21fae2249262aaf8692ea0e5050fbe50a9287874f7772bfb8657
 harness_digest: sha256:ecbbf779a13847e00f1131108163137e74aa7f0d78d908b0508489002c665ce7
 harness_path: .agents/skills/reference-atlas-core/SKILL.md
-artifact: {uri: evals/core.skill-eval.json, digest: sha256:2f9a6d516e77015439f7db1fefccba1fe736cabe434371948b8d125e9512abfc, media_type: application/json, size_bytes: 1432}
+artifact: {uri: evals/core.skill-eval.json, digest: sha256:a5bea445db865cc38c254af19ef01e0d39651e61f6d08c101e690405e53913eb, media_type: application/json, size_bytes: 1432}
 verdict: pass
 retention: git

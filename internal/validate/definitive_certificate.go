@@ -103,6 +103,9 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return nil, "", err
 	}
+	if _, err := AuditDefinitiveSkillRouter(dir, stringValue(ctx.manifest["skill_router"]), true); err != nil {
+		return nil, "", err
+	}
 	if _, err := AuditNonRegression(dir); err != nil {
 		return nil, "", fmt.Errorf("Definitive non-regression Gate: %w", err)
 	}
@@ -123,6 +126,22 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if err != nil {
 		return nil, "", err
 	}
+	authorityBodyData, err := os.ReadFile(filepath.Join(dir, "authority", "body-inventory.snapshot.json"))
+	if err != nil {
+		return nil, "", err
+	}
+	authorityBodyReviewData, err := os.ReadFile(filepath.Join(dir, "authority", "review-queue.snapshot.json"))
+	if err != nil {
+		return nil, "", err
+	}
+	authorityReviewDecisionsData, err := os.ReadFile(filepath.Join(dir, "authority", "reviews", "decisions.json"))
+	if err != nil {
+		return nil, "", err
+	}
+	authorityReviewDigest, err := digestCanonical(map[string]any{"queue_index": digestBytes(authorityBodyReviewData), "decision_ledger": digestBytes(authorityReviewDecisionsData)})
+	if err != nil {
+		return nil, "", err
+	}
 	matrixData, err := os.ReadFile(filepath.Join(dir, "verification.matrix.yaml"))
 	if err != nil {
 		return nil, "", err
@@ -132,6 +151,14 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		return nil, "", err
 	}
 	skillData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["skill_eval"]))))
+	if err != nil {
+		return nil, "", err
+	}
+	routerData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["skill_router"]))))
+	if err != nil {
+		return nil, "", err
+	}
+	skillContractDigest, err := digestCanonical(map[string]any{"skill_eval": digestBytes(skillData), "skill_router": digestBytes(routerData)})
 	if err != nil {
 		return nil, "", err
 	}
@@ -166,10 +193,12 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		"schema_version": 2, "completion_class": "subject-definitive",
 		"atlas_id": stringValue(ctx.base.documents["atlas"]["id"]), "atlas_release": stringValue(ctx.base.documents["skill"]["atlas_release"]),
 		"coverage_epoch": stringValue(coverageConfig["epoch"]), "authority_lock_digest": stringValue(ctx.base.documents["coverage"]["authority_lock_digest"]),
-		"authority_extraction_digest": digestBytes(authorityExtractionData),
-		"surface_inventory_digest":    digestBytes(inventoryData), "verification_matrix_digest": digestBytes(matrixData),
+		"authority_extraction_digest":     digestBytes(authorityExtractionData),
+		"authority_body_inventory_digest": digestBytes(authorityBodyData),
+		"authority_body_review_digest":    authorityReviewDigest,
+		"surface_inventory_digest":        digestBytes(inventoryData), "verification_matrix_digest": digestBytes(matrixData),
 		"depth_parity_digest": digestBytes(depthParityData),
-		"proof_graph_digest":  proofGraphDigest, "skill_eval_digest": digestBytes(skillData), "reference_system_digest": referenceDigest,
+		"proof_graph_digest":  proofGraphDigest, "skill_eval_digest": skillContractDigest, "reference_system_digest": referenceDigest,
 		"non_regression_digest":   digestBytes(nonRegressionData),
 		"historical_certificates": historical, "issued_at": issuedAt, "commit": commit,
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/akaitigo/reference-atlas-core/internal/validate"
 )
 
-const version = "1.0.0"
+const version = "1.1.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -36,6 +36,48 @@ func run(args []string) error {
 		}
 		return nil
 	case "audit":
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "skill-router" {
+			result, err := validate.AuditDefinitiveSkillRouter(args[1], "evals/definitive-skill-router.json", false)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Definitive Skill Router監査済み: %s cells=%d routed=%d routing_gaps=%d partial=%d boundaries=%d forward_eval=%t completion_limited=%t\n", result.AtlasID, result.Cells, result.Routed, result.RoutingGaps, result.PartialCoverageCells, result.BoundaryCases, result.ForwardEvalCompleted, result.CompletionLimited)
+			return nil
+		}
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "authority-relock" {
+			result, err := validate.AuditAuthorityRelock(args[1])
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Authority stale relock監査済み: %s candidates=%d unchanged=%d authorized_updates=%d automatic_updates=false\n", result.AtlasID, result.Candidates, result.Unchanged, result.AuthorizedUpdates)
+			return nil
+		}
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "authority-review-export" {
+			result, err := validate.AuditAuthorityReviewExport(args[1])
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Authority Review read-only export監査済み: %s packets=%d anchors=%d candidate_projections=%d machine_proposals=%d human_decisions=%d stale_holds=%d write_decisions=false promote_human_review=false depth_credit=false\n", result.AtlasID, result.Packets, result.UniqueAnchors, result.DomainProjections, result.MachineProposals, result.HumanDecisions, result.StaleHolds)
+			return nil
+		}
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "authority-review" {
+			result, err := validate.AuditAuthorityReviewQueue(args[1], false)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Authority Human Review監査済み: %s status=%s queued=%d pending_human=%d human_reviewed=%d deferred=%d stale_holds=%d unavailable_holds=%d decisions=%d semantic_exhaustive=%t depth_credit=false\n",
+				result.AtlasID, result.Status, result.QueuedAnchors, result.PendingHuman, result.HumanReviewed, result.Deferred, result.StaleHolds, result.UnavailableHolds, result.Decisions, result.AuthoritySemanticsExhaustive)
+			return nil
+		}
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "authority-body" {
+			result, err := validate.AuditAuthorityBodyInventory(args[1], false)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Authority Body Denominator監査済み: %s status=%s sources=%d documents=%d matched=%d stale=%d failed=%d candidate_anchors=%d classified=%d unclassified=%d human_reviewed=%d deferred=%d eligible_artifacts=%d semantic_exhaustive=%t baseline=%t\n",
+				result.AtlasID, result.Status, result.SourceEntries, result.UniqueDocuments, result.MatchedDocuments, result.StaleDocuments, result.FailedDocuments, result.Anchors, result.ClassifiedAnchors, result.UnclassifiedAnchors, result.HumanReviewedAnchors, result.DeferredAnchors, result.CoreV2EligibleArtifacts, result.AuthoritySemanticsExhaustive, result.BaselinePresent)
+			return nil
+		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "authority-extraction" {
 			result, err := validate.AuditAuthorityExtraction(args[1], false)
 			if err != nil {
@@ -240,5 +282,5 @@ func baselineOptions(args []string) (string, string, error) {
 }
 
 func usageError() error {
-	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
+	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
 }

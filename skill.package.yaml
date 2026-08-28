@@ -1,6 +1,6 @@
 schema_version: 1
 atlas_id: reference-atlas-core
-atlas_release: v1.0.0
+atlas_release: v1.1.0
 router:
   id: reference-atlas-core
   path: .agents/skills/reference-atlas-core/SKILL.md

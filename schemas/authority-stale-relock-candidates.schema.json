@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-stale-relock-candidates.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "generated_at", "status", "body_storage", "tool_digest", "body_inventory_digest", "summary", "relock_contract", "candidates"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "atlas_id": {"$ref": "#/$defs/id"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "status": {"const": "proposal-only-explicit-relock-required"},
+    "body_storage": {"const": "digest-metadata-only"},
+    "tool_digest": {"$ref": "#/$defs/sha256"},
+    "body_inventory_digest": {"$ref": "#/$defs/sha256"},
+    "summary": {"type": "object", "additionalProperties": false, "required": ["stale_documents", "immutable_candidates_fetched", "locked_digests_updated", "human_choices"], "properties": {"stale_documents": {"type": "integer", "minimum": 1}, "immutable_candidates_fetched": {"type": "integer", "minimum": 0}, "locked_digests_updated": {"const": 0}, "human_choices": {"const": 0}}},
+    "relock_contract": {"type": "object", "additionalProperties": false, "required": ["authorization", "automatic_lock_update", "required_steps_ja"], "properties": {"authorization": {"const": "explicit-human-choice-required"}, "automatic_lock_update": {"const": false}, "required_steps_ja": {"type": "array", "minItems": 4, "uniqueItems": true, "items": {"type": "string", "minLength": 20}}}},
+    "candidates": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["document_id", "source_ids", "current_lock", "same_url_observation", "immutable_alternative", "review_state", "lock_update_authorized"], "properties": {
+      "document_id": {"type": "string", "pattern": "^document-[a-z0-9-]+$"}, "source_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+      "current_lock": {"$ref": "#/$defs/artifact"}, "same_url_observation": {"$ref": "#/$defs/observation"}, "immutable_alternative": {"$ref": "#/$defs/alternative"},
+      "review_state": {"const": "candidate-unreviewed"}, "lock_update_authorized": {"const": false}
+    }}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"}, "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "artifact": {"type": "object", "required": ["url", "digest", "size_bytes", "content_type"], "properties": {"url": {"type": "string", "format": "uri"}, "digest": {"$ref": "#/$defs/sha256"}, "size_bytes": {"type": "integer", "minimum": 0}, "content_type": {"type": "string", "minLength": 1}}, "additionalProperties": false},
+    "observation": {"type": "object", "required": ["final_url", "digest", "size_bytes", "content_type", "http_status", "digest_changed", "byte_delta"], "properties": {"final_url": {"type": "string", "format": "uri"}, "digest": {"$ref": "#/$defs/sha256"}, "size_bytes": {"type": "integer", "minimum": 0}, "content_type": {"type": "string"}, "http_status": {"type": "integer", "minimum": 100}, "digest_changed": {"const": true}, "byte_delta": {"type": "integer"}}, "additionalProperties": false},
+    "alternative": {"type": "object", "required": ["url", "digest", "size_bytes", "content_type", "http_status", "final_url", "etag", "last_modified", "media_kind", "difference_from_locked", "provenance"], "properties": {"url": {"type": "string", "format": "uri"}, "digest": {"$ref": "#/$defs/sha256"}, "size_bytes": {"type": "integer", "minimum": 0}, "content_type": {"type": "string"}, "http_status": {"type": "integer", "minimum": 100}, "final_url": {"type": "string", "format": "uri"}, "etag": {"type": ["string", "null"]}, "last_modified": {"type": ["string", "null"]}, "media_kind": {"type": "string", "minLength": 1}, "difference_from_locked": {"type": "object"}, "provenance": {"type": "object"}}, "additionalProperties": false}
+  }
+}

@@ -1,9 +1,23 @@
 schema_version: 2
 atlas_id: reference-atlas-core
 baseline:
-  path: baselines/main-b32f6af.non-regression-baseline.json
-  digest: sha256:fca1ce072ad60887a6c66fc99c94c0ef38b82fe2365b9f76609303c751b674fd
+  path: baselines/main-b32f6af.definitive-v2.non-regression-baseline.json
+  digest: sha256:d7e2319ff17b1dd76fc60c98b70ebea6b3f56f1ac3fcfced5ae2042fff2459ca
+baseline_upgrade:
+  mode: monotonic-capture-contract-extension
+  from:
+    path: baselines/main-b32f6af.non-regression-baseline.json
+    digest: sha256:fca1ce072ad60887a6c66fc99c94c0ef38b82fe2365b9f76609303c751b674fd
+  reason: 既存項目を保持したままAuthority denominator、Human Review Queue、Skill Routerを含む監視Collectionを追加する。
+  migration_evidence_ids: [core.tooling]
 replacements:
+  - collection: tests_labs
+    old_id: test:cmd/atlas/main_test.go:TestVersion
+    new_ids: [test:cmd/atlas/main_test.go:TestVersion]
+    equivalence: equal-or-stronger
+    reason: CLI Version assertionをv1.1.0 Releaseへ更新し、Version固定の強度と実行方法を維持する。
+    execution_proof_evidence_ids: [core.audit]
+    migration_evidence_ids: [core.tooling]
   - collection: tests_labs
     old_id: test:internal/validate/core_test.go:TestCorePassesItsOwnCompletionGate
     new_ids: [test:internal/validate/core_test.go:TestCorePassesItsOwnCompletionGate]

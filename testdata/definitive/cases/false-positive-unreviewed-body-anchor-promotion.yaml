@@ -1,0 +1,2 @@
+mutation: authority-body-review-mapping-forgery
+want_error: Human Review Queueのold→new mappingからだけ昇格

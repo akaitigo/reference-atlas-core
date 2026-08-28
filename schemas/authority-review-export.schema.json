@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-review-export.schema.json",
+  "title": "Reference Atlas read-only human review portal export",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "atlas_id",
+    "generated_at",
+    "status",
+    "mode",
+    "locale",
+    "schema_path",
+    "schema_digest",
+    "packet_schema_path",
+    "packet_schema_digest",
+    "integrity",
+    "capabilities",
+    "summary",
+    "packet_index_path",
+    "packets",
+    "proposed_clusters",
+    "stale_holds",
+    "stale_candidate_report",
+    "decision_boundary"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract_id": { "const": "reference-atlas-review-portal-export-v1" },
+    "atlas_id": { "$ref": "#/$defs/id" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "const": "incomplete-human-review-required" },
+    "mode": { "const": "read-only" },
+    "locale": { "const": "ja" },
+    "schema_path": { "type": "string", "minLength": 1 },
+    "schema_digest": { "$ref": "#/$defs/sha256" },
+    "packet_schema_path": { "type": "string", "minLength": 1 },
+    "packet_schema_digest": { "$ref": "#/$defs/sha256" },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["queue_id", "queue_digest", "packet_index_digest", "producer_tool_digest"],
+      "properties": {
+        "queue_id": { "type": "string", "pattern": "^authority-review-[a-z0-9-]+$" },
+        "queue_digest": { "$ref": "#/$defs/sha256" },
+        "packet_index_digest": { "$ref": "#/$defs/sha256" },
+        "producer_tool_digest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["open_primary_source_deep_link", "show_machine_proposed_clusters", "show_decision_state", "write_decisions", "promote_human_review"],
+      "properties": {
+        "open_primary_source_deep_link": { "const": true },
+        "show_machine_proposed_clusters": { "const": true },
+        "show_decision_state": { "const": true },
+        "write_decisions": { "const": false },
+        "promote_human_review": { "const": false }
+      }
+    },
+    "summary": { "$ref": "#/$defs/summary" },
+    "packet_index_path": { "type": "string", "minLength": 1 },
+    "packets": { "type": "array", "items": { "$ref": "#/$defs/packetRecord" } },
+    "proposed_clusters": { "type": "array", "items": { "$ref": "#/$defs/proposedCluster" } },
+    "stale_holds": { "type": "array", "items": { "$ref": "#/$defs/staleHold" } },
+    "stale_candidate_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "digest", "status", "locked_digests_updated", "human_choices"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/sha256" },
+        "status": { "const": "proposal-only-explicit-relock-required" },
+        "locked_digests_updated": { "const": 0 },
+        "human_choices": { "const": 0 }
+      }
+    },
+    "decision_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ledger_path", "decisions_observed", "input_owner", "export_accepts_writes"],
+      "properties": {
+        "ledger_path": { "type": "string", "minLength": 1 },
+        "decisions_observed": { "type": "integer", "minimum": 0 },
+        "input_owner": { "const": "human-reviewer" },
+        "export_accepts_writes": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packets", "unique_anchors", "candidate_domain_projections", "deep_links", "pending_human", "human_reviewed", "proposed_clusters", "semantic_decisions_by_export", "stale_document_holds"],
+      "properties": {
+        "packets": { "type": "integer", "minimum": 0 },
+        "unique_anchors": { "type": "integer", "minimum": 0 },
+        "candidate_domain_projections": { "type": "integer", "minimum": 0 },
+        "deep_links": { "type": "integer", "minimum": 0 },
+        "pending_human": { "type": "integer", "minimum": 0 },
+        "human_reviewed": { "type": "integer", "minimum": 0 },
+        "proposed_clusters": { "type": "integer", "minimum": 0 },
+        "semantic_decisions_by_export": { "const": 0 },
+        "stale_document_holds": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "packetRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "digest", "anchor_id", "deep_link", "candidate_edges", "proposed_cluster_ids"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^packet-anchor-[a-z0-9-]+$" },
+        "path": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/sha256" },
+        "anchor_id": { "type": "string", "pattern": "^anchor-[a-z0-9-]+$" },
+        "deep_link": { "type": "string", "format": "uri" },
+        "candidate_edges": { "type": "integer", "minimum": 1 },
+        "proposed_cluster_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "staleHold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document_id", "document_url", "source_ids", "locked_source_digest", "inventory_tool_digest", "review_queue_tool_digest", "locator", "fetched_digest", "status", "reason"],
+      "properties": {
+        "document_id": { "type": "string", "pattern": "^document-[a-z0-9-]+$" },
+        "document_url": { "type": "string", "format": "uri" },
+        "source_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "locked_source_digest": { "$ref": "#/$defs/sha256" },
+        "inventory_tool_digest": { "$ref": "#/$defs/sha256" },
+        "review_queue_tool_digest": { "$ref": "#/$defs/sha256" },
+        "locator": { "const": "document-root" },
+        "fetched_digest": { "$ref": "#/$defs/sha256" },
+        "status": { "const": "hold-stale-document-relock-required" },
+        "reason": { "const": "locked-document-body-digest-mismatch" }
+      }
+    },
+    "proposedCluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "proposal_type", "basis", "basis_value", "packet_ids", "anchor_ids", "candidate_edge_ids", "semantic_decision", "human_reviewed"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^proposal\\.(?:anchor|pattern)\\.[a-f0-9]{20}$" },
+        "proposal_type": { "enum": ["shared-authority-anchor", "shared-domain-pattern"] },
+        "basis": { "enum": ["shared-authority-anchor-locator", "shared-domain-pattern-id"] },
+        "basis_value": { "type": "string", "minLength": 1 },
+        "packet_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "anchor_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^anchor-[a-z0-9-]+$" } },
+        "candidate_edge_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "semantic_decision": { "const": "none-machine-proposal-only" },
+        "human_reviewed": { "const": false }
+      }
+    }
+  }
+}

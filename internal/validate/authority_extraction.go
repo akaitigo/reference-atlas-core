@@ -104,6 +104,9 @@ func AuditAuthorityExtraction(dir string, requireEligible bool) (AuthorityExtrac
 		if extraction["body_storage"] != "digest-and-locator-context-digest-only" || extraction["review_status"] != "automated-unreviewed" {
 			return AuthorityExtractionResult{}, fmt.Errorf("Authority Draftの本文保存またはReview境界が不正です: %s", sourceID)
 		}
+		if snapshot["tool_digest"] != nil && extraction["tool_digest"] != snapshot["tool_digest"] {
+			return AuthorityExtractionResult{}, fmt.Errorf("Authority Draftのtool digestがSnapshotと一致しません: %s", sourceID)
+		}
 		fetch, _ := draft["fetch"].(map[string]any)
 		fetchStatus := stringValue(fetch["status"])
 		switch fetchStatus {
