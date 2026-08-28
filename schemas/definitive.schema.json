@@ -4,7 +4,7 @@
   "title": "Subject Definitive Gate v2",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "atlas_id", "epoch", "completion_class", "authority_extraction", "authority_body_inventory", "authority_body_review", "surface_inventory", "verification_matrix", "scenario_proofs", "scenario_closure_plan", "skill_eval", "skill_router", "certificate", "historical_certificates", "reference_systems", "comparisons"],
+  "required": ["schema_version", "atlas_id", "epoch", "completion_class", "authority_extraction", "authority_body_inventory", "authority_body_review", "surface_inventory", "verification_matrix", "scenario_proofs", "scenario_closure_plan", "evidence_durability", "skill_eval", "skill_router", "certificate", "historical_certificates", "reference_systems", "comparisons"],
   "properties": {
     "schema_version": { "const": 2 },
     "atlas_id": { "$ref": "#/$defs/id" },
@@ -17,6 +17,7 @@
     "verification_matrix": { "const": "verification.matrix.yaml" },
     "scenario_proofs": { "const": "evidence/scenarios/index.json" },
     "scenario_closure_plan": { "const": "evidence/scenarios/closure-plan.json" },
+    "evidence_durability": { "const": "artifacts/pattern-scenarios/results.json" },
     "depth_parity": { "const": "depth.parity.yaml" },
     "skill_eval": { "type": "string", "pattern": "^evals/.+\\.definitive-skill-eval\\.json$" },
     "skill_router": { "const": "evals/definitive-skill-router.json" },

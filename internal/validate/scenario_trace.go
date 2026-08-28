@@ -337,6 +337,9 @@ func auditDedicatedScenarioRuntime(dir string, row map[string]any, sourceDigests
 	if len(seen) != len(bindings) {
 		return false, nil, fmt.Errorf("専用Scenario suiteが全Variantを実行していません: expected=%d actual=%d", len(bindings), len(seen))
 	}
+	if _, err := AuditEvidenceDurability(dir, reportPath); err != nil {
+		return false, nil, fmt.Errorf("専用Scenario Evidence durability: %w", err)
+	}
 	return true, artifacts, nil
 }
 

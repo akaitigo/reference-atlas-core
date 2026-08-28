@@ -110,6 +110,9 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if closurePlan.RemainingRows != 0 {
 		return nil, "", fmt.Errorf("Definitive Certificateは未実行Scenario Closure Planへ発行できません")
 	}
+	if _, err := AuditEvidenceDurability(dir, stringValue(ctx.manifest["evidence_durability"])); err != nil {
+		return nil, "", fmt.Errorf("Definitive Evidence durability Gate: %w", err)
+	}
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return nil, "", err
 	}
@@ -161,6 +164,10 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		return nil, "", err
 	}
 	scenarioClosurePlanData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["scenario_closure_plan"]))))
+	if err != nil {
+		return nil, "", err
+	}
+	evidenceDurabilityData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(stringValue(ctx.manifest["evidence_durability"]))))
 	if err != nil {
 		return nil, "", err
 	}
@@ -217,6 +224,7 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		"surface_inventory_digest":        digestBytes(inventoryData), "verification_matrix_digest": digestBytes(matrixData),
 		"scenario_proof_digest":        digestBytes(scenarioProofData),
 		"scenario_closure_plan_digest": digestBytes(scenarioClosurePlanData),
+		"evidence_durability_digest":   digestBytes(evidenceDurabilityData),
 		"depth_parity_digest":          digestBytes(depthParityData),
 		"proof_graph_digest":           proofGraphDigest, "skill_eval_digest": skillContractDigest, "reference_system_digest": referenceDigest,
 		"non_regression_digest":   digestBytes(nonRegressionData),

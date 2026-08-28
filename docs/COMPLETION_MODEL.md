@@ -143,6 +143,7 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 - 全Behaviorに正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenario Rowを要求する。Surfaceから必須となるScenarioは`not-applicable`にできない。
 - Integrated Reference Systemの10 Scenario成功は統合境界の証拠であり、個別Surface／Atomic BehaviorのClosureへ加点しない。各Behavior × Scenario rowはsource、harness、environment、runtime identity、専用Evidence／Artifact、Atomic Authority bindingを独立して持ち、明示Gapを残せる。Scenario ClosureにはPattern＋Scenario＋全Variantを駆動したretry 0の専用suite、first-attempt pass、Scenario固有Oracle、source／harness digest、action／network／resource stream付きTraceを要求する。Capture identityによる補完、統合Traceや同一Runtime Artifactの複数row流用を拒否する。
 - 残存Scenario Gapはrisk順、同一Scenario内の安定Pattern順、1 tranche最大4 Pattern rowのClosure Planへ完全包含する。Plan row削除、後段への順序退避、batch肥大化をNon-regression Gateで拒否し、計画件数そのものはCompletion creditにしない。
+- 専用Runtime Evidenceは全run pass時だけstaging directoryからdirectory renameで公開し、failed／no-match runでは直前成功世代を保持し、置換失敗時はrollbackする。Report、Trace、Screenshotの完全な1世代集合を照合し、部分上書き、成功Evidence消去、新旧Artifact混在を拒否する。
 - required Scenarioは指定Profileの実RuntimeまたはPlatform Evidenceを必要とする。static、fixture、compile-only、KLIBやbytecode生成は代替にならない。
 - Architecture／Compatibility Surfaceでは複数Behaviorを接続するReference System、Decision Surfaceでは2方式以上のComparisonを要求する。
 - Skill Evalは8 Outcomeと14 Surfaceの全件、Coverage Gap応答、権限境界をpass Caseへ接続する。
@@ -156,3 +157,4 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 詳細な移行は`docs/MIGRATION_DEFINITIVE_V2.md`を正本とする。
 Integrated Scenario／Trace入力契約と参照値は`docs/FE_INTEGRATED_SCENARIO_TRACE_REFERENCE.md`に記録する。
 段階的Closure Plan契約は`docs/FE_SCENARIO_CLOSURE_PLAN_REFERENCE.md`に記録する。
+Evidence公開の耐久性契約は`docs/EVIDENCE_DURABILITY.md`に記録する。

@@ -72,6 +72,13 @@ func makeStagingScenarioClosurePlan(t *testing.T, dir string) {
 		record := raw.(map[string]any)
 		if !selected[stringValue(record["pattern_id"])+":"+stringValue(record["scenario"])] {
 			keptTests = append(keptTests, record)
+			continue
+		}
+		for _, field := range []string{"trace", "screenshot"} {
+			artifact := record[field].(map[string]any)
+			if err := os.Remove(filepath.Join(dir, filepath.FromSlash(stringValue(artifact["path"])))); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 	report["tests"] = keptTests
@@ -129,7 +136,7 @@ func makeStagingScenarioClosurePlan(t *testing.T, dir string) {
 		rows = append(rows, closurePlanRow{id: stringValue(document["id"]), patternID: patternID, scenario: scenario, riskRank: rank, variantIDs: variants, document: document})
 	}
 	sortClosurePlanRows(rows)
-	tranches := buildExpectedClosureTranches(rows)
+	tranches := buildExpectedClosureTranches(rows, map[string]int{})
 	rowDocuments := []any{}
 	byScenario := map[string]any{}
 	for _, scenario := range scenarioClosureRiskOrder {

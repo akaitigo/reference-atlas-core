@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "scenario_closure_plan", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
+var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "authority_body_inventory", "authority_review_queue", "skill_eval_cases", "skill_router_cells", "scenario_proof_rows", "scenario_closure_plan", "evidence_durability", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
 
 type NonRegressionResult struct {
 	AtlasID       string
@@ -444,6 +444,7 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	collections["skill_router_cells"] = captureSkillRouterCells(dir)
 	collections["scenario_proof_rows"] = captureScenarioProofRows(dir)
 	collections["scenario_closure_plan"] = captureScenarioClosurePlan(dir)
+	collections["evidence_durability"] = captureEvidenceDurability(dir)
 	completion, _ := atlas["completion"].(map[string]any)
 	profileItems := []any{}
 	for _, raw := range anySlice(completion["required_profiles"]) {
@@ -472,6 +473,35 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 		"schema_version": 2, "atlas_id": atlas["id"], "baseline_commit": commit, "captured_at": capturedAt,
 		"scope_statement_fingerprint": scopeFingerprint, "scope_exclusions": anySlice(scope["exclusions"]), "minimum_skill_pass_rate": minimum, "collections": collections,
 	}, nil
+}
+
+func captureEvidenceDurability(dir string) []any {
+	relative := "artifacts/pattern-scenarios/results.json"
+	path := filepath.Join(dir, filepath.FromSlash(relative))
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return []any{}
+	}
+	doc, err := readDocument(path)
+	if err != nil {
+		return []any{}
+	}
+	contract, _ := doc["retention_contract"].(map[string]any)
+	items := []any{baselineItem("profile:"+stringValue(doc["id"]), map[string]any{
+		"publish_on": contract["publish_on"], "failed_run": contract["failed_run"], "swap": contract["swap"],
+	}, func(snapshot map[string]any) {
+		snapshot["kind"], snapshot["path"], snapshot["enabled"] = "evidence-durability-profile", relative, true
+	})}
+	for _, raw := range anySlice(doc["tests"]) {
+		record, _ := raw.(map[string]any)
+		for _, field := range []string{"trace", "screenshot"} {
+			artifact, _ := record[field].(map[string]any)
+			artifactPath := stringValue(artifact["path"])
+			items = append(items, baselineItem("artifact:"+artifactPath, map[string]any{"path": artifactPath, "kind": field}, func(snapshot map[string]any) {
+				snapshot["path"], snapshot["kind"], snapshot["enabled"] = artifactPath, "durable-runtime-"+field, true
+			}))
+		}
+	}
+	return items
 }
 
 func captureAuthorityExtractionState(dir string) ([]any, error) {
@@ -890,6 +920,13 @@ func captureScenarioClosurePlan(dir string) []any {
 		item["kind"] = "policy"
 	})}
 	trancheByRow := map[string]string{}
+	for ordinal, raw := range anySlice(plan["completed_tranches"]) {
+		tranche, _ := raw.(map[string]any)
+		id := stringValue(tranche["id"])
+		items = append(items, baselineItem("completed-tranche:"+id, map[string]any{"tranche": tranche, "ordinal": ordinal + 1}, func(item map[string]any) {
+			item["kind"], item["ordinal"] = "completed-tranche", ordinal+1
+		}))
+	}
 	for ordinal, raw := range anySlice(plan["tranches"]) {
 		tranche, _ := raw.(map[string]any)
 		id := stringValue(tranche["id"])

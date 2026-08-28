@@ -17,7 +17,10 @@
 - ClosureにはPattern＋Scenario＋全Variantの実駆動、first attempt、retry 0、専用Runtime identity／Oracle、Variant別Trace／Screenshot、Action／Network／Resource stream、source／harness digestを要求する。
 - metadata-only、Capture再利用、Integrated Trace再利用、mock／static Runtimeへの置換を禁止する。
 - Authority Atomic、外部Profile、Agent Forward Eval等の独立未完軸をScenario Runtimeの進捗で閉じない。
+- 公開Evidenceは`publish_on=full-run-passed`、`failed_run=retain-prior-success`、`swap=staged-directory-rename-with-rollback`のdurability Profileを持ち、全Artifactを1世代として原子的に置換する。
 
 ## Non-regression
 
 BaselineはPolicy、Plan rowのordinalとtranche所属、trancheのordinal／row集合／Variant実行数、completed rowを固定する。このため、Plan row削除、risk順の変更、tranche肥大化、契約弱化は失敗する。正当なClosureでPlan rowを置換する場合も、通常のNon-regression Mapping、Runtime実行Proof、Migration Evidence、理由を必要とする。
+
+Evidence durabilityの公開原子性は`docs/EVIDENCE_DURABILITY.md`を正本とする。

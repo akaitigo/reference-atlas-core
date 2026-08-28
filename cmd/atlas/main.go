@@ -36,6 +36,14 @@ func run(args []string) error {
 		}
 		return nil
 	case "audit":
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "evidence-durability" {
+			result, err := validate.AuditEvidenceDurability(args[1], "artifacts/pattern-scenarios/results.json")
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Evidence durability監査済み: %s artifacts=%d rows=%d variants=%d publish_on=full-run-passed failed_run=retain-prior-success swap=staged-directory-rename-with-rollback\n", result.ReportID, result.Artifacts, result.Rows, result.Variants)
+			return nil
+		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "scenario-plan" {
 			result, err := validate.AuditScenarioClosurePlan(args[1], "evidence/scenarios/closure-plan.json")
 			if err != nil {
@@ -298,5 +306,5 @@ func baselineOptions(args []string) (string, string, error) {
 }
 
 func usageError() error {
-	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body|authority-review|authority-review-export|authority-relock|skill-router|scenario-trace|scenario-plan] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
+	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction|authority-body|authority-review|authority-review-export|authority-relock|skill-router|scenario-trace|scenario-plan|evidence-durability] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
 }

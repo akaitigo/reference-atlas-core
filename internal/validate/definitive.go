@@ -72,6 +72,9 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if closurePlan.RemainingRows != 0 {
 		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Scenario Closure Planに未実行rowがあります: %d", closurePlan.RemainingRows)
 	}
+	if _, err := AuditEvidenceDurability(dir, stringValue(ctx.manifest["evidence_durability"])); err != nil {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive Evidence durability Gate: %w", err)
+	}
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
