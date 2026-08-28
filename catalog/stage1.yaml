@@ -257,6 +257,38 @@ domains:
         status: planned
         scope: 理解、依存更新、互換性、段階移行、データ移行、廃止、ロールバックを実証する。
         excludes: [停止時間や復旧経路のない一括移行]
+      - id: backend-application-engineering
+        title: バックエンドアプリケーション工学
+        repository: backend-application-engineering-reference-atlas
+        archetypes: [field, construction]
+        stage1_required: true
+        status: planned
+        scope: サーバーアプリのFramework、DI、永続化、構成、並行処理、エラー境界、起動停止を比較実装で実証する。
+        excludes: [個別バックエンドFrameworkの全API列挙]
+      - id: build-toolchain-package-engineering
+        title: ビルド・ツールチェーン・パッケージ工学
+        repository: build-toolchain-package-engineering-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: Build Graph、依存解決、Lock、Toolchain固定、Package公開、Monorepo、再現Buildを実証する。
+        excludes: [単一Build Toolのコマンド一覧だけの収録]
+      - id: application-configuration-feature-management
+        title: アプリケーション構成・Feature管理
+        repository: application-configuration-feature-management-reference-atlas
+        archetypes: [field]
+        stage1_required: true
+        status: planned
+        scope: 構成Source、型検証、環境差分、動的更新、Feature Flag、秘密分離、失敗時挙動を実証する。
+        excludes: [実在環境の設定値や秘密情報]
+      - id: technical-documentation-architecture-as-code
+        title: 技術文書・Architecture as Code
+        repository: technical-documentation-architecture-as-code-reference-atlas
+        archetypes: [field, construction]
+        stage1_required: true
+        status: planned
+        scope: Docs as Code、ADR、図、API文書、実行例、参照整合性、陳腐化検出、公開品質を実証する。
+        excludes: [会社固有の非公開設計文書や業務情報]
 
   - id: client-applications
     title: フロントエンド・クライアント

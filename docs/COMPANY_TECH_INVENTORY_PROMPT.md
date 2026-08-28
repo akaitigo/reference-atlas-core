@@ -7,7 +7,7 @@
 
 目的:
 - 個人で構築する「技術実証アトラス」のStage 1技術分野カタログと比較するため
-- 製品名の羅列ではなく、技術分野、役割、Version帯、利用件数、技術間の組み合わせを把握するため
+- 製品名の羅列ではなく、技術分野、役割、Major系統、利用頻度、技術間の組み合わせを把握するため
 - 出力は会社を特定できない、外部共有可能な匿名化済み情報だけにするため
 
 絶対条件:
@@ -17,7 +17,7 @@
 4. Token、Password、Cookie、秘密鍵、証明書、接続文字列、環境変数の値、Secret名、脆弱性の具体的悪用情報は、発見しても内容・存在場所・識別子を出力しない。
 5. `.env*`、秘密鍵、証明書、認証設定、実データ、生成物、Vendor、Build Cacheは開かない。秘密らしい内容を見つけたら直ちにそのファイルの解析を中止する。
 6. 会社の規程上、外部共有不可または判断不能な情報は出力から除外する。除外した事実は集計数だけで表す。
-7. 推測と確認済み事実を分ける。VersionはLockfileやManifestで確認できた範囲だけを記載し、Patch Versionが個別案件の指紋になり得る場合はMajor帯またはMajor.Minor帯へ丸める。
+7. 推測と確認済み事実を分ける。VersionはLockfileやManifestで確認しても、出力ではMajor系統だけへ丸める。MinorおよびPatch Versionは出力しない。
 
 調査対象の信号:
 - 依存ManifestとLockfile
@@ -48,21 +48,21 @@
 
 手順:
 1. リポジトリ境界を数える。名前は保持・表示せず、内部でrepo-001のような一時番号に置換する。
-2. 各リポジトリの信号から技術名、一般的役割、Version帯を抽出する。
+2. 各リポジトリの信号から技術名、一般的役割、Major系統を抽出する。
 3. 同義語を公式の一般名へ正規化する。フレームワーク、ランタイム、DB、Broker、CI/CD、IaC、Observability、Securityも落とさない。
 4. 宣言だけ、Build時利用、Runtime利用、Test専用、運用基盤を役割として区別する。
-5. 同一技術は集約し、利用リポジトリ数だけをusage_countにする。どのリポジトリかは出力しない。
-6. 技術間連携は、一般化した関係と件数だけを集約する。内部サービス構成は再現しない。
+5. 同一技術は集約し、利用件数をsingle/few/several/common/pervasive/unknownの頻度区分へ丸める。正確な件数は出力しない。
+6. 技術間連携は、一般化した関係と頻度区分だけを集約する。内部サービス構成は再現しない。
 7. 下記Stage 1 Subject候補へ対応付ける。該当しなければ空配列にし、勝手な内部情報を追加しない。
 8. 最後にRedaction監査を行い、禁止情報が一つでも残れば削除してから出力する。
 
 出力は次の2部だけ:
 
 A. 日本語サマリー
-- 解析対象リポジトリ数、除外数
-- 分類別の技術数
-- 高頻度技術 上位20件: 技術名、一般的役割、Major帯、利用件数だけ
-- 主要な技術組み合わせ 上位20件: 一般化した関係、利用件数だけ
+- 解析対象リポジトリ数、除外数は範囲区分だけ
+- 分類別の技術数は正確な件数ではなく、おおまかな多寡だけ
+- 高頻度技術 上位20件: 技術名、一般的役割、Major系統、頻度区分だけ
+- 主要な技術組み合わせ 上位20件: 一般化した関係、頻度区分だけ
 - Stage 1カタログへ新規追加を検討すべき技術分野。ただし会社固有情報を根拠欄へ書かない
 - 静的解析では判定できなかった点
 
@@ -70,13 +70,13 @@ B. `company-inventory.yaml`
 - 下記形式だけをYAMLコードブロックで出力する
 - コメント、ファイルパス、リポジトリ識別子、証拠断片を含めない
 
-schema_version: 1
+schema_version: 2
 inventory_id: company-technology-inventory-sanitized
 generated_at: <ISO 8601。時刻自体が機微なら日付の00:00:00+09:00>
 scope:
   root_kind: multi-repository
-  repository_count: <整数>
-  excluded_repository_count: <整数>
+  repository_count_band: <none|1-5|6-10|11-25|26-50|51-100|100-plus|withheld>
+  excluded_repository_count_band: <同上>
 redaction:
   confirmed: true
   removed_categories:
@@ -95,17 +95,17 @@ technologies:
     name: <一般公開されている技術名>
     category: <上記10分類の英語ID>
     roles: [<一般化した日本語の役割>]
-    versions: [<MajorまたはMajor.Minor帯。安全に出せなければ空配列>]
-    usage_count: <利用リポジトリ数>
+    major_families: [<Major番号だけ。安全に出せなければunknown>]
+    usage_frequency: <single|few|several|common|pervasive|unknown>
     signals: [dependency-manifest|lockfile|build-config|container|ci-config|iac|runtime-config|source-import|database-migration|documentation]
     confidence: high|medium|low
     stage1_subjects: [<対応する一般技術分野ID。判断不能なら空配列>]
-    notes: <任意。会社固有情報を含まない短い注意>
+    risk_flags: [<version-unpinned|lock-missing|legacy|prerelease|multiple-major-families|tests-not-observed|supply-chain-controls-not-observed>]
 integrations:
   - from: <technologies内のID>
     to: <technologies内のID>
     relation: <一般化した日本語の関係>
-    usage_count: <確認できたリポジトリ数>
+    usage_frequency: <single|few|several|common|pervasive|unknown>
     confidence: high|medium|low
 unknowns:
   - <静的・匿名化解析上の限界だけを書く>
@@ -114,7 +114,7 @@ unknowns:
 - 禁止された名前、パス、URL、ID、データ、コード、秘密がゼロである
 - technologiesのidが重複していない
 - integrationsのfrom/toがtechnologies内に存在する
-- usage_countは1以上
+- 正確なRepository数、利用件数、Minor/Patch Versionが含まれていない
 - redaction.confirmedがtrue
 
 条件を守れない場合は棚卸し結果を出さず、「会社規程または匿名化要件により安全な出力を作成できない」とだけ答えてください。
