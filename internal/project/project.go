@@ -280,6 +280,8 @@ historical_certificate:
 status: inventory-required
 required_actions:
   - lock-authority-artifacts
+  - extract-authority-locators
+  - review-authority-text-surfaces
   - lock-non-regression-baseline
   - classify-all-surfaces
   - split-behavior-proofs

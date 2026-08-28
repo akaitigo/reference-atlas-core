@@ -100,6 +100,12 @@ func schemaFor(path string) (string, error) {
 		return "third-party.schema.json", nil
 	case base == "surface.inventory.yaml":
 		return "surface-inventory.schema.json", nil
+	case base == "extraction.snapshot.json" && filepath.Base(filepath.Dir(path)) == "authority":
+		return "authority-extraction.schema.json", nil
+	case base == "FE_AUTHORITY_EXTRACTION_REFERENCE.json":
+		return "authority-extraction.schema.json", nil
+	case strings.HasSuffix(base, ".json") && filepath.Base(filepath.Dir(path)) == "surfaces-draft":
+		return "authority-surface-draft.schema.json", nil
 	case base == "verification.matrix.yaml":
 		return "verification-matrix.schema.json", nil
 	case base == "depth.parity.yaml":

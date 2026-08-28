@@ -239,6 +239,13 @@ func auditDefinitiveRequiredTargets(ctx *definitiveContext) error {
 }
 
 func auditSurfaceInventory(ctx *definitiveContext) (int, error) {
+	if stringValue(ctx.manifest["authority_extraction"]) != "authority/extraction.snapshot.json" {
+		return 0, fmt.Errorf("subject-definitiveにはauthority/extraction.snapshot.jsonが必要です")
+	}
+	extractionResult, err := AuditAuthorityExtraction(ctx.base.dir, true)
+	if err != nil {
+		return 0, fmt.Errorf("Authority Extraction Gate: %w", err)
+	}
 	type extractedSurface struct{ item map[string]any }
 	extracted := map[string]extractedSurface{}
 	artifactIDs := map[string]bool{}
@@ -352,6 +359,9 @@ func auditSurfaceInventory(ctx *definitiveContext) (int, error) {
 	}
 	if len(seen) != len(extracted) {
 		return 0, fmt.Errorf("Authority Surface Inventoryに未分類があります: extracted=%d classified=%d", len(extracted), len(seen))
+	}
+	if extractionResult.CoreV2EligibleSurfaces != len(extracted) {
+		return 0, fmt.Errorf("Authority Extractionのeligible Surface数がreview済みArtifact実体と一致しません: eligible=%d artifacts=%d", extractionResult.CoreV2EligibleSurfaces, len(extracted))
 	}
 	return len(extracted), nil
 }

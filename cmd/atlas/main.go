@@ -36,6 +36,15 @@ func run(args []string) error {
 		}
 		return nil
 	case "audit":
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "authority-extraction" {
+			result, err := validate.AuditAuthorityExtraction(args[1], false)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Authority Extraction監査済み: %s status=%s locked=%d matched=%d stale=%d failed=%d candidate_edges=%d classified_edges=%d unclassified_edges=%d missing_locators=%d deferred_locators=%d text_exhaustive=%t human_reviewed=%d core_v2_eligible=%d\n",
+				result.AtlasID, result.Status, result.LockedSources, result.MatchedSources, result.StaleSources, result.FailedSources, result.CandidateEdges, result.ClassifiedReferenceEdges, result.UnclassifiedReferenceEdges, result.MissingLocators, result.DeferredLocators, result.AuthorityTextSurfacesExhaustive, result.HumanReviewedSurfaces, result.CoreV2EligibleSurfaces)
+			return nil
+		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "non-regression" {
 			result, err := validate.AuditNonRegression(args[1])
 			if err != nil {
@@ -231,5 +240,5 @@ func baselineOptions(args []string) (string, string, error) {
 }
 
 func usageError() error {
-	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
+	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression|authority-extraction] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
 }

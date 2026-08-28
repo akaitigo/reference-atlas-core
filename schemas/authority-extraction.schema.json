@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-extraction.schema.json",
+  "title": "Authority Locator Extraction Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "generated_at", "status", "input_digest", "body_storage", "summary", "sources"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "atlas_id": {"$ref": "#/$defs/id"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["incomplete-human-review-required", "incomplete-source-state", "eligible-for-core-v2"]},
+    "input_digest": {"$ref": "#/$defs/sha256"},
+    "body_storage": {"const": "digest-and-locator-context-digest-only"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locked_sources", "fetched_digest_matched", "fetched_digest_stale", "fetch_failed", "candidate_surfaces", "root_locators", "fragments_found", "fragments_not_found", "locator_evaluations_deferred", "reference_edges_classified", "unclassified_reference_edges", "authority_text_surfaces_exhaustive", "human_reviewed_surfaces", "core_v2_eligible_surfaces"],
+      "properties": {
+        "locked_sources": {"type": "integer", "minimum": 1},
+        "fetched_digest_matched": {"type": "integer", "minimum": 0},
+        "fetched_digest_stale": {"type": "integer", "minimum": 0},
+        "fetch_failed": {"type": "integer", "minimum": 0},
+        "candidate_surfaces": {"type": "integer", "minimum": 0},
+        "root_locators": {"type": "integer", "minimum": 0},
+        "fragments_found": {"type": "integer", "minimum": 0},
+        "fragments_not_found": {"type": "integer", "minimum": 0},
+        "locator_evaluations_deferred": {"type": "integer", "minimum": 0},
+        "reference_edges_classified": {"type": "integer", "minimum": 0},
+        "unclassified_reference_edges": {"type": "integer", "minimum": 0},
+        "authority_text_surfaces_exhaustive": {"type": "boolean"},
+        "human_reviewed_surfaces": {"type": "integer", "minimum": 0},
+        "core_v2_eligible_surfaces": {"type": "integer", "minimum": 0}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "path", "digest", "locked_digest_match", "candidate_surfaces", "locator_status"],
+        "properties": {
+          "id": {"$ref": "#/$defs/dottedId"},
+          "path": {"type": "string", "pattern": "^authority/surfaces-draft/[a-z0-9.-]+\\.json$"},
+          "digest": {"$ref": "#/$defs/sha256"},
+          "locked_digest_match": {"type": "boolean"},
+          "candidate_surfaces": {"type": "integer", "minimum": 0},
+          "locator_status": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "root-document": {"type": "integer", "minimum": 1},
+              "fragment-found": {"type": "integer", "minimum": 1},
+              "fragment-not-found": {"type": "integer", "minimum": 1},
+              "not-evaluated-stale-body": {"type": "integer", "minimum": 1},
+              "not-evaluated-fetch-failed": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "dottedId": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+  }
+}

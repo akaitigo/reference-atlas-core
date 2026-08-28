@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/authority-surface-draft.schema.json",
+  "title": "Authority Locator Surface Draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_id", "source_url", "locked_source_digest", "fetch", "extraction", "candidate_surfaces"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "source_id": {"$ref": "#/$defs/dottedId"},
+    "source_url": {"type": "string", "format": "uri"},
+    "locked_source_digest": {"$ref": "#/$defs/sha256"},
+    "fetch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "fetched_digest", "locked_digest_match", "http_status", "final_url", "content_type", "fetched_bytes", "error_digest"],
+      "properties": {
+        "status": {"enum": ["matched", "stale", "failed"]},
+        "fetched_digest": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "locked_digest_match": {"type": "boolean"},
+        "http_status": {"type": ["integer", "null"], "minimum": 100, "maximum": 599},
+        "final_url": {"anyOf": [{"type": "string", "format": "uri"}, {"type": "null"}]},
+        "content_type": {"type": ["string", "null"], "maxLength": 255},
+        "fetched_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "error_digest": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
+      }
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "tool", "review_status", "body_storage"],
+      "properties": {
+        "method": {"const": "locked-body-locator-context-digest"},
+        "tool": {"type": "string", "minLength": 2},
+        "review_status": {"const": "automated-unreviewed"},
+        "body_storage": {"const": "digest-and-locator-context-digest-only"}
+      }
+    },
+    "candidate_surfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["edge_id", "source_id", "reference_url", "locator", "pattern_id", "pattern_kind", "candidate_behavior_id", "capability_id", "target_id", "claim_id", "variant_ids", "surface_ids", "classification_basis", "domain_reference_metadata_digest", "locator_status", "context_digest", "context_start", "context_end", "context_unit", "heading_digest", "classification"],
+        "properties": {
+          "edge_id": {"$ref": "#/$defs/dottedId"},
+          "source_id": {"$ref": "#/$defs/dottedId"},
+          "reference_url": {"type": "string", "format": "uri"},
+          "locator": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "pattern_id": {"type": "string", "pattern": "^[a-z0-9-]+/[a-z0-9-]+$"},
+          "pattern_kind": {"enum": ["atomic", "compound", "systemic"]},
+          "candidate_behavior_id": {"$ref": "#/$defs/dottedId"},
+          "capability_id": {"$ref": "#/$defs/dottedId"},
+          "target_id": {"$ref": "#/$defs/dottedId"},
+          "claim_id": {"$ref": "#/$defs/dottedId"},
+          "variant_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/dottedId"}},
+          "surface_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/surface"}},
+          "classification_basis": {"const": "domain-contract-projection-unreviewed"},
+          "domain_reference_metadata_digest": {"$ref": "#/$defs/sha256"},
+          "locator_status": {"enum": ["root-document", "fragment-found", "fragment-not-found", "not-evaluated-stale-body", "not-evaluated-fetch-failed"]},
+          "context_digest": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+          "context_start": {"type": ["integer", "null"], "minimum": 0},
+          "context_end": {"type": ["integer", "null"], "minimum": 0},
+          "context_unit": {"enum": ["utf16-code-unit", null]},
+          "heading_digest": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+          "classification": {"const": "candidate-included-unreviewed"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "dottedId": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "surface": {"enum": ["orientation-scope", "foundations-mechanics", "architecture-design", "implementation-construction", "testing-verification", "failure-recovery", "operations-observability", "security-privacy-safety", "performance-capacity-cost", "compatibility-integration", "migration-evolution-deprecation", "decision-comparison", "provenance-rights", "agent-skill"]}
+  }
+}

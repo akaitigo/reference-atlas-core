@@ -119,6 +119,10 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if err != nil {
 		return nil, "", err
 	}
+	authorityExtractionData, err := os.ReadFile(filepath.Join(dir, "authority", "extraction.snapshot.json"))
+	if err != nil {
+		return nil, "", err
+	}
 	matrixData, err := os.ReadFile(filepath.Join(dir, "verification.matrix.yaml"))
 	if err != nil {
 		return nil, "", err
@@ -162,7 +166,8 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		"schema_version": 2, "completion_class": "subject-definitive",
 		"atlas_id": stringValue(ctx.base.documents["atlas"]["id"]), "atlas_release": stringValue(ctx.base.documents["skill"]["atlas_release"]),
 		"coverage_epoch": stringValue(coverageConfig["epoch"]), "authority_lock_digest": stringValue(ctx.base.documents["coverage"]["authority_lock_digest"]),
-		"surface_inventory_digest": digestBytes(inventoryData), "verification_matrix_digest": digestBytes(matrixData),
+		"authority_extraction_digest": digestBytes(authorityExtractionData),
+		"surface_inventory_digest":    digestBytes(inventoryData), "verification_matrix_digest": digestBytes(matrixData),
 		"depth_parity_digest": digestBytes(depthParityData),
 		"proof_graph_digest":  proofGraphDigest, "skill_eval_digest": digestBytes(skillData), "reference_system_digest": referenceDigest,
 		"non_regression_digest":   digestBytes(nonRegressionData),

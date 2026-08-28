@@ -25,6 +25,7 @@
         "proof_obligations": {"$ref": "#/$defs/items"},
         "evidence": {"$ref": "#/$defs/items"},
         "sources": {"$ref": "#/$defs/items"},
+        "authority_extraction": {"$ref": "#/$defs/items"},
         "skill_eval_cases": {"$ref": "#/$defs/items"},
         "required_profiles": {"$ref": "#/$defs/items"},
         "matrix_rows": {"$ref": "#/$defs/items"},

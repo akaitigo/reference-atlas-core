@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "skill_eval_cases", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
+var nonRegressionCollections = []string{"tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "authority_extraction", "skill_eval_cases", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"}
 
 type NonRegressionResult struct {
 	AtlasID       string
@@ -127,6 +127,9 @@ func AuditNonRegression(dir string) (NonRegressionResult, error) {
 					return NonRegressionResult{}, err
 				}
 				if oldItem["fingerprint"] == newItem["fingerprint"] {
+					continue
+				}
+				if collection == "authority_extraction" && authorityExtractionStrengthens(oldItem, newItem) {
 					continue
 				}
 			}
@@ -323,6 +326,13 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 	}
 	collections["evidence"] = evidenceItems
 	collections["sources"] = snapshotEntities(anySlice(sources["sources"]), func(item map[string]any) string { return stringValue(item["id"]) }, nil)
+	authorityExtraction, err := captureAuthorityExtractionState(dir)
+	if err != nil {
+		return nil, err
+	}
+	if len(authorityExtraction) > 0 {
+		collections["authority_extraction"] = authorityExtraction
+	}
 	evalItems, minimum, err := captureSkillEval(dir, skill)
 	if err != nil {
 		return nil, err
@@ -353,6 +363,166 @@ func captureNonRegressionState(dir, commit, capturedAt string) (map[string]any, 
 		"schema_version": 2, "atlas_id": atlas["id"], "baseline_commit": commit, "captured_at": capturedAt,
 		"scope_statement_fingerprint": scopeFingerprint, "scope_exclusions": anySlice(scope["exclusions"]), "minimum_skill_pass_rate": minimum, "collections": collections,
 	}, nil
+}
+
+func captureAuthorityExtractionState(dir string) ([]any, error) {
+	snapshotPath := filepath.Join(dir, "authority", "extraction.snapshot.json")
+	if _, err := os.Stat(snapshotPath); os.IsNotExist(err) {
+		return []any{}, nil
+	} else if err != nil {
+		return nil, err
+	}
+	if _, err := File(snapshotPath); err != nil {
+		return nil, err
+	}
+	snapshot, err := readDocument(snapshotPath)
+	if err != nil {
+		return nil, err
+	}
+	stableContracts := map[string]any{}
+	locatorRanks := map[string]any{}
+	fetchRanks := map[string]any{}
+	locatorStates := map[string]any{}
+	fetchStates := map[string]any{}
+	drafts := map[string]any{}
+	for _, raw := range anySlice(snapshot["sources"]) {
+		index, _ := raw.(map[string]any)
+		relative := stringValue(index["path"])
+		full := filepath.Join(dir, filepath.FromSlash(relative))
+		if _, err := File(full); err != nil {
+			return nil, err
+		}
+		draft, err := readDocument(full)
+		if err != nil {
+			return nil, err
+		}
+		sourceID := stringValue(index["id"])
+		drafts[sourceID] = draft
+		fetch, _ := draft["fetch"].(map[string]any)
+		fetchRanks[sourceID] = authorityFetchRank(stringValue(fetch["status"]))
+		fetchStates[sourceID], _ = digestCanonical(fetch)
+		stableContracts["source:"+sourceID], _ = digestCanonical(map[string]any{
+			"source_id": draft["source_id"], "source_url": draft["source_url"], "locked_source_digest": draft["locked_source_digest"],
+		})
+		for _, rawCandidate := range anySlice(draft["candidate_surfaces"]) {
+			candidate, _ := rawCandidate.(map[string]any)
+			edgeID := stringValue(candidate["edge_id"])
+			stableContracts["edge:"+edgeID], _ = digestCanonical(map[string]any{
+				"edge_id": candidate["edge_id"], "source_id": candidate["source_id"], "reference_url": candidate["reference_url"],
+				"locator": candidate["locator"], "pattern_id": candidate["pattern_id"], "pattern_kind": candidate["pattern_kind"],
+				"candidate_behavior_id": candidate["candidate_behavior_id"], "capability_id": candidate["capability_id"],
+				"target_id": candidate["target_id"], "claim_id": candidate["claim_id"], "variant_ids": candidate["variant_ids"],
+				"surface_ids": candidate["surface_ids"], "classification_basis": candidate["classification_basis"],
+				"domain_reference_metadata_digest": candidate["domain_reference_metadata_digest"],
+			})
+			locatorRanks[edgeID] = authorityLocatorRank(stringValue(candidate["locator_status"]))
+			locatorStates[edgeID], _ = digestCanonical(map[string]any{
+				"locator_status": candidate["locator_status"], "context_digest": candidate["context_digest"],
+				"context_start": candidate["context_start"], "context_end": candidate["context_end"],
+				"context_unit": candidate["context_unit"], "heading_digest": candidate["heading_digest"],
+			})
+		}
+	}
+	item := baselineItem("snapshot", map[string]any{"snapshot": snapshot, "drafts": drafts}, func(item map[string]any) {
+		item["path"] = "authority/extraction.snapshot.json"
+		item["stable_contracts"] = stableContracts
+		item["fetch_ranks"] = fetchRanks
+		item["locator_ranks"] = locatorRanks
+		item["fetch_state_fingerprints"] = fetchStates
+		item["locator_state_fingerprints"] = locatorStates
+		summary, _ := snapshot["summary"].(map[string]any)
+		for _, key := range []string{"locked_sources", "fetched_digest_matched", "fetched_digest_stale", "fetch_failed", "candidate_surfaces", "fragments_not_found", "locator_evaluations_deferred", "reference_edges_classified", "unclassified_reference_edges", "human_reviewed_surfaces", "core_v2_eligible_surfaces"} {
+			item[key] = summary[key]
+		}
+		item["authority_text_surfaces_exhaustive"] = summary["authority_text_surfaces_exhaustive"]
+		item["status_rank"] = authorityExtractionStatusRank(stringValue(snapshot["status"]))
+	})
+	return []any{item}, nil
+}
+
+func authorityExtractionStrengthens(oldItem, newItem map[string]any) bool {
+	for _, key := range []string{"locked_sources", "candidate_surfaces", "reference_edges_classified", "fetched_digest_matched", "human_reviewed_surfaces", "core_v2_eligible_surfaces", "status_rank"} {
+		if numberValue(newItem[key]) < numberValue(oldItem[key]) {
+			return false
+		}
+	}
+	for _, key := range []string{"fetched_digest_stale", "fetch_failed", "fragments_not_found", "locator_evaluations_deferred", "unclassified_reference_edges"} {
+		if numberValue(newItem[key]) > numberValue(oldItem[key]) {
+			return false
+		}
+	}
+	if oldItem["authority_text_surfaces_exhaustive"] == true && newItem["authority_text_surfaces_exhaustive"] != true {
+		return false
+	}
+	if !mapSubsetEqual(oldItem["stable_contracts"], newItem["stable_contracts"]) {
+		return false
+	}
+	if !rankedStateNonRegressive(oldItem["fetch_ranks"], newItem["fetch_ranks"], oldItem["fetch_state_fingerprints"], newItem["fetch_state_fingerprints"]) ||
+		!rankedStateNonRegressive(oldItem["locator_ranks"], newItem["locator_ranks"], oldItem["locator_state_fingerprints"], newItem["locator_state_fingerprints"]) {
+		return false
+	}
+	return true
+}
+
+func mapSubsetEqual(oldRaw, newRaw any) bool {
+	oldValues, _ := oldRaw.(map[string]any)
+	newValues, _ := newRaw.(map[string]any)
+	for key, oldValue := range oldValues {
+		if newValues[key] != oldValue {
+			return false
+		}
+	}
+	return true
+}
+
+func rankedStateNonRegressive(oldRankRaw, newRankRaw, oldStateRaw, newStateRaw any) bool {
+	oldRanks, _ := oldRankRaw.(map[string]any)
+	newRanks, _ := newRankRaw.(map[string]any)
+	oldStates, _ := oldStateRaw.(map[string]any)
+	newStates, _ := newStateRaw.(map[string]any)
+	for key, oldValue := range oldRanks {
+		oldRank, newRank := numberValue(oldValue), numberValue(newRanks[key])
+		if newRank < oldRank {
+			return false
+		}
+		if newRank == oldRank && newStates[key] != oldStates[key] {
+			return false
+		}
+	}
+	return true
+}
+
+func authorityFetchRank(status string) int {
+	switch status {
+	case "matched":
+		return 2
+	case "stale":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func authorityLocatorRank(status string) int {
+	switch status {
+	case "root-document", "fragment-found":
+		return 2
+	case "fragment-not-found":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func authorityExtractionStatusRank(status string) int {
+	switch status {
+	case "eligible-for-core-v2":
+		return 2
+	case "incomplete-human-review-required":
+		return 1
+	default:
+		return 0
+	}
 }
 
 func captureTestsAndLabs(dir string) ([]any, error) {

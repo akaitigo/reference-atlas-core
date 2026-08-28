@@ -11,6 +11,7 @@
     "epoch": { "$ref": "#/$defs/date" },
     "completion_class": { "const": "subject-definitive" },
     "surface_inventory": { "const": "surface.inventory.yaml" },
+    "authority_extraction": { "const": "authority/extraction.snapshot.json" },
     "verification_matrix": { "const": "verification.matrix.yaml" },
     "depth_parity": { "const": "depth.parity.yaml" },
     "skill_eval": { "type": "string", "pattern": "^evals/.+\\.definitive-skill-eval\\.json$" },

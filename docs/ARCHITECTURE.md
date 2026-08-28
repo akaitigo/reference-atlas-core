@@ -121,7 +121,7 @@ Authority Source
   -> Completion Certificate
 ```
 
-v1 CertificateはこのChainのうち自己宣言Coverageを閉じる`bounded-complete`履歴である。`subject-definitive`はFixed Authority Surface Artifactから導出された全Behavior／CapabilityがInventory、専用Target、Claim、Proof、Scenario Matrix、Runtime Evidenceへ一対一で接続された場合だけ発行する。
+v1 CertificateはこのChainのうち自己宣言Coverageを閉じる`bounded-complete`履歴である。`subject-definitive`はmetadata-only Authority Locator Extractionがstale・fetch・locator・exhaustive・Human review・eligibleの各状態を閉じ、Fixed Authority Surface Artifactから導出された全Behavior／CapabilityがInventory、専用Target、Claim、Proof、Scenario Matrix、Runtime Evidenceへ一対一で接続された場合だけ発行する。
 
 Definitive v2では固定Commitの`FE_DEPTH_REFERENCE.json`を使用し、Authority本文消化、Behavior/Variant、実Runtime Lab、10 Scenario、Artifact/Trace、統合Reference System、Skill Eval、権利・Provenance、Non-regression GateをDepth Parity Matrixへ展開する。参照元Frontendの状態は`incomplete`のまま保持する。比較単位はFrontendの件数ではなく、Subject自身のAuthority由来denominatorに対する専用Proof／Oracleと再実行可能な接続であり、Gapが1件でも残る場合は`subject-definitive`を発行しない。
 

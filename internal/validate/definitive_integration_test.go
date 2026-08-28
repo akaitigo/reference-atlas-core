@@ -241,6 +241,49 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 	}
 	write("authority/counter.authority-surfaces.yaml", authority)
 	authorityArtifactDigest := fileDigest(t, filepath.Join(dir, "authority/counter.authority-surfaces.yaml"))
+	lockedDigest := "sha256:" + strings.Repeat("0", 64)
+	sourceURL := "https://github.com/akaitigo/reference-atlas-core/releases/tag/v1.0.0"
+	draftCandidates := []any{}
+	for _, behavior := range behaviors {
+		short := strings.TrimPrefix(behavior, "counter.")
+		draftCandidates = append(draftCandidates, map[string]any{
+			"edge_id": "edge.counter." + short + ".reference-atlas-core-v1", "source_id": "reference-atlas-core-v1",
+			"reference_url": sourceURL, "locator": "document-root", "pattern_id": "counter/" + short, "pattern_kind": "atomic",
+			"candidate_behavior_id": "candidate.counter." + short, "capability_id": behavior, "target_id": behavior,
+			"claim_id": behavior, "variant_ids": []any{behavior + ".default"},
+			"surface_ids":                      []any{"orientation-scope", "testing-verification"},
+			"classification_basis":             "domain-contract-projection-unreviewed",
+			"domain_reference_metadata_digest": lockedDigest, "locator_status": "root-document",
+			"context_digest": lockedDigest, "context_start": 0, "context_end": 1, "context_unit": "utf16-code-unit",
+			"heading_digest": nil, "classification": "candidate-included-unreviewed",
+		})
+	}
+	draftPath := filepath.Join(dir, "authority", "surfaces-draft", "reference-atlas-core-v1.json")
+	if err := os.MkdirAll(filepath.Dir(draftPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	mustWriteJSON(t, draftPath, map[string]any{
+		"schema_version": 1, "source_id": "reference-atlas-core-v1", "source_url": sourceURL, "locked_source_digest": lockedDigest,
+		"fetch":              map[string]any{"status": "matched", "fetched_digest": lockedDigest, "locked_digest_match": true, "http_status": 200, "final_url": sourceURL, "content_type": "text/html", "fetched_bytes": 1, "error_digest": nil},
+		"extraction":         map[string]any{"method": "locked-body-locator-context-digest", "tool": "counter-authority-extractor-v1", "review_status": "automated-unreviewed", "body_storage": "digest-and-locator-context-digest-only"},
+		"candidate_surfaces": draftCandidates,
+	})
+	draftDigest := fileDigest(t, draftPath)
+	mustWriteJSON(t, filepath.Join(dir, "authority", "extraction.snapshot.json"), map[string]any{
+		"schema_version": 1, "atlas_id": "counter-reference-atlas", "generated_at": "2026-08-28T00:00:00Z",
+		"status": "eligible-for-core-v2", "input_digest": lockedDigest, "body_storage": "digest-and-locator-context-digest-only",
+		"summary": map[string]any{
+			"locked_sources": 1, "fetched_digest_matched": 1, "fetched_digest_stale": 0, "fetch_failed": 0,
+			"candidate_surfaces": 2, "root_locators": 2, "fragments_found": 0, "fragments_not_found": 0,
+			"locator_evaluations_deferred": 0, "reference_edges_classified": 2, "unclassified_reference_edges": 0,
+			"authority_text_surfaces_exhaustive": true, "human_reviewed_surfaces": 2, "core_v2_eligible_surfaces": 2,
+		},
+		"sources": []any{map[string]any{
+			"id": "reference-atlas-core-v1", "path": "authority/surfaces-draft/reference-atlas-core-v1.json",
+			"digest": draftDigest, "locked_digest_match": true, "candidate_surfaces": 2,
+			"locator_status": map[string]any{"root-document": 2},
+		}},
+	})
 	inventory := fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\nauthority_lock_digest: %s\nauthority_artifacts:\n  - {id: counter-protocol, source_id: reference-atlas-core-v1, path: authority/counter.authority-surfaces.yaml, digest: %s}\nitems:\n", authorityLockDigest, authorityArtifactDigest)
 	for _, behavior := range behaviors {
 		inventory += fmt.Sprintf("  - {id: %s, authority_artifact_id: counter-protocol, authority_surface_id: %s, locator: protocol/%s, kind: behavior, capability_id: %s, behavior_id: %s, variant_ids: [%s.default], target_id: %s, title: %s Behavior, surface_ids: [orientation-scope, testing-verification], classification: included, rationale: Authority ArtifactのBehaviorを省略せずInventoryへ分類する。, claim_ids: [%s]}\n", behavior, behavior, strings.TrimPrefix(behavior, "counter."), behavior, behavior, behavior, behavior, behavior, behavior)
@@ -276,7 +319,7 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 	allOutcomes := "understand, choose, build, verify, operate, troubleshoot, evolve, delegate"
 	allSurfaces := "orientation-scope, foundations-mechanics, architecture-design, implementation-construction, testing-verification, failure-recovery, operations-observability, security-privacy-safety, performance-capacity-cost, compatibility-integration, migration-evolution-deprecation, decision-comparison, provenance-rights, agent-skill"
 	write("evals/counter.definitive-skill-eval.json", fmt.Sprintf("{\"schema_version\":2,\"id\":\"counter.definitive-v2\",\"atlas_id\":\"counter-reference-atlas\",\"atlas_release\":\"v0.1.0\",\"skill_id\":\"counter-reference-atlas-advisor\",\"generated_at\":\"2026-08-28T00:00:00Z\",\"cases\":[{\"id\":\"all.contracts\",\"result\":\"pass\",\"outcome_ids\":[%s],\"surface_ids\":[%s],\"gap_behavior\":true,\"authorization_boundary\":true,\"assertion\":\"8 Outcomeと14 SurfaceとGapと権限境界を評価する。\"}]}\n", quoteList(allOutcomes), quoteList(allSurfaces)))
-	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
+	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nauthority_extraction: authority/extraction.snapshot.json\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
 	if _, err := GenerateCertificate(dir, "2026-08-28T00:00:00Z", strings.Repeat("a", 40)); err != nil {
 		t.Fatal(err)
 	}
@@ -377,6 +420,13 @@ func applyDefinitiveMutation(t *testing.T, dir, mutation string) {
 		items := doc["items"].([]any)
 		delete(items[0].(map[string]any), "variant_ids")
 		mustWriteYAML(t, filepath.Join(dir, "surface.inventory.yaml"), doc)
+	case "authority-candidates-not-exhaustive":
+		path := filepath.Join(dir, "authority", "extraction.snapshot.json")
+		doc := mustReadYAML(t, path)
+		summary := doc["summary"].(map[string]any)
+		summary["authority_text_surfaces_exhaustive"] = false
+		doc["status"] = "incomplete-human-review-required"
+		mustWriteJSON(t, path, doc)
 	default:
 		t.Fatalf("未知のFixture mutation: %s", mutation)
 	}

@@ -135,6 +135,7 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 
 - required Targetはすべて`covered`でなければならず、`excluded`／`infeasible`は未完として拒否する。
 - Authority Surface Artifactは一次資料Source IDとDigestへ束縛し、Inventoryの未分類を0にする。Authority由来項目をSubject都合で除外できない。
+- Authority Locator Extractionは第三者本文を保存せず、response/body/context/headingのDigest、Locator offset、Domain metadata digestだけを許可する。candidate reference edgeの分類完了をAuthority本文全体のexhaustive closureとして扱わず、stale／fetch failed／locator missing／locator deferred／Human review／eligibleを独立に閉じる。
 - 各Behavior／Capabilityは専用required Target、専用accepted Claim、Scenarioごとの専用Proof Obligationを持つ。Target、Claim、Proof、Evidence、Artifactの共有による集約Closureを拒否する。
 - 全Behaviorに正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenario Rowを要求する。Surfaceから必須となるScenarioは`not-applicable`にできない。
 - required Scenarioは指定Profileの実RuntimeまたはPlatform Evidenceを必要とする。static、fixture、compile-only、KLIBやbytecode生成は代替にならない。
