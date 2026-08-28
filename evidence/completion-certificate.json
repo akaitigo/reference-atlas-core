@@ -1,14 +1,14 @@
 {
   "atlas_id": "reference-atlas-core",
-  "atlas_release": "v1.0.0",
+  "atlas_release": "v1.1.0",
   "authority_lock_digest": "sha256:f35634bf23db21fae2249262aaf8692ea0e5050fbe50a9287874f7772bfb8657",
-  "commit": "74e339075459d3606b5899ad886034155ee9f995",
+  "commit": "a0d76c67f2edcaaee6ef56265e673e4573298d3e",
   "core_policy_version": "1.0.0",
   "coverage_epoch": "2026-08-28",
-  "evidence_set_digest": "sha256:b5158c3024895384be19a0d582d532909126491cff19d28c2b6ae45744942894",
-  "graph_digest": "sha256:fcb9db151f1e863a1a5f1cc5ede5fd049d442ffa4cf40534e386a6eb80c32aac",
-  "issued_at": "2026-08-28T11:50:48Z",
-  "provenance_digest": "sha256:25f4b96a46ae72f2c79f7290769f0465fecb9d4b29af11b73185cd2fe23c2f40",
+  "evidence_set_digest": "sha256:643856e1fc0471951d51fb2af065fd89899f0ca7e8cb298b869ae39372a2094a",
+  "graph_digest": "sha256:a6f1449107dd36377ae7e919cb46e332918fc286743f8d22bee4c13203af4888",
+  "issued_at": "2026-08-28T13:13:01Z",
+  "provenance_digest": "sha256:bd360cab66e37bedd5a1293b300948ea3760d682b618376e0d5a6038088be58d",
   "required_profiles": [
     {
       "evidence_ids": [
@@ -22,15 +22,15 @@
       "result": "pass"
     }
   ],
-  "sbom_digest": "sha256:e96103992b62754e01b068dfc2200be3c808acb9c8c6e28bff7db6e66dfddb2d",
+  "sbom_digest": "sha256:daa2688c8fb374a2f695d0c1adb43799e6decd0f5f70845b830015e0827d0edc",
   "schema_version": 1,
   "signature": {
-    "digest": "sha256:cd4c0167a58ab5e1413cbfa8e624e6ece6daa332322a08144a927b9d6fab551e",
+    "digest": "sha256:059efe6bcec44c9bd777855c7e2089dff66b2516afc2b6620a5163e681fbdd6e",
     "type": "payload-sha256"
   },
   "skill_eval": {
-    "digest": "sha256:2f9a6d516e77015439f7db1fefccba1fe736cabe434371948b8d125e9512abfc",
+    "digest": "sha256:a5bea445db865cc38c254af19ef01e0d39651e61f6d08c101e690405e53913eb",
     "pass_rate": 1
   },
-  "skill_package_digest": "sha256:3b91a7177910f3a7e3ecfc0c6aaabe1708a9e726462bbb08f25ae08379a8247a"
+  "skill_package_digest": "sha256:a731847bb1dc574ee66240bc01b4a57f880784853b1d0bfff6bc50c393df406a"
 }
