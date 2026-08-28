@@ -98,3 +98,21 @@ func TestDefinitiveV2MigrationPreservesBoundedCertificate(t *testing.T) {
 		t.Fatalf("Migration再実行は既存記録を変更してはいけません: path=%s err=%v", second, err)
 	}
 }
+
+func TestScaffoldUsesNeutralFactualLanguage(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "neutral-reference-atlas")
+	if err := project.Scaffold(dir, "neutral-reference-atlas", "中立表現検証", "2026-08-28"); err != nil {
+		t.Fatal(err)
+	}
+	for _, relative := range []string{"mastery.yaml", "coverage.yaml"} {
+		data, err := os.ReadFile(filepath.Join(dir, relative))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, prohibited := range []string{"世界一", "唯一", "決定版"} {
+			if strings.Contains(string(data), prohibited) {
+				t.Fatalf("Generatorが検証不能な優越表現を生成しました: file=%s expression=%s", relative, prohibited)
+			}
+		}
+	}
+}

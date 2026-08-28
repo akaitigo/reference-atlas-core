@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/depth-reference.schema.json",
+  "title": "FE Depth Reference Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "description", "axes"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "id": {"const": "FE_DEPTH_REFERENCE"},
+    "description": {"type": "string", "minLength": 30},
+    "axes": {
+      "type": "array", "minItems": 18, "maxItems": 18,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "runtime_required", "criterion"],
+        "properties": {
+          "id": {"$ref": "#/$defs/axis"},
+          "runtime_required": {"type": "boolean"},
+          "criterion": {"type": "string", "minLength": 20}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "axis": {"enum": ["authority-consumption", "surface-atomic-behavior-variant", "runtime-lab", "scenario-normal", "scenario-boundary", "scenario-refusal", "scenario-failure", "scenario-recovery", "scenario-migration", "scenario-operations", "scenario-security", "scenario-performance", "scenario-compatibility", "artifact-trace", "integrated-reference-system", "skill-eval", "provenance", "non-regression"]}
+  }
+}

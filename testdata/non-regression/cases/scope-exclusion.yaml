@@ -1,0 +1,2 @@
+mutation: baseline-scope-exclusion
+want_error: Scope exclusion

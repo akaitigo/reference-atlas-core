@@ -1,0 +1,3 @@
+mutation: variant-omission
+want_error: variant_idsがAuthority Artifactと一致しません
+refresh_bounded: false

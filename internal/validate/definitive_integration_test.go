@@ -66,6 +66,32 @@ func TestDefinitiveGateFixtures(t *testing.T) {
 	}
 }
 
+func TestNonRegressionNegativeFixtures(t *testing.T) {
+	paths, err := filepath.Glob(filepath.Join("..", "..", "testdata", "non-regression", "cases", "*.yaml"))
+	if err != nil || len(paths) < 4 {
+		t.Fatalf("non-regression negative fixtureが不足しています: paths=%d err=%v", len(paths), err)
+	}
+	for _, path := range paths {
+		path := path
+		t.Run(strings.TrimSuffix(filepath.Base(path), ".yaml"), func(t *testing.T) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var tc definitiveCase
+			if err := yaml.Unmarshal(data, &tc); err != nil {
+				t.Fatal(err)
+			}
+			dir := createDefinitiveRepositoryFixture(t)
+			applyDefinitiveMutation(t, dir, tc.Mutation)
+			_, err = AuditNonRegression(dir)
+			if err == nil || !strings.Contains(err.Error(), tc.WantError) {
+				t.Fatalf("回避的変更を拒否できません: mutation=%s want=%q err=%v", tc.Mutation, tc.WantError, err)
+			}
+		})
+	}
+}
+
 func createDefinitiveRepositoryFixture(t *testing.T) string {
 	t.Helper()
 	dir := filepath.Join(t.TempDir(), "counter-reference-atlas")
@@ -83,6 +109,7 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		}
 	}
 	write("go.mod", "module example.invalid/counter-reference-atlas\n\ngo 1.26\n")
+	write("counter_test.go", "package counter\n\nimport \"testing\"\n\nfunc TestCounterRuntime(t *testing.T) {\n\tif 1+1 != 2 { t.Fatal(\"runtime assertion failed\") }\n}\n")
 	write("harness.txt", "counter runtime harness v1\n")
 	harnessDigest := fileDigest(t, filepath.Join(dir, "harness.txt"))
 	environmentDigest := fileDigest(t, filepath.Join(dir, "go.mod"))
@@ -117,12 +144,23 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 			write(reportPath, report)
 			write("evidence/"+evidenceID+".evidence.yaml", fmt.Sprintf("schema_version: 1\nid: %s\natlas_id: counter-reference-atlas\nclaim_ids: [%s]\nkind: test-report\nproducer: counter-runtime\ncommand: counter-test --behavior %s --scenario %s\ncreated_at: \"2026-08-28T00:00:00Z\"\nenvironment: {profile: local, manifest_digest: %s}\nsource_digest: %s\nharness_digest: %s\nharness_path: harness.txt\nexecution_mode: runtime\nruntime_identity: counter-runtime-v1\nartifact: {uri: %s, digest: %s, media_type: application/json, size_bytes: %d}\nverdict: pass\nretention: git\n", evidenceID, claimID, behavior, scenario, environmentDigest, authorityLockDigest, harnessDigest, reportPath, shaDigest([]byte(report)), len(report)))
 		}
+		for _, axis := range feDepthAxes {
+			evidenceID := strings.TrimPrefix(behavior, "counter.") + ".depth." + axis
+			allEvidence = append(allEvidence, evidenceID)
+			reportPath := "evidence/reports/" + evidenceID + ".json"
+			report := fmt.Sprintf("{\"behavior\":%q,\"axis\":%q,\"trace\":%q,\"result\":\"pass\"}\n", behavior, axis, evidenceID+".trace")
+			write(reportPath, report)
+			write("evidence/"+evidenceID+".evidence.yaml", fmt.Sprintf("schema_version: 1\nid: %s\natlas_id: counter-reference-atlas\nclaim_ids: [%s]\nkind: test-report\nproducer: counter-runtime\ncommand: counter-depth-test --behavior %s --axis %s\ncreated_at: \"2026-08-28T00:00:00Z\"\nenvironment: {profile: local, manifest_digest: %s}\nsource_digest: %s\nharness_digest: %s\nharness_path: harness.txt\nexecution_mode: runtime\nruntime_identity: counter-runtime-v1\nartifact: {uri: %s, digest: %s, media_type: application/json, size_bytes: %d}\nverdict: pass\nretention: git\n", evidenceID, claimID, behavior, axis, environmentDigest, authorityLockDigest, harnessDigest, reportPath, shaDigest([]byte(report)), len(report)))
+		}
 	}
 	coverage := fmt.Sprintf("schema_version: 1\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\nauthority_lock_digest: %s\ntarget_sets:\n  - id: foundation\n    title: Authority由来Behavior\n    sequence: 1\n    completion_required: true\n    exit_criteria: [全BehaviorをRuntimeで検証すること, 全Scenarioの適用判断を記録すること]\ntargets:\n", authorityLockDigest)
 	for _, behavior := range behaviors {
 		ids := []string{}
 		for _, scenario := range scenarios {
 			ids = append(ids, strings.TrimPrefix(behavior, "counter.")+"."+scenario)
+		}
+		for _, axis := range feDepthAxes {
+			ids = append(ids, strings.TrimPrefix(behavior, "counter.")+".depth."+axis)
 		}
 		coverage += fmt.Sprintf("  - id: %s\n    title: %s Behavior\n    target_set: foundation\n    kind: capability\n    requirement: required\n    state: covered\n    rationale: Authority Artifactから導出したBehaviorを専用Proofで検証する必要がある。\n    claim_ids: [%s]\n    evidence_ids: [%s]\n", behavior, behavior, behavior, strings.Join(ids, ", "))
 	}
@@ -151,13 +189,13 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 
 	authority := "schema_version: 2\nsource_id: reference-atlas-core-v1\nsource_digest: sha256:" + strings.Repeat("0", 64) + "\nextraction: {method: machine-readable-primary, tool: fixture-extractor-v1, reviewed_by: fixture-reviewer, reviewed_at: \"2026-08-28\"}\nsurfaces:\n"
 	for _, behavior := range behaviors {
-		authority += fmt.Sprintf("  - {id: %s, locator: protocol/%s, kind: behavior, capability_id: %s, behavior_id: %s, title: %s Behavior, surface_ids: [orientation-scope, testing-verification]}\n", behavior, strings.TrimPrefix(behavior, "counter."), behavior, behavior, behavior)
+		authority += fmt.Sprintf("  - {id: %s, locator: protocol/%s, kind: behavior, capability_id: %s, behavior_id: %s, variant_ids: [%s.default], title: %s Behavior, surface_ids: [orientation-scope, testing-verification]}\n", behavior, strings.TrimPrefix(behavior, "counter."), behavior, behavior, behavior, behavior)
 	}
 	write("authority/counter.authority-surfaces.yaml", authority)
 	authorityArtifactDigest := fileDigest(t, filepath.Join(dir, "authority/counter.authority-surfaces.yaml"))
 	inventory := fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\nauthority_lock_digest: %s\nauthority_artifacts:\n  - {id: counter-protocol, source_id: reference-atlas-core-v1, path: authority/counter.authority-surfaces.yaml, digest: %s}\nitems:\n", authorityLockDigest, authorityArtifactDigest)
 	for _, behavior := range behaviors {
-		inventory += fmt.Sprintf("  - {id: %s, authority_artifact_id: counter-protocol, authority_surface_id: %s, locator: protocol/%s, kind: behavior, capability_id: %s, behavior_id: %s, target_id: %s, title: %s Behavior, surface_ids: [orientation-scope, testing-verification], classification: included, rationale: Authority ArtifactのBehaviorを省略せずInventoryへ分類する。, claim_ids: [%s]}\n", behavior, behavior, strings.TrimPrefix(behavior, "counter."), behavior, behavior, behavior, behavior, behavior)
+		inventory += fmt.Sprintf("  - {id: %s, authority_artifact_id: counter-protocol, authority_surface_id: %s, locator: protocol/%s, kind: behavior, capability_id: %s, behavior_id: %s, variant_ids: [%s.default], target_id: %s, title: %s Behavior, surface_ids: [orientation-scope, testing-verification], classification: included, rationale: Authority ArtifactのBehaviorを省略せずInventoryへ分類する。, claim_ids: [%s]}\n", behavior, behavior, strings.TrimPrefix(behavior, "counter."), behavior, behavior, behavior, behavior, behavior, behavior)
 	}
 	write("surface.inventory.yaml", inventory)
 	matrix := "schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\nrows:\n"
@@ -172,10 +210,25 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		}
 	}
 	write("verification.matrix.yaml", matrix)
+	depth := "schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_status: parity\nreference: {id: FE_DEPTH_REFERENCE, path: authority/FE_DEPTH_REFERENCE.yaml, digest: " + feDepthReferenceDigest + "}\nrows:\n"
+	for _, behavior := range behaviors {
+		for _, axis := range feDepthAxes {
+			evidenceID := strings.TrimPrefix(behavior, "counter.") + ".depth." + axis
+			depth += fmt.Sprintf("  - {behavior_id: %s, variant_id: %s.default, axis: %s, status: parity, gap_count: 0, evidence_ids: [%s], artifact_uri: evidence/reports/%s.json, trace_id: %s.trace, rationale: 固定FE Depth軸を専用Runtime ArtifactとTraceで検証しGapを残さない。}\n", behavior, behavior, axis, evidenceID, evidenceID, evidenceID)
+		}
+	}
+	write("depth.parity.yaml", depth)
+	feReference, err := os.ReadFile(filepath.Join("..", "..", "profiles", "FE_DEPTH_REFERENCE.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("authority/FE_DEPTH_REFERENCE.yaml", string(feReference))
+	write("reference/counter-system.txt", "increment and reset integrated runtime reference system\n")
+	referenceDigest := fileDigest(t, filepath.Join(dir, "reference", "counter-system.txt"))
 	allOutcomes := "understand, choose, build, verify, operate, troubleshoot, evolve, delegate"
 	allSurfaces := "orientation-scope, foundations-mechanics, architecture-design, implementation-construction, testing-verification, failure-recovery, operations-observability, security-privacy-safety, performance-capacity-cost, compatibility-integration, migration-evolution-deprecation, decision-comparison, provenance-rights, agent-skill"
 	write("evals/counter.definitive-skill-eval.json", fmt.Sprintf("{\"schema_version\":2,\"id\":\"counter.definitive-v2\",\"atlas_id\":\"counter-reference-atlas\",\"atlas_release\":\"v0.1.0\",\"skill_id\":\"counter-reference-atlas-advisor\",\"generated_at\":\"2026-08-28T00:00:00Z\",\"cases\":[{\"id\":\"all.contracts\",\"result\":\"pass\",\"outcome_ids\":[%s],\"surface_ids\":[%s],\"gap_behavior\":true,\"authorization_boundary\":true,\"assertion\":\"8 Outcomeと14 SurfaceとGapと権限境界を評価する。\"}]}\n", quoteList(allOutcomes), quoteList(allSurfaces)))
-	write("definitive.yaml", "schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems: []\ncomparisons: []\n")
+	write("definitive.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_class: subject-definitive\nsurface_inventory: surface.inventory.yaml\nverification_matrix: verification.matrix.yaml\ndepth_parity: depth.parity.yaml\nskill_eval: evals/counter.definitive-skill-eval.json\nnon_regression: non-regression.yaml\ncertificate: evidence/definitive-certificate.json\nhistorical_certificates:\n  - {path: evidence/history/v0.1.0/completion-certificate.json, classification: bounded-complete}\nreference_systems:\n  - {id: counter-system, path: reference/counter-system.txt, digest: %s, behavior_ids: [counter.increment, counter.reset]}\ncomparisons: []\n", referenceDigest))
 	if _, err := GenerateCertificate(dir, "2026-08-28T00:00:00Z", strings.Repeat("a", 40)); err != nil {
 		t.Fatal(err)
 	}
@@ -184,6 +237,11 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 	write("evidence/history/v0.1.0/completion-certificate.json", string(v1Certificate))
+	baselineRelative := "baselines/v0.1.0.non-regression-baseline.json"
+	if _, err := GenerateNonRegressionBaseline(dir, filepath.Join(dir, baselineRelative), strings.Repeat("a", 40), "2026-08-28T00:00:00Z"); err != nil {
+		t.Fatal(err)
+	}
+	write("non-regression.yaml", fmt.Sprintf("schema_version: 2\natlas_id: counter-reference-atlas\nbaseline: {path: %s, digest: %s}\nreplacements: []\n", baselineRelative, fileDigest(t, filepath.Join(dir, baselineRelative))))
 	if _, err := GenerateDefinitiveCertificate(dir, "2026-08-28T00:00:00Z", strings.Repeat("b", 40)); err != nil {
 		t.Fatal(err)
 	}
@@ -233,6 +291,44 @@ func applyDefinitiveMutation(t *testing.T, dir, mutation string) {
 		item := cases[0].(map[string]any)
 		item["outcome_ids"] = item["outcome_ids"].([]any)[:7]
 		mustWriteJSON(t, path, doc)
+	case "baseline-target-deletion":
+		doc := mustReadYAML(t, filepath.Join(dir, "coverage.yaml"))
+		targets := doc["targets"].([]any)
+		doc["targets"] = targets[1:]
+		mustWriteYAML(t, filepath.Join(dir, "coverage.yaml"), doc)
+	case "baseline-scope-exclusion":
+		doc := mustReadYAML(t, filepath.Join(dir, "atlas.yaml"))
+		scope := doc["scope"].(map[string]any)
+		scope["exclusions"] = append(scope["exclusions"].([]any), "Runtime検証を新たにScope外へ移動する。")
+		mustWriteYAML(t, filepath.Join(dir, "atlas.yaml"), doc)
+	case "baseline-scope-statement":
+		doc := mustReadYAML(t, filepath.Join(dir, "atlas.yaml"))
+		scope := doc["scope"].(map[string]any)
+		scope["statement"] = "Counterのincrementだけを対象とし、既存のreset、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の各Behaviorを新たに対象外へ移動する縮小Scopeである。"
+		mustWriteYAML(t, filepath.Join(dir, "atlas.yaml"), doc)
+	case "baseline-skip":
+		path := filepath.Join(dir, "counter_test.go")
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(strings.Replace(string(data), "if 1+1", "t.Skip(\"disabled\")\n\tif 1+1", 1)), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	case "baseline-threshold-relaxation":
+		doc := mustReadYAML(t, filepath.Join(dir, "skill.package.yaml"))
+		evals := doc["evals"].(map[string]any)
+		evals["minimum_pass_rate"] = 0.5
+		mustWriteYAML(t, filepath.Join(dir, "skill.package.yaml"), doc)
+	case "depth-gap":
+		doc := mustReadYAML(t, filepath.Join(dir, "depth.parity.yaml"))
+		doc["completion_status"] = "incomplete"
+		mustWriteYAML(t, filepath.Join(dir, "depth.parity.yaml"), doc)
+	case "variant-omission":
+		doc := mustReadYAML(t, filepath.Join(dir, "surface.inventory.yaml"))
+		items := doc["items"].([]any)
+		delete(items[0].(map[string]any), "variant_ids")
+		mustWriteYAML(t, filepath.Join(dir, "surface.inventory.yaml"), doc)
 	default:
 		t.Fatalf("未知のFixture mutation: %s", mutation)
 	}

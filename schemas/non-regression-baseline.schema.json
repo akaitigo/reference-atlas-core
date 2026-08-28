@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/non-regression-baseline.schema.json",
+  "title": "Definitive Non Regression Baseline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "baseline_commit", "captured_at", "scope_statement_fingerprint", "scope_exclusions", "minimum_skill_pass_rate", "collections"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "atlas_id": {"$ref": "#/$defs/id"},
+    "baseline_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "captured_at": {"type": "string", "format": "date-time"},
+    "scope_statement_fingerprint": {"$ref": "#/$defs/sha256"},
+    "scope_exclusions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 2}},
+    "minimum_skill_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "collections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tests_labs", "target_sets", "targets", "claims", "proof_obligations", "evidence", "sources", "skill_eval_cases", "required_profiles", "matrix_rows", "depth_parity_rows", "ci_jobs"],
+      "properties": {
+        "tests_labs": {"$ref": "#/$defs/items"},
+        "target_sets": {"$ref": "#/$defs/items"},
+        "targets": {"$ref": "#/$defs/items"},
+        "claims": {"$ref": "#/$defs/items"},
+        "proof_obligations": {"$ref": "#/$defs/items"},
+        "evidence": {"$ref": "#/$defs/items"},
+        "sources": {"$ref": "#/$defs/items"},
+        "skill_eval_cases": {"$ref": "#/$defs/items"},
+        "required_profiles": {"$ref": "#/$defs/items"},
+        "matrix_rows": {"$ref": "#/$defs/items"},
+        "depth_parity_rows": {"$ref": "#/$defs/items"},
+        "ci_jobs": {"$ref": "#/$defs/items"}
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "items": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "fingerprint"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "fingerprint": {"$ref": "#/$defs/sha256"},
+          "path": {"type": "string"},
+          "kind": {"type": "string"},
+          "enabled": {"type": "boolean"},
+          "requirement": {"type": "string"},
+          "state": {"type": "string"},
+          "verdict": {"type": "string"},
+          "execution_mode": {"type": "string"},
+          "profile": {"type": "string"},
+          "platform": {"type": "string"}
+        }
+      }
+    }
+  }
+}

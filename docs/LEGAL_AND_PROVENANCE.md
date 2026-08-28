@@ -56,5 +56,4 @@
 
 ## Contributor
 
-外部ContributionはDCO Sign-offを必須にします。Contributorは、自身が提出する権利を持ち、RepositoryのLicenseで配布できることを表明します。自動Gate通過だけではMergeせず、`akaitigo`が最終承認します。
-
+外部ContributionはDCO Sign-offを必須にします。Contributorは、自身が提出する権利を持ち、RepositoryのLicenseで配布できることを表明します。自動Gate通過だけではMergeせず、Repository maintainerのReviewを必要とします。

@@ -60,7 +60,7 @@ coverage: {epoch: %q, manifest: coverage.yaml}
 authority: {lockfile: sources.lock.yaml, policy: primary-first}
 mastery: {manifest: mastery.yaml, contract_version: 1.0.0}
 scope:
-  statement: %sについて、固定したCoverage Epochと一次資料に対する決定版Referenceを提供する。
+  statement: %sについて、固定したCoverage Epochと一次資料へ追跡可能なReferenceを提供する。
   exclusions: [対象VersionとAuthority Corpusの外側にある未固定の将来仕様]
 skills:
   router: {id: %s, path: %s}
@@ -86,7 +86,7 @@ target_sets:
     exit_criteria: [対象範囲と原理を一次資料から説明できること, 代表Taskを再現可能な証拠で検証できること]
 targets:
   - id: foundation.definitive-reference
-    title: 決定版Reference
+    title: Authority追跡可能Reference
     target_set: foundation
     kind: capability
     requirement: required
@@ -280,6 +280,7 @@ historical_certificate:
 status: inventory-required
 required_actions:
   - lock-authority-artifacts
+  - lock-non-regression-baseline
   - classify-all-surfaces
   - split-behavior-proofs
   - complete-scenario-matrix
@@ -311,13 +312,13 @@ func masteryTemplate(id, epoch string, sets []string) string {
 		{"provenance-rights", "出典・来歴・権利", "[provenance-record, evidence]"}, {"agent-skill", "Agent Skill・評価", "[skill-reference, skill-eval]"},
 	}
 	var output strings.Builder
-	fmt.Fprintf(&output, "schema_version: 1\natlas_id: %s\nepoch: %q\npromise: 対象分野の境界、原理、判断、実装、検証、運用、移行を固定した一次資料と再実行可能な証拠へ接続し、その分野について知るための決定版Referenceを継続的かつ安全に提供する。\naudiences: [learner, practitioner, architect, operator, maintainer, reviewer, educator, agent]\noutcomes:\n", id, epoch)
+	fmt.Fprintf(&output, "schema_version: 1\natlas_id: %s\nepoch: %q\npromise: 対象分野の境界、原理、判断、実装、検証、運用、移行を固定した一次資料と再実行可能な証拠へ接続し、既知の制約、適用条件、比較条件、未解決Gapを追跡可能なReferenceとして提供する。\naudiences: [learner, practitioner, architect, operator, maintainer, reviewer, educator, agent]\noutcomes:\n", id, epoch)
 	for _, item := range outcomes {
 		fmt.Fprintf(&output, "  - id: %s\n    title: %s\n    target_sets: %s\n", item.id, item.title, setList)
 	}
 	output.WriteString("surfaces:\n")
 	for _, item := range surfaces {
-		fmt.Fprintf(&output, "  - id: %s\n    title: %s\n    applicability: required\n    rationale: このSurfaceを決定版Referenceの必須観点として追跡可能に閉じるために必要である。\n    target_sets: %s\n    required_deliverables: %s\n", item.id, item.title, setList, item.deliverables)
+		fmt.Fprintf(&output, "  - id: %s\n    title: %s\n    applicability: required\n    rationale: このSurfaceをAuthorityと再実行可能なEvidenceへ追跡可能に接続するために必要である。\n    target_sets: %s\n    required_deliverables: %s\n", item.id, item.title, setList, item.deliverables)
 	}
 	return output.String()
 }

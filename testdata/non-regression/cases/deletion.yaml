@@ -1,0 +1,2 @@
+mutation: baseline-target-deletion
+want_error: 削除・Scope外移動

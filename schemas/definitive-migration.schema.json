@@ -8,7 +8,7 @@
     "schema_version":{"const":2},"atlas_id":{"$ref":"#/$defs/id"},"from":{"const":"bounded-complete-v1"},"to":{"const":"subject-definitive-v2"},"generated_at":{"type":"string","format":"date-time"},
     "historical_certificate":{"type":"object","additionalProperties":false,"required":["path","digest","classification"],"properties":{"path":{"type":"string","pattern":"^evidence/history/.+/completion-certificate\\.json$"},"digest":{"$ref":"#/$defs/sha256"},"classification":{"const":"bounded-complete"}}},
     "status":{"enum":["inventory-required","proof-required","matrix-required","ready-for-audit"]},
-    "required_actions":{"type":"array","minItems":4,"uniqueItems":true,"items":{"enum":["lock-authority-artifacts","classify-all-surfaces","split-behavior-proofs","complete-scenario-matrix","collect-runtime-evidence","add-reference-system-if-applicable","add-comparisons-if-applicable","upgrade-skill-eval","issue-definitive-certificate"]}}
+    "required_actions":{"type":"array","minItems":4,"uniqueItems":true,"items":{"enum":["lock-authority-artifacts","lock-non-regression-baseline","classify-all-surfaces","split-behavior-proofs","complete-scenario-matrix","collect-runtime-evidence","add-reference-system-if-applicable","add-comparisons-if-applicable","upgrade-skill-eval","issue-definitive-certificate"]}}
   },
   "$defs":{"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"sha256":{"type":"string","pattern":"^sha256:[a-f0-9]{64}$"}}
 }

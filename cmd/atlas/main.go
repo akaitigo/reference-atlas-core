@@ -36,13 +36,21 @@ func run(args []string) error {
 		}
 		return nil
 	case "audit":
+		if len(args) == 4 && args[2] == "--gate" && args[3] == "non-regression" {
+			result, err := validate.AuditNonRegression(args[1])
+			if err != nil {
+				return err
+			}
+			fmt.Printf("非退行監査済み: %s baseline_items=%d current_items=%d replacements=%d\n", result.AtlasID, result.BaselineItems, result.CurrentItems, result.Replacements)
+			return nil
+		}
 		if len(args) == 4 && args[2] == "--gate" && args[3] == "definitive" {
 			result, err := validate.AuditDefinitive(args[1])
 			if err != nil {
 				return err
 			}
-			fmt.Printf("決定版監査済み: %s completion_class=%s authority_surfaces=%d behaviors=%d proofs=%d required_matrix_rows=%d runtime_evidence=%d reference_systems=%d comparisons=%d\n",
-				result.AtlasID, result.CompletionClass, result.AuthoritySurfaces, result.IncludedBehaviors, result.ProofObligations, result.RequiredMatrixRows, result.RuntimeEvidence, result.ReferenceSystems, result.Comparisons)
+			fmt.Printf("Subject Definitive監査済み: %s completion_class=%s authority_surfaces=%d behaviors=%d proofs=%d required_matrix_rows=%d runtime_evidence=%d depth_parity_rows=%d reference_systems=%d comparisons=%d\n",
+				result.AtlasID, result.CompletionClass, result.AuthoritySurfaces, result.IncludedBehaviors, result.ProofObligations, result.RequiredMatrixRows, result.RuntimeEvidence, result.DepthParityRows, result.ReferenceSystems, result.Comparisons)
 			return nil
 		}
 		if len(args) != 2 {
@@ -125,6 +133,23 @@ func run(args []string) error {
 		}
 		fmt.Printf("Skill Coverage Referenceを再生成しました: %s\n", args[2])
 		return nil
+	case "baseline":
+		if len(args) < 4 || args[1] != "generate" {
+			return usageError()
+		}
+		capturedAt, commit, err := baselineOptions(args[4:])
+		if err != nil {
+			return err
+		}
+		if commit == "" {
+			return fmt.Errorf("baseline generateには--commitが必要です")
+		}
+		path, err := validate.GenerateNonRegressionBaseline(args[2], args[3], commit, capturedAt)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Non-regression baselineを生成しました: %s\n", path)
+		return nil
 	case "migrate":
 		if len(args) != 3 {
 			return usageError()
@@ -186,6 +211,25 @@ func certificateOptions(args []string) (string, string, error) {
 	return issuedAt, commit, nil
 }
 
+func baselineOptions(args []string) (string, string, error) {
+	capturedAt, commit := "", ""
+	for len(args) > 0 {
+		if len(args) < 2 {
+			return "", "", usageError()
+		}
+		switch args[0] {
+		case "--captured-at":
+			capturedAt = args[1]
+		case "--commit":
+			commit = args[1]
+		default:
+			return "", "", fmt.Errorf("未知のOptionです: %s", args[0])
+		}
+		args = args[2:]
+	}
+	return capturedAt, commit, nil
+}
+
 func usageError() error {
-	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
+	return fmt.Errorf("使い方: atlas validate <manifest...> | audit <atlas-directory> [--gate definitive|non-regression] | baseline generate <directory> <output> --commit SHA [--captured-at RFC3339] | scaffold <directory> <atlas-id> <日本語title> [epoch] | generate skill-reference <directory> | migrate v1|definitive-v2 <directory> | certificate generate|verify|generate-definitive|verify-definitive <directory> | version")
 }

@@ -1,0 +1,430 @@
+{
+  "atlas_id": "reference-atlas-core",
+  "baseline_commit": "b32f6afe888e2e07eef0e2e016f6f7d139582159",
+  "captured_at": "2026-08-28T00:00:00+09:00",
+  "collections": {
+    "ci_jobs": [
+      {
+        "enabled": true,
+        "fingerprint": "sha256:95ad8a6976284067a86985ce1be6bc4cda13687fe0492a80c3c5759b8e06ba6e",
+        "id": ".github/workflows/ci.yml:verify",
+        "kind": "ci-job",
+        "path": ".github/workflows/ci.yml",
+        "platform": "ubuntu-latest"
+      }
+    ],
+    "claims": [
+      {
+        "fingerprint": "sha256:49c8e208a77953a9e09ed1abc382531c58d66a6ff178ce36587592ecb5e638c1",
+        "id": "assurance.artifacts"
+      },
+      {
+        "fingerprint": "sha256:b1f61096506c20fe1258eed24a9f4b7c73f7ff5b142cc6d8e4217227db0c29a5",
+        "id": "assurance.graph"
+      },
+      {
+        "fingerprint": "sha256:d3c9c24635df90eaea0cc300aa6ddbcffb2c45e8b7f72da932c54fb9119f148a",
+        "id": "assurance.publication"
+      },
+      {
+        "fingerprint": "sha256:f9e42d4903cf26a25ce07be0ae241221ba9767f6ff22c25330de4adc44ae1b61",
+        "id": "contracts.mastery"
+      },
+      {
+        "fingerprint": "sha256:2cc421cce5d6e45a610a866f017293a6846d85a8b16ea2008d4300e47b17fec1",
+        "id": "contracts.schemas"
+      },
+      {
+        "fingerprint": "sha256:9c2539a2ea71ff07c4ee89fb21fe4490bf723a7b4bd681e351f8f1968aaddd9b",
+        "id": "lifecycle.compatibility-release"
+      },
+      {
+        "fingerprint": "sha256:b54e21d81e72cabe40268f5796dd60a60d57f47a36e5c49257571568bef995e2",
+        "id": "lifecycle.migration"
+      },
+      {
+        "fingerprint": "sha256:36e4bbcaf4789b2a0293ca0bc1906373cba2766594847dd50fdbf23ceaee20be",
+        "id": "lifecycle.scaffold"
+      },
+      {
+        "fingerprint": "sha256:a3a05925fa30cc5542cd7b39a54143e5bd3b1ec7d46ee5782328c5cd4e6ada08",
+        "id": "skill.router-eval"
+      }
+    ],
+    "depth_parity_rows": [],
+    "evidence": [
+      {
+        "execution_mode": "runtime",
+        "fingerprint": "sha256:1f0d1952711ec6c75c626e8f6796d5d84331b5bd0575209e961581171dbc8fd8",
+        "id": "core.audit",
+        "profile": "local",
+        "verdict": "pass"
+      },
+      {
+        "execution_mode": "runtime",
+        "fingerprint": "sha256:fd690c564bfab78c1408bf2125c5c2952fbab397a8aebea36c1bbc19511d1be9",
+        "id": "core.compatibility",
+        "profile": "local",
+        "verdict": "pass"
+      },
+      {
+        "execution_mode": "runtime",
+        "fingerprint": "sha256:05a456e56baa960b18cfc9b1981877104b48c8acceac3e88f0cec7ddba63d802",
+        "id": "core.contracts",
+        "profile": "local",
+        "verdict": "pass"
+      },
+      {
+        "execution_mode": "runtime",
+        "fingerprint": "sha256:74eda44694308ae0ef57a06c7ce36e6a1080e7c5e7617a6a7891fcb5643f4933",
+        "id": "core.skill",
+        "profile": "local",
+        "verdict": "pass"
+      },
+      {
+        "execution_mode": "runtime",
+        "fingerprint": "sha256:0f46657b16aa696e38e4531ca914639f0cd62ccd483355f75a840ba3c4766f85",
+        "id": "core.tooling",
+        "profile": "local",
+        "verdict": "pass"
+      }
+    ],
+    "matrix_rows": [],
+    "proof_obligations": [
+      {
+        "fingerprint": "sha256:05669e90efc2be3f6c11a4cb0f01057beb5a70efbb784052b7d543da163dc642",
+        "id": "assurance.artifacts.digest"
+      },
+      {
+        "fingerprint": "sha256:a98c4ac5b160385da130bba1b8ee88185a3c98691fefb4016508733ed83409c5",
+        "id": "assurance.graph.closure"
+      },
+      {
+        "fingerprint": "sha256:1b23cba02e8a5d18f9caccc491c84d49f79b91b8929743a831264f8cde243cdb",
+        "id": "assurance.publication.verify"
+      },
+      {
+        "fingerprint": "sha256:f568ab60e9893140091b595125b25492358aed5e813237221346ef47f9070d8e",
+        "id": "contracts.mastery.exact"
+      },
+      {
+        "fingerprint": "sha256:b19543165c476843dfaa01af2e5a3aa3659a6204246f65648cb9c1b61339e9be",
+        "id": "contracts.schemas.validation"
+      },
+      {
+        "fingerprint": "sha256:8280df8dda26fe9733d5f4cc9eac5e12b702e7696b0c99fadeee6f9c1dc82d6e",
+        "id": "lifecycle.compatibility-release.gate"
+      },
+      {
+        "fingerprint": "sha256:cd46226bb6e59de10161555047604064750ad680a43cc11d08752a9120592ae3",
+        "id": "lifecycle.migration.nondestructive"
+      },
+      {
+        "fingerprint": "sha256:f488f99f2397db6ee1cc26e433822130efc1bfd493d1610dc95afea3ca1ef167",
+        "id": "lifecycle.scaffold.valid"
+      },
+      {
+        "fingerprint": "sha256:47521fe8706cb33cf97442633fdb038d168f0567d08efbd12b3650c131cf9497",
+        "id": "skill.router-eval.categories"
+      }
+    ],
+    "required_profiles": [
+      {
+        "fingerprint": "sha256:5ecda787e51a590af90a522264b84a48da429ab4475f34348877334c82a1cf61",
+        "id": "local"
+      }
+    ],
+    "skill_eval_cases": [
+      {
+        "fingerprint": "sha256:f6247a76b624fd61b2b14ac3c495a0f4e269eedb728d992862913fef25417e6c",
+        "id": "route.audit"
+      },
+      {
+        "fingerprint": "sha256:0c976ad2a8ae0e8ab6aba5eb3a3a604918fd0f467c5e168e732a41b21f94b72c",
+        "id": "route.authority"
+      },
+      {
+        "fingerprint": "sha256:8d4e3f20437c26032e95e222b63cd0ef0603291d240e8a51f0c8de18da1d5eb2",
+        "id": "route.authorization"
+      },
+      {
+        "fingerprint": "sha256:5cf0266ae9515919839e2ca52355fe4a1c13c2edc69dcac3fa87beca60d8b23e",
+        "id": "route.coverage-gap"
+      },
+      {
+        "fingerprint": "sha256:98833c7e6bde73d3efea91ac877f155172c4ab5630f9da6dcb95f18346ebefb9",
+        "id": "route.execution"
+      },
+      {
+        "fingerprint": "sha256:5de479b99859c4d8bcdc303843bbde095c5c083c1c15234852e90db0a4441d14",
+        "id": "route.migration"
+      },
+      {
+        "fingerprint": "sha256:f65423853e9b1ae9e41eea8b4544487c2b2b33d0241352c8b7e5b640ec9f4187",
+        "id": "route.security"
+      },
+      {
+        "fingerprint": "sha256:8012b5d3efeffc553e61751e17c46014bcdf107e224d405e1b75c105ab43deab",
+        "id": "route.subject-boundary"
+      }
+    ],
+    "sources": [
+      {
+        "fingerprint": "sha256:b0ac6acd3a41bba970dd5f311ff9925fa660215daae99a49ee440ade08c08d68",
+        "id": "developer-certificate-of-origin-1.1"
+      },
+      {
+        "fingerprint": "sha256:26c93d1df27218dda9e374b38c03205ea8e71e6e7d6e0eb55e29eadcaa74405d",
+        "id": "go-modules-reference"
+      },
+      {
+        "fingerprint": "sha256:cdd2151de65fbd5fc555a623644c6b37c672f0b5c5fdd9900af6530709586264",
+        "id": "json-schema-2020-12"
+      },
+      {
+        "fingerprint": "sha256:61bfae1fa8dc7911bd221347c9ac6871c8838dd0bd9db022727368769afcb45f",
+        "id": "spdx-2.3"
+      }
+    ],
+    "target_sets": [
+      {
+        "fingerprint": "sha256:12192eb09509fe151f43d4a96a82c49ab8b805b4e062b2d0fc46991c3b56616c",
+        "id": "assurance"
+      },
+      {
+        "fingerprint": "sha256:c26a1b886b68a5d324273dc527f47d5bcad02df897ee818c9b27d94e5d483a28",
+        "id": "contracts"
+      },
+      {
+        "fingerprint": "sha256:dddaf58f05943538220ca474aa5e662feab5dbeee6e8e603f14d138409481cde",
+        "id": "lifecycle"
+      },
+      {
+        "fingerprint": "sha256:90fd3a5784d1ad15a9971142e8627d1fcb268d3e850deb6e912e21aa81e1076a",
+        "id": "skill"
+      }
+    ],
+    "targets": [
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:f5a8347170373d5953f377d2fb8ff84227084028c2d20f4866d75ade6d1f5346",
+        "id": "assurance.artifacts",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:3cbba1fea1a46e3316181ce9a215bfbb6b1bab6331b7a08582cc05c60abb2a90",
+        "id": "assurance.graph",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:3322d4d5b733230f89224ab7cddad782de182180ae4b091b14ae68e0b17c6a0d",
+        "id": "assurance.publication",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:069fa0ca17d3bf01be3f7b0cb316b660a14c1ab3463b2bb7e8aad24aeaf33760",
+        "id": "contracts.mastery",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:53eb5501ebdd3de901678965da7603d9dfafd973ae219b828eb1cb08cce1b109",
+        "id": "contracts.schemas",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:996a7578c2d60da00e8b079ca1d82ed82799d137906c95bbcf5bfa15e63afd7b",
+        "id": "lifecycle.compatibility-release",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:9e4b70d9a29440d613ee8c08345088327e0135c229d55e9d3a24be6959efc94f",
+        "id": "lifecycle.migration",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:fb5fb4d08edbd4494c96d243719ed0e992d793418b6d353a9d844f7a4125c97f",
+        "id": "lifecycle.scaffold",
+        "requirement": "required",
+        "state": "covered"
+      },
+      {
+        "claim_count": 1,
+        "evidence_count": 1,
+        "fingerprint": "sha256:a044e9a54d5a3ef04114e3ed0059e79919e75a9faf8d49a0d6eb7c7bd643476c",
+        "id": "skill.router-eval",
+        "requirement": "required",
+        "state": "covered"
+      }
+    ],
+    "tests_labs": [
+      {
+        "enabled": true,
+        "fingerprint": "sha256:b1e735043383ae0edf47c2368c76d3693f32e3a0a63fb8f67ba8671569d326f1",
+        "id": "lab:examples/company-inventory.yaml",
+        "kind": "lab",
+        "path": "examples/company-inventory.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:355c80885ca9252064974086cdb0c726234f2a7cc740e2a0b53aadf7dbae1b18",
+        "id": "lab:examples/frontend-behavior-atlas/atlas.yaml",
+        "kind": "lab",
+        "path": "examples/frontend-behavior-atlas/atlas.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:a488d0c0455b4938e21e5ccc906f3de340ac8318e79ec19c2c9b35985b37dfc9",
+        "id": "lab:examples/frontend-behavior-atlas/coverage.yaml",
+        "kind": "lab",
+        "path": "examples/frontend-behavior-atlas/coverage.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:376d6b156f9147fed228758c3a4b28e5ffcf1af751a1285474c138aa9fa9eb8d",
+        "id": "lab:examples/frontend-behavior-atlas/mastery.yaml",
+        "kind": "lab",
+        "path": "examples/frontend-behavior-atlas/mastery.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:762de1179e475b82cf32ca1be5d57d737d62195999b85fb94272533947aef388",
+        "id": "lab:examples/frontend-behavior-atlas/sample.evidence.yaml",
+        "kind": "lab",
+        "path": "examples/frontend-behavior-atlas/sample.evidence.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:220e48b5d2862045911488c31d7377a62fb6ca809cad56a32cbca805ec177987",
+        "id": "lab:examples/frontend-behavior-atlas/skill.package.yaml",
+        "kind": "lab",
+        "path": "examples/frontend-behavior-atlas/skill.package.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:1d9963dbd7e3addbcc4307fee3d4dfb1f54dbc1b07610b0693caed76caae5bbd",
+        "id": "lab:examples/frontend-behavior-atlas/sources.lock.yaml",
+        "kind": "lab",
+        "path": "examples/frontend-behavior-atlas/sources.lock.yaml"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:467707f649400adc8c7dcea9e9fa68c66e27032c40c15c16f75db530ab3f07ff",
+        "id": "test-harness:scripts/check_dco.py",
+        "kind": "test-harness",
+        "path": "scripts/check_dco.py"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:ed9c847c1feb8dfca3e6dcfdb688a542345fecbd871923ccc504adf9abce429b",
+        "id": "test:cmd/atlas/main_test.go:TestRunRequiresValidateSubcommand",
+        "kind": "test",
+        "path": "cmd/atlas/main_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:c6dcd3a023f28f11b0553ad2988cdb5c62d4bd4590221d274c73995657fa146f",
+        "id": "test:cmd/atlas/main_test.go:TestVersion",
+        "kind": "test",
+        "path": "cmd/atlas/main_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:d5d3f98fc175dc85df1f80813a5fecad671ddef27d05db87352e4d187de8ad95",
+        "id": "test:internal/project/project_test.go:TestMigrationIsNonDestructiveAndIdempotent",
+        "kind": "test",
+        "path": "internal/project/project_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:7a19ece5fffc1b683d5645f8eca405bf76c077596d3bd91a81c63ac68d36ce1e",
+        "id": "test:internal/project/project_test.go:TestScaffoldProducesAuditableIncompleteSubject",
+        "kind": "test",
+        "path": "internal/project/project_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:4e350ede2921372888294fcc4670e61a119ce9ed40198709013e2e3890083544",
+        "id": "test:internal/validate/core_test.go:TestCorePassesItsOwnCompletionGate",
+        "kind": "test",
+        "path": "internal/validate/core_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:b79e2632916aa313f4889c26144baf1a122e5569ddd8bfe7776f44a9fc081419",
+        "id": "test:internal/validate/validate_test.go:TestCoveredTargetRequiresEvidence",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:75ea9e1a6c8397bfdd9eb3687f6701d0353b55e616daadea8792c2153ad2a24c",
+        "id": "test:internal/validate/validate_test.go:TestExampleAudit",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:bd9410c72ff779e5a4f484cc8b8115cd39bf8fc4bd234b5704e3b8a58fc53929",
+        "id": "test:internal/validate/validate_test.go:TestExamplesValidate",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:530a317bae8c97ea708a6824f0ef1c8133de6905dc59a1d7d9f5320b73c46195",
+        "id": "test:internal/validate/validate_test.go:TestRelativeDigestRejectsTraversalAndTampering",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:927c556a5e860ffd551153ab0bc8fc2245834d4e364561bd9ca3dfd03ee51ef4",
+        "id": "test:internal/validate/validate_test.go:TestSupplyChainAcceptsMavenAndNpmWithoutGoMod",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:8c83cd681c60855f67048a62be1d7194480ede0fa6197c679d88e0f73a2ae8db",
+        "id": "test:internal/validate/validate_test.go:TestSupplyChainRequiresGoModOnlyForGoModules",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      },
+      {
+        "enabled": true,
+        "fingerprint": "sha256:468ebac81f3fafeba38f993c55724a2575bd95e0c929141e0af04bc1d60e9080",
+        "id": "test:internal/validate/validate_test.go:TestV1CompatibilityFixtures",
+        "kind": "test",
+        "path": "internal/validate/validate_test.go"
+      }
+    ]
+  },
+  "minimum_skill_pass_rate": 1,
+  "schema_version": 2,
+  "scope_exclusions": [
+    "個別Subject固有の機能一覧、製品実装、複数Subjectを組み合わせる統合試験"
+  ],
+  "scope_statement_fingerprint": "sha256:f60c264d1835063bb9e5c5442201bbe232b20900a20e1d79c0ace2fb6a469410"
+}

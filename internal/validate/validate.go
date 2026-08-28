@@ -102,6 +102,10 @@ func schemaFor(path string) (string, error) {
 		return "surface-inventory.schema.json", nil
 	case base == "verification.matrix.yaml":
 		return "verification-matrix.schema.json", nil
+	case base == "depth.parity.yaml":
+		return "depth-parity.schema.json", nil
+	case base == "FE_DEPTH_REFERENCE.yaml":
+		return "depth-reference.schema.json", nil
 	case strings.HasSuffix(base, ".authority-surfaces.yaml"):
 		return "authority-surfaces.schema.json", nil
 	case strings.HasSuffix(base, ".definitive-skill-eval.json"):
@@ -110,6 +114,10 @@ func schemaFor(path string) (string, error) {
 		return "definitive-certificate.schema.json", nil
 	case base == "definitive-v2.yaml":
 		return "definitive-migration.schema.json", nil
+	case base == "non-regression.yaml":
+		return "non-regression.schema.json", nil
+	case strings.HasSuffix(base, ".non-regression-baseline.json"):
+		return "non-regression-baseline.schema.json", nil
 	default:
 		return "", fmt.Errorf("%sに対応するSchemaを判定できません", path)
 	}

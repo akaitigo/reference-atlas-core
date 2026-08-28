@@ -108,6 +108,7 @@ atlas-skills     lab
 Authority Source
   -> Fixed Authority Surface Artifact
   -> Complete Surface Inventory
+  -> Atomic Behavior / Variant
   -> Mastery Surface / Outcome
   -> Coverage Target
   -> Capability
@@ -121,6 +122,8 @@ Authority Source
 ```
 
 v1 CertificateはこのChainのうち自己宣言Coverageを閉じる`bounded-complete`履歴である。`subject-definitive`はFixed Authority Surface Artifactから導出された全Behavior／CapabilityがInventory、専用Target、Claim、Proof、Scenario Matrix、Runtime Evidenceへ一対一で接続された場合だけ発行する。
+
+Definitive v2ではさらに固定`FE_DEPTH_REFERENCE`を使用し、Authority消化、Behavior/Variant、Runtime Lab、10 Scenario、Artifact/Trace、統合Reference System、Skill Eval、Provenance、Non-regressionをDepth Parity Matrixへ展開する。比較単位は件数ではなく各軸の再実行可能な接続であり、Gapが1件でも残る場合は`subject-definitive`を発行しない。
 
 孤立したNodeはReleaseを阻止します。v1 bounded Gateだけは理由、責任者、再評価日を持つ明示的Exclusionを履歴化できるが、v2 definitive Gateのrequired Surfaceには例外を認めない。
 

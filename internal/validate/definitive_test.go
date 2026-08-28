@@ -1,9 +1,22 @@
 package validate
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestDepthParitySchemaAllowsHonestIncompleteStaging(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "depth.parity.yaml")
+	content := "schema_version: 2\natlas_id: sample-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_status: incomplete\nreference: {id: FE_DEPTH_REFERENCE, path: authority/FE_DEPTH_REFERENCE.yaml, digest: " + feDepthReferenceDigest + "}\nrows: []\n"
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := File(path); err != nil {
+		t.Fatalf("移行中のGapを捏造Parityなしで保存できる必要があります: %v", err)
+	}
+}
 
 func TestCertificateGenerationRejectsUnknownGitCommit(t *testing.T) {
 	err := ensureSourceCommitExists(".", strings.Repeat("a", 40))

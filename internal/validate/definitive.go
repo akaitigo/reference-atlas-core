@@ -27,6 +27,7 @@ type DefinitiveAuditResult struct {
 	RuntimeEvidence    int
 	ReferenceSystems   int
 	Comparisons        int
+	DepthParityRows    int
 }
 
 type definitiveContext struct {
@@ -34,6 +35,7 @@ type definitiveContext struct {
 	manifest         map[string]any
 	inventory        map[string]any
 	matrix           map[string]any
+	depthParity      map[string]any
 	skillEval        map[string]any
 	behaviors        map[string]map[string]any
 	claimsByBehavior map[string]map[string]any
@@ -68,6 +70,13 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
+	if _, err := AuditNonRegression(dir); err != nil {
+		return DefinitiveAuditResult{}, fmt.Errorf("Definitive non-regression Gate: %w", err)
+	}
+	depthRows, err := auditDepthParity(ctx)
+	if err != nil {
+		return DefinitiveAuditResult{}, err
+	}
 	if err := VerifyDefinitiveCertificate(dir); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
@@ -76,6 +85,7 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 		AuthoritySurfaces: authorityCount, IncludedBehaviors: len(ctx.behaviors), ProofObligations: proofCount,
 		RequiredMatrixRows: requiredRows, RuntimeEvidence: runtimeCount,
 		ReferenceSystems: len(anySlice(ctx.manifest["reference_systems"])), Comparisons: len(anySlice(ctx.manifest["comparisons"])),
+		DepthParityRows: depthRows,
 	}, nil
 }
 
@@ -85,7 +95,7 @@ func loadDefinitiveContext(dir string) (*definitiveContext, error) {
 		return nil, err
 	}
 	docs := map[string]map[string]any{}
-	for name, relative := range map[string]string{"manifest": "definitive.yaml", "inventory": "surface.inventory.yaml", "matrix": "verification.matrix.yaml"} {
+	for name, relative := range map[string]string{"manifest": "definitive.yaml", "inventory": "surface.inventory.yaml", "matrix": "verification.matrix.yaml", "depth-parity": "depth.parity.yaml"} {
 		path := filepath.Join(dir, relative)
 		if _, err := File(path); err != nil {
 			return nil, err
@@ -106,7 +116,7 @@ func loadDefinitiveContext(dir string) (*definitiveContext, error) {
 	atlasID := stringValue(base.documents["atlas"]["id"])
 	coverageConfig, _ := base.documents["atlas"]["coverage"].(map[string]any)
 	epoch := stringValue(coverageConfig["epoch"])
-	for name, doc := range map[string]map[string]any{"definitive": docs["manifest"], "inventory": docs["inventory"], "matrix": docs["matrix"], "skill-eval": skillEval} {
+	for name, doc := range map[string]map[string]any{"definitive": docs["manifest"], "inventory": docs["inventory"], "matrix": docs["matrix"], "depth-parity": docs["depth-parity"], "skill-eval": skillEval} {
 		if stringValue(doc["atlas_id"]) != atlasID {
 			return nil, fmt.Errorf("%sのAtlas IDが一致しません", name)
 		}
@@ -117,7 +127,7 @@ func loadDefinitiveContext(dir string) (*definitiveContext, error) {
 	if docs["inventory"]["authority_lock_digest"] != base.documents["coverage"]["authority_lock_digest"] {
 		return nil, fmt.Errorf("Surface InventoryのAuthority Lock Digestが一致しません")
 	}
-	return &definitiveContext{base: base, manifest: docs["manifest"], inventory: docs["inventory"], matrix: docs["matrix"], skillEval: skillEval, behaviors: map[string]map[string]any{}, claimsByBehavior: map[string]map[string]any{}}, nil
+	return &definitiveContext{base: base, manifest: docs["manifest"], inventory: docs["inventory"], matrix: docs["matrix"], depthParity: docs["depth-parity"], skillEval: skillEval, behaviors: map[string]map[string]any{}, claimsByBehavior: map[string]map[string]any{}}, nil
 }
 
 func auditDefinitiveRequiredTargets(ctx *definitiveContext) error {
@@ -201,7 +211,13 @@ func auditSurfaceInventory(ctx *definitiveContext) (int, error) {
 		if !sameStringSet(anySlice(item["surface_ids"]), anySlice(source.item["surface_ids"])) {
 			return 0, fmt.Errorf("Surface Inventory %sのsurface_idsがAuthority Artifactと一致しません", key)
 		}
+		if !sameStringSet(anySlice(item["variant_ids"]), anySlice(source.item["variant_ids"])) {
+			return 0, fmt.Errorf("Surface Inventory %sのvariant_idsがAuthority Artifactと一致しません", key)
+		}
 		behaviorID := stringValue(item["behavior_id"])
+		if len(anySlice(item["variant_ids"])) == 0 {
+			return 0, fmt.Errorf("subject-definitiveではBehaviorにVariantが1件以上必要です: %s", behaviorID)
+		}
 		if _, duplicate := ctx.behaviors[behaviorID]; duplicate {
 			return 0, fmt.Errorf("Behavior IDはAuthority Surface粒度で一意である必要があります: %s", behaviorID)
 		}

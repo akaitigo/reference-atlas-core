@@ -9,7 +9,7 @@
 - 全Subject Atlasが従う機械可読Schema
 - Stage 1の技術分野Catalog
 - 完成判定とVersion規則
-- 各分野を決定版にする8 Outcome・14 SurfaceのMastery契約
+- 各分野のAuthority由来Coverageを8 Outcome・14 Surfaceで検証するMastery契約
 - 日本語を正本とする文書化規則
 - Agent Skillの生成・配布契約
 - 権利、出典、第三者素材のPublication Gate
@@ -36,7 +36,7 @@ reference-atlas-core
 
 ## 現在の状態
 
-Control Plane v1の既存Certificateは固定したCoverage Epoch `2026-08-28`に対する`bounded-complete`履歴です。`subject-definitive`とは区別されます。Definitive Gate v2はAuthority由来Surface全件、Behavior粒度Proof、10 Scenario Matrix、実Runtime／Platform Evidenceを別Certificateで検証します。
+Control Plane v1の既存Certificateは固定したCoverage Epoch `2026-08-28`に対する`bounded-complete`履歴です。`subject-definitive`とは区別されます。Definitive Gate v2はAuthority由来Surface全件、Atomic Behavior/Variant、10 Scenario Matrix、固定FE Depth Parity、実Runtime／Platform Artifact/Trace、公開main Non-regressionを別Certificateで検証します。
 
 ## 開発用検証
 
@@ -52,6 +52,8 @@ make release-check
 ```
 
 CLIの全Commandは`docs/CLI.md`、互換性は`docs/VERSIONING.md`、公開手順は`docs/RELEASING.md`を正本とします。
+
+TemplateとDocsの記述規約は[`docs/NEUTRAL_AUTHORING.md`](docs/NEUTRAL_AUTHORING.md)に従い、検証不能な優越表現ではなくEvidence、比較条件、既知の制約を記録します。
 
 ## 言語
 

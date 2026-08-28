@@ -1,0 +1,2 @@
+mutation: baseline-scope-statement
+want_error: Scope statementを縮小・置換

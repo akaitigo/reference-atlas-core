@@ -4,6 +4,8 @@
 atlas validate <manifest...>
 atlas audit <atlas-directory>
 atlas audit <atlas-directory> --gate definitive
+atlas audit <atlas-directory> --gate non-regression
+atlas baseline generate <atlas-directory> <output> --commit SHA [--captured-at RFC3339]
 atlas scaffold <directory> <atlas-id> <日本語title> [epoch]
 atlas generate skill-reference <atlas-directory>
 atlas migrate v1 <atlas-directory>
@@ -17,4 +19,6 @@ atlas version
 
 `scaffold`は空の出力先だけへ`incomplete` Subjectを生成する。`generate skill-reference`はCanonical `coverage.yaml`から派生Referenceを再生成する。`migrate v1`は既存Fileを上書きせず、不足するMasteryと`migrations/core-v1.yaml`だけを作る。`migrate definitive-v2`はv1 Certificateを不変履歴へコピーして未完Actionを記録するだけで、自己申告ScopeからAuthority Inventoryを捏造しない。
 
-既定`audit`はv1の`complete`を`completion_class=bounded-complete`として表示する。`--gate definitive`だけがAuthority Inventory、Behavior Proof、10 Scenario Matrix、Runtime Profile、Reference System、Comparison、Skill Eval v2、独立Certificateを検査し、成功時に`completion_class=subject-definitive`を返す。
+既定`audit`はv1の`complete`を`completion_class=bounded-complete`として表示する。`--gate definitive`だけがAuthority Inventory、Atomic Behavior/Variant、Behavior Proof、10 Scenario Matrix、`FE_DEPTH_REFERENCE` Parity、Runtime Profile、Artifact/Trace、Reference System、Comparison、Skill Eval v2、Non-regression、独立Certificateを検査し、成功時に`completion_class=subject-definitive`を返す。
+
+`baseline generate`はTest関数、`examples/**`、`labs/**`、`testdata/**`、`evals/run.*`、主要`script` harness、Target／Target Set、Claim／Proof、Evidence、Source、Skill Eval、Required Profile、Verification Matrix、CI Jobを固定する。`--gate non-regression`は削除、skip、Scope退避、Target弱化、Assertion／閾値／Matrix／CI縮小、Runtime Evidenceのstatic化、失敗Evidenceの消去を拒否する。

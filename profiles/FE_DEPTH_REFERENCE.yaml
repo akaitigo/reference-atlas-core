@@ -1,0 +1,22 @@
+schema_version: 2
+id: FE_DEPTH_REFERENCE
+description: Frontend Atlasで確立した解像度・実行性・証拠密度を件数ではなく必須検証軸として固定する。
+axes:
+  - {id: authority-consumption, runtime_required: false, criterion: 一次資料本文または固定Artifactの全Surfaceを消化し未分類を残さない。}
+  - {id: surface-atomic-behavior-variant, runtime_required: false, criterion: Surfaceを反証可能なAtomic BehaviorとVariantへ分解する。}
+  - {id: runtime-lab, runtime_required: true, criterion: staticやmockではない実Runtime Labを再実行する。}
+  - {id: scenario-normal, runtime_required: true, criterion: 正常系を専用ArtifactとTraceで検証する。}
+  - {id: scenario-boundary, runtime_required: true, criterion: 境界値を専用ArtifactとTraceで検証する。}
+  - {id: scenario-refusal, runtime_required: true, criterion: 拒否動作を専用ArtifactとTraceで検証する。}
+  - {id: scenario-failure, runtime_required: true, criterion: 障害動作を専用ArtifactとTraceで検証する。}
+  - {id: scenario-recovery, runtime_required: true, criterion: 回復動作を専用ArtifactとTraceで検証する。}
+  - {id: scenario-migration, runtime_required: true, criterion: 移行動作を専用ArtifactとTraceで検証する。}
+  - {id: scenario-operations, runtime_required: true, criterion: 運用動作を専用ArtifactとTraceで検証する。}
+  - {id: scenario-security, runtime_required: true, criterion: Security境界を専用ArtifactとTraceで検証する。}
+  - {id: scenario-performance, runtime_required: true, criterion: 性能予算を専用ArtifactとTraceで検証する。}
+  - {id: scenario-compatibility, runtime_required: true, criterion: 互換動作を専用ArtifactとTraceで検証する。}
+  - {id: artifact-trace, runtime_required: true, criterion: 実行Artifactを追跡可能なTraceへ接続する。}
+  - {id: integrated-reference-system, runtime_required: true, criterion: 複数Behaviorを統合したReference Systemを実行する。}
+  - {id: skill-eval, runtime_required: false, criterion: Skill Evalを8 Outcomeと14 SurfaceとGapと権限境界へ接続する。}
+  - {id: provenance, runtime_required: false, criterion: Source、Artifact、権利、生成来歴を固定する。}
+  - {id: non-regression, runtime_required: true, criterion: 公開baselineからCoverage能力が減っていないことを実行検証する。}

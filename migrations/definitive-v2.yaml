@@ -10,6 +10,7 @@ historical_certificate:
 status: inventory-required
 required_actions:
   - lock-authority-artifacts
+  - lock-non-regression-baseline
   - classify-all-surfaces
   - split-behavior-proofs
   - complete-scenario-matrix

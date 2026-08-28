@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/depth-parity.schema.json",
+  "title": "FE Depth Parity Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "epoch", "completion_status", "reference", "rows"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "atlas_id": {"$ref": "#/$defs/id"},
+    "epoch": {"$ref": "#/$defs/date"},
+    "completion_status": {"enum": ["incomplete", "parity"]},
+    "reference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "digest"],
+      "properties": {
+        "id": {"const": "FE_DEPTH_REFERENCE"},
+        "path": {"const": "authority/FE_DEPTH_REFERENCE.yaml"},
+        "digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["behavior_id", "variant_id", "axis", "status", "gap_count", "evidence_ids", "artifact_uri", "trace_id", "rationale"],
+        "properties": {
+          "behavior_id": {"$ref": "#/$defs/dottedId"},
+          "variant_id": {"$ref": "#/$defs/dottedId"},
+          "axis": {"$ref": "#/$defs/axis"},
+          "status": {"enum": ["gap", "parity"]},
+          "gap_count": {"type": "integer", "minimum": 0},
+          "evidence_ids": {"type": "array", "maxItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/dottedId"}},
+          "artifact_uri": {"type": ["string", "null"]},
+          "trace_id": {"anyOf": [{"$ref": "#/$defs/dottedId"}, {"type": "null"}]},
+          "rationale": {"type": "string", "minLength": 20}
+        },
+        "allOf": [
+          {"if": {"properties": {"status": {"const": "parity"}}}, "then": {"properties": {"gap_count": {"const": 0}, "evidence_ids": {"minItems": 1}, "artifact_uri": {"type": "string", "minLength": 3}, "trace_id": {"$ref": "#/$defs/dottedId"}}}},
+          {"if": {"properties": {"status": {"const": "gap"}}}, "then": {"properties": {"gap_count": {"minimum": 1}}}}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "dottedId": {"type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "axis": {"enum": ["authority-consumption", "surface-atomic-behavior-variant", "runtime-lab", "scenario-normal", "scenario-boundary", "scenario-refusal", "scenario-failure", "scenario-recovery", "scenario-migration", "scenario-operations", "scenario-security", "scenario-performance", "scenario-compatibility", "artifact-trace", "integrated-reference-system", "skill-eval", "provenance", "non-regression"]}
+  }
+}
