@@ -104,7 +104,7 @@ func schemaFor(path string) (string, error) {
 		return "verification-matrix.schema.json", nil
 	case base == "depth.parity.yaml":
 		return "depth-parity.schema.json", nil
-	case base == "FE_DEPTH_REFERENCE.yaml":
+	case base == "FE_DEPTH_REFERENCE.yaml" || base == "FE_DEPTH_REFERENCE.json":
 		return "depth-reference.schema.json", nil
 	case strings.HasSuffix(base, ".authority-surfaces.yaml"):
 		return "authority-surfaces.schema.json", nil

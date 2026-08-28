@@ -42,14 +42,7 @@ type definitiveContext struct {
 }
 
 func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
-	baseResult, err := AuditDir(dir)
-	if err != nil {
-		return DefinitiveAuditResult{}, fmt.Errorf("bounded-complete基盤が無効です: %w", err)
-	}
-	if baseResult.CompletionClass != "bounded-complete" {
-		return DefinitiveAuditResult{}, fmt.Errorf("subject-definitiveには有効なbounded-complete基盤が必要です")
-	}
-	ctx, err := loadDefinitiveContext(dir)
+	ctx, err := loadDefinitiveBase(dir)
 	if err != nil {
 		return DefinitiveAuditResult{}, err
 	}
@@ -77,6 +70,12 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 	if err != nil {
 		return DefinitiveAuditResult{}, err
 	}
+	if err := auditDefinitivePromotionFoundation(ctx); err != nil {
+		return DefinitiveAuditResult{}, err
+	}
+	if stringValue(ctx.base.documents["atlas"]["status"]) != "complete" {
+		return DefinitiveAuditResult{}, fmt.Errorf("historical bounded-complete基盤は検証済みですが、subject-definitive昇格にはatlas.status=completeが必要です")
+	}
 	if err := VerifyDefinitiveCertificate(dir); err != nil {
 		return DefinitiveAuditResult{}, err
 	}
@@ -87,6 +86,105 @@ func AuditDefinitive(dir string) (DefinitiveAuditResult, error) {
 		ReferenceSystems: len(anySlice(ctx.manifest["reference_systems"])), Comparisons: len(anySlice(ctx.manifest["comparisons"])),
 		DepthParityRows: depthRows,
 	}, nil
+}
+
+// loadDefinitiveBase accepts either the current bounded-complete state or an
+// immutable, self-signed v1 certificate retained as bounded-complete history.
+// The latter lets an honest status=incomplete migration reach its actual v2
+// promotion gap without rewriting or deleting the historical certificate.
+func loadDefinitiveBase(dir string) (*definitiveContext, error) {
+	baseResult, baseErr := AuditDir(dir)
+	ctx, ctxErr := loadDefinitiveContext(dir)
+	if ctxErr != nil {
+		return nil, ctxErr
+	}
+	if baseErr == nil && baseResult.CompletionClass == "bounded-complete" {
+		return ctx, nil
+	}
+	if err := verifyHistoricalBoundedBase(ctx); err != nil {
+		if baseErr != nil {
+			return nil, fmt.Errorf("bounded-complete基盤が無効で、historical bounded Certificateも検証できません: current=%v historical=%w", baseErr, err)
+		}
+		return nil, fmt.Errorf("subject-definitiveには現在またはhistoricalの有効なbounded-complete基盤が必要です: %w", err)
+	}
+	return ctx, nil
+}
+
+func verifyHistoricalBoundedBase(ctx *definitiveContext) error {
+	items := anySlice(ctx.manifest["historical_certificates"])
+	if len(items) == 0 {
+		return fmt.Errorf("historical_certificatesがありません")
+	}
+	verified := 0
+	for _, raw := range items {
+		item, _ := raw.(map[string]any)
+		if item["classification"] != "bounded-complete" {
+			continue
+		}
+		path := stringValue(item["path"])
+		full := filepath.Join(ctx.base.dir, filepath.FromSlash(path))
+		if _, err := File(full); err != nil {
+			return fmt.Errorf("%s: %w", path, err)
+		}
+		certificate, err := readJSONDocument(full)
+		if err != nil {
+			return err
+		}
+		if stringValue(certificate["atlas_id"]) != stringValue(ctx.base.documents["atlas"]["id"]) {
+			return fmt.Errorf("%sのAtlas IDが現在のRepositoryと一致しません", path)
+		}
+		signature, _ := certificate["signature"].(map[string]any)
+		if stringValue(signature["type"]) != "payload-sha256" {
+			return fmt.Errorf("%sの署名方式が無効です", path)
+		}
+		payload := make(map[string]any, len(certificate)-1)
+		for key, value := range certificate {
+			if key != "signature" {
+				payload[key] = value
+			}
+		}
+		digest, err := digestCanonical(payload)
+		if err != nil {
+			return err
+		}
+		if digest != stringValue(signature["digest"]) {
+			return fmt.Errorf("%sのpayload署名が一致しません", path)
+		}
+		verified++
+	}
+	if verified == 0 {
+		return fmt.Errorf("bounded-complete分類のhistorical Certificateがありません")
+	}
+	return nil
+}
+
+// auditDefinitivePromotionFoundation enforces the v1 foundation without
+// requiring the historical certificate to match the migrated working tree.
+func auditDefinitivePromotionFoundation(ctx *definitiveContext) error {
+	if err := ensureMasteryCovered(ctx.base.documents["mastery"], ctx.base.targets); err != nil {
+		return fmt.Errorf("subject-definitive昇格のMastery基盤: %w", err)
+	}
+	if err := verifyAuthorityDigest(filepath.Join(ctx.base.dir, "sources.lock.yaml"), ctx.base.documents["coverage"]); err != nil {
+		return err
+	}
+	if err := auditClaimEvidenceGraph(ctx.base); err != nil {
+		return err
+	}
+	if err := auditProfiles(ctx.base); err != nil {
+		return err
+	}
+	if _, err := skillEvalSummary(ctx.base); err != nil {
+		return err
+	}
+	atlas := ctx.base.documents["atlas"]
+	license, _ := atlas["license"].(map[string]any)
+	if err := auditSBOM(filepath.Join(ctx.base.dir, filepath.FromSlash(stringValue(license["sbom"])))); err != nil {
+		return err
+	}
+	if err := auditSupplyChain(ctx.base, stringValue(license["sbom"]), stringValue(license["third_party_manifest"])); err != nil {
+		return err
+	}
+	return auditProvenance(ctx.base)
 }
 
 func loadDefinitiveContext(dir string) (*definitiveContext, error) {

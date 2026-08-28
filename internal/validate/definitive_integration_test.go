@@ -92,6 +92,54 @@ func TestNonRegressionNegativeFixtures(t *testing.T) {
 	}
 }
 
+func TestIncompleteMigrationUsesHistoricalBoundedBaseBeforePromotionBlock(t *testing.T) {
+	dir := createDefinitiveRepositoryFixture(t)
+	atlasPath := filepath.Join(dir, "atlas.yaml")
+	atlas := mustReadYAML(t, atlasPath)
+	atlas["status"] = "incomplete"
+	mustWriteYAML(t, atlasPath, atlas)
+	_, err := AuditDefinitive(dir)
+	if err == nil || !strings.Contains(err.Error(), "historical bounded-complete基盤は検証済み") || !strings.Contains(err.Error(), "atlas.status=complete") {
+		t.Fatalf("historical bounded基盤を認識した後にpromotionを止める必要があります: %v", err)
+	}
+}
+
+func TestIncompleteMigrationRejectsTamperedHistoricalBoundedBase(t *testing.T) {
+	dir := createDefinitiveRepositoryFixture(t)
+	atlasPath := filepath.Join(dir, "atlas.yaml")
+	atlas := mustReadYAML(t, atlasPath)
+	atlas["status"] = "incomplete"
+	mustWriteYAML(t, atlasPath, atlas)
+	historicalPath := filepath.Join(dir, "evidence", "history", "v0.1.0", "completion-certificate.json")
+	historical := mustReadYAML(t, historicalPath)
+	historical["commit"] = strings.Repeat("c", 40)
+	mustWriteJSON(t, historicalPath, historical)
+	_, err := AuditDefinitive(dir)
+	if err == nil || !strings.Contains(err.Error(), "payload署名が一致しません") {
+		t.Fatalf("改変されたhistorical bounded Certificateを基盤にできてはいけません: %v", err)
+	}
+}
+
+func TestDepthParityRejectsSharedProofAcrossAuthorityDenominator(t *testing.T) {
+	dir := createDefinitiveRepositoryFixture(t)
+	path := filepath.Join(dir, "depth.parity.yaml")
+	doc := mustReadYAML(t, path)
+	rows := doc["rows"].([]any)
+	rows[1].(map[string]any)["proof_id"] = rows[0].(map[string]any)["proof_id"]
+	mustWriteYAML(t, path, doc)
+	ctx, err := loadDefinitiveContext(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := auditSurfaceInventory(ctx); err != nil {
+		t.Fatal(err)
+	}
+	_, err = auditDepthParity(ctx)
+	if err == nil || !strings.Contains(err.Error(), "専用の反証可能Proof") {
+		t.Fatalf("1件のProofを複数Axis/Behavior/Variantへ集約できてはいけません: %v", err)
+	}
+}
+
 func createDefinitiveRepositoryFixture(t *testing.T) string {
 	t.Helper()
 	dir := filepath.Join(t.TempDir(), "counter-reference-atlas")
@@ -210,19 +258,19 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 		}
 	}
 	write("verification.matrix.yaml", matrix)
-	depth := "schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_status: parity\nreference: {id: FE_DEPTH_REFERENCE, path: authority/FE_DEPTH_REFERENCE.yaml, digest: " + feDepthReferenceDigest + "}\nrows:\n"
+	depth := "schema_version: 2\natlas_id: counter-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_status: parity\nreference: {id: fe-depth-reference-v1, path: authority/FE_DEPTH_REFERENCE.json, digest: " + feDepthReferenceDigest + ", repository: frontend-behavior-atlas, commit: " + feDepthReferenceCommit + ", status_at_commit: incomplete}\ndenominator_policy: {source: authority-derived-subject-surface-inventory, transplant_absolute_counts: false}\nrows:\n"
 	for _, behavior := range behaviors {
 		for _, axis := range feDepthAxes {
 			evidenceID := strings.TrimPrefix(behavior, "counter.") + ".depth." + axis
-			depth += fmt.Sprintf("  - {behavior_id: %s, variant_id: %s.default, axis: %s, status: parity, gap_count: 0, evidence_ids: [%s], artifact_uri: evidence/reports/%s.json, trace_id: %s.trace, rationale: 固定FE Depth軸を専用Runtime ArtifactとTraceで検証しGapを残さない。}\n", behavior, behavior, axis, evidenceID, evidenceID, evidenceID)
+			depth += fmt.Sprintf("  - {behavior_id: %s, variant_id: %s.default, axis: %s, status: satisfied, gap_count: 0, proof_id: %s.proof, oracle: Subject固有のAuthority由来母集団について期待結果と実行結果が一致すること。, evidence_ids: [%s], artifact_uri: evidence/reports/%s.json, trace_id: %s.trace, rationale: FEの絶対件数を転用せずportable criterionを専用ArtifactとTraceで検証する。}\n", behavior, behavior, axis, evidenceID, evidenceID, evidenceID, evidenceID)
 		}
 	}
 	write("depth.parity.yaml", depth)
-	feReference, err := os.ReadFile(filepath.Join("..", "..", "profiles", "FE_DEPTH_REFERENCE.yaml"))
+	feReference, err := os.ReadFile(filepath.Join("..", "..", "profiles", "FE_DEPTH_REFERENCE.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	write("authority/FE_DEPTH_REFERENCE.yaml", string(feReference))
+	write("authority/FE_DEPTH_REFERENCE.json", string(feReference))
 	write("reference/counter-system.txt", "increment and reset integrated runtime reference system\n")
 	referenceDigest := fileDigest(t, filepath.Join(dir, "reference", "counter-system.txt"))
 	allOutcomes := "understand, choose, build, verify, operate, troubleshoot, evolve, delegate"

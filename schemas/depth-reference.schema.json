@@ -1,28 +1,80 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/depth-reference.schema.json",
-  "title": "FE Depth Reference Profile",
+  "title": "FE Depth Reference Canonical Input",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "id", "description", "axes"],
+  "required": ["schemaVersion", "id", "subject", "generatedAt", "status", "completionClaim", "denominatorPolicy", "parityDecision", "observedDensity", "summary", "axes", "referenceFixtures"],
   "properties": {
-    "schema_version": {"const": 2},
-    "id": {"const": "FE_DEPTH_REFERENCE"},
-    "description": {"type": "string", "minLength": 30},
+    "schemaVersion": {"const": 1},
+    "id": {"const": "fe-depth-reference-v1"},
+    "subject": {"const": "frontend-observable-behavior"},
+    "generatedAt": {"type": "string", "format": "date-time"},
+    "status": {"const": "incomplete"},
+    "completionClaim": {"const": "neither-bounded-complete-nor-subject-definitive"},
+    "denominatorPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source", "transplantAbsoluteCounts", "note"],
+      "properties": {
+        "source": {"const": "authority-derived-subject-surface-inventory"},
+        "transplantAbsoluteCounts": {"const": false},
+        "note": {"type": "string", "minLength": 30}
+      }
+    },
+    "parityDecision": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rule", "frontendCurrentlyDefinitive", "reasons"],
+      "properties": {
+        "rule": {"type": "string", "minLength": 30},
+        "frontendCurrentlyDefinitive": {"const": false},
+        "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 10}}
+      }
+    },
+    "observedDensity": {"type": "object", "minProperties": 1, "additionalProperties": true},
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["satisfied", "partial", "missing"],
+      "properties": {
+        "satisfied": {"const": 1},
+        "partial": {"const": 17},
+        "missing": {"const": 0}
+      }
+    },
     "axes": {
       "type": "array", "minItems": 18, "maxItems": 18,
       "items": {
         "type": "object", "additionalProperties": false,
-        "required": ["id", "runtime_required", "criterion"],
+        "required": ["id", "title", "portableCriterion", "denominator", "status", "checks", "gaps"],
         "properties": {
           "id": {"$ref": "#/$defs/axis"},
-          "runtime_required": {"type": "boolean"},
-          "criterion": {"type": "string", "minLength": 20}
+          "title": {"type": "string", "minLength": 3},
+          "portableCriterion": {"type": "string", "minLength": 30},
+          "denominator": {"type": "string", "minLength": 10},
+          "status": {"enum": ["satisfied", "partial", "missing"]},
+          "checks": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["id", "status", "required", "observed", "evidence"],
+              "properties": {
+                "id": {"type": "string", "minLength": 3},
+                "status": {"enum": ["pass", "gap"]},
+                "required": {"type": "string", "minLength": 10},
+                "observed": {},
+                "evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+              }
+            }
+          },
+          "gaps": {"type": "array", "items": {"type": "string", "minLength": 5}}
         }
       }
+    },
+    "referenceFixtures": {
+      "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^fixtures/definitive-gate-v2/.+\\.fixture\\.json$"}
     }
   },
   "$defs": {
-    "axis": {"enum": ["authority-consumption", "surface-atomic-behavior-variant", "runtime-lab", "scenario-normal", "scenario-boundary", "scenario-refusal", "scenario-failure", "scenario-recovery", "scenario-migration", "scenario-operations", "scenario-security", "scenario-performance", "scenario-compatibility", "artifact-trace", "integrated-reference-system", "skill-eval", "provenance", "non-regression"]}
+    "axis": {"enum": ["authority-body-digestion", "surface-atomic-behavior-variant", "real-runtime-lab", "scenario-normal", "scenario-boundary", "scenario-refusal", "scenario-failure", "scenario-recovery", "scenario-migration", "scenario-operations", "scenario-security", "scenario-performance", "scenario-compatibility", "artifact-trace", "integrated-reference-system", "skill-eval", "rights-provenance", "non-regression-gate"]}
   }
 }

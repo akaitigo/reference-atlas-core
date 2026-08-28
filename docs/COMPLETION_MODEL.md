@@ -141,9 +141,10 @@ v2はRaw Target件数を要求しない。固定Authority Artifactから抽出�
 - Architecture／Compatibility Surfaceでは複数Behaviorを接続するReference System、Decision Surfaceでは2方式以上のComparisonを要求する。
 - Skill Evalは8 Outcomeと14 Surfaceの全件、Coverage Gap応答、権限境界をpass Caseへ接続する。
 - v1 Certificateは`bounded-complete`履歴としてv2 CertificateへDigest参照し、自動昇格させない。
+- `status: incomplete`の移行Repositoryではhistorical v1 CertificateのSchema、Atlas ID、payload署名を先に検証してbounded基盤として認識し、その後にv2固有のpromotion Gapを返す。最終昇格には`atlas.status: complete`を要求する。
 - 公開main由来Non-regression Baselineを単調下限とし、Test/Lab/Target/Claim/Proof/Evidence/Source/Skill Eval/Profile/Matrix/CIの削除・弱化・Scope退避を拒否する。正当な置換は旧IDから新IDへの一対多または同等以上Mapping、Runtime実行Proof、Migration Evidence、理由をすべて必要とし、多対一の粗い集約は認めない。
-- 固定`FE_DEPTH_REFERENCE`のAuthority消化、Atomic Behavior/Variant、Runtime Lab、10 Scenario、Artifact/Trace、統合Reference System、Skill Eval、Provenance、Non-regression軸を各Behavior/Variantへ展開し、Depth Parity MatrixのGap 0を要求する。TargetやRowの件数だけではParityとしない。
+- 固定Commitの`FE_DEPTH_REFERENCE.json`にあるAuthority本文消化、Atomic Behavior/Variant、実Runtime Lab、10 Scenario、Artifact/Trace、統合Reference System、Skill Eval、権利・Provenance、Non-regression Gateの18軸を各Behavior/Variantへ展開し、専用Proof／OracleとDepth Parity MatrixのGap 0を要求する。参照元Frontendは`incomplete`（1軸`satisfied`、17軸`partial`）であり、自動的にcomplete扱いしない。TargetやRowの件数だけではParityとせず、Frontend固有の絶対件数を別Subjectへ転用しない。
 
-移行途中の`depth.parity.yaml`は`completion_status: incomplete`と`rows: []`、または`status: gap`のRowを保存できる。Schema適合はGapの正直な記録を許すが、Definitive Gateは`completion_status: parity`、全軸の専用Evidence/Artifact/Trace、Gap 0が揃うまで失敗する。
+移行途中の`depth.parity.yaml`は`completion_status: incomplete`と`rows: []`、または`status: gap`のRowを保存できる。Schema適合はGapの正直な記録を許すが、Definitive Gateは`completion_status: parity`、全軸の専用Proof／Oracle／Evidence／Artifact／Trace、Gap 0が揃うまで失敗する。
 
 詳細な移行は`docs/MIGRATION_DEFINITIVE_V2.md`を正本とする。

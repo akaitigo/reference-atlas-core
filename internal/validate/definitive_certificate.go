@@ -81,16 +81,12 @@ func VerifyDefinitiveCertificate(dir string) error {
 }
 
 func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, string, error) {
-	baseResult, err := AuditDir(dir)
+	ctx, err := loadDefinitiveBase(dir)
 	if err != nil {
 		return nil, "", err
 	}
-	if baseResult.CompletionClass != "bounded-complete" {
-		return nil, "", fmt.Errorf("subject-definitive Certificateにはbounded-complete基盤が必要です")
-	}
-	ctx, err := loadDefinitiveContext(dir)
-	if err != nil {
-		return nil, "", err
+	if stringValue(ctx.base.documents["atlas"]["status"]) != "complete" {
+		return nil, "", fmt.Errorf("historical bounded-complete基盤は検証済みですが、subject-definitive Certificate生成にはatlas.status=completeが必要です")
 	}
 	if err := auditDefinitiveRequiredTargets(ctx); err != nil {
 		return nil, "", err
@@ -111,6 +107,9 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 		return nil, "", fmt.Errorf("Definitive non-regression Gate: %w", err)
 	}
 	if _, err := auditDepthParity(ctx); err != nil {
+		return nil, "", err
+	}
+	if err := auditDefinitivePromotionFoundation(ctx); err != nil {
 		return nil, "", err
 	}
 	if err := validateCommit(commit); err != nil {

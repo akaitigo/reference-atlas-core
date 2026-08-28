@@ -1,15 +1,59 @@
 package validate
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
+func TestCanonicalFEDepthReferencePreservesIncompleteStatus(t *testing.T) {
+	path := filepath.Join("..", "..", "profiles", "FE_DEPTH_REFERENCE.json")
+	if _, err := File(path); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := shaDigest(data); got != feDepthReferenceDigest {
+		t.Fatalf("FE Depth Reference digestが正本Commitと一致しません: %s", got)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(data, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if err := auditFEDepthReferenceContract(doc); err != nil {
+		t.Fatal(err)
+	}
+	if doc["status"] != "incomplete" {
+		t.Fatalf("FEをcomplete扱いしてはいけません: %v", doc["status"])
+	}
+}
+
+func TestFEDepthParityIgnoresPortableRawCounts(t *testing.T) {
+	path := filepath.Join("..", "..", "profiles", "FE_DEPTH_REFERENCE.json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(data, &doc); err != nil {
+		t.Fatal(err)
+	}
+	density := doc["observedDensity"].(map[string]any)
+	density["targets"] = float64(1)
+	density["variants"] = float64(1_000_000)
+	density["lockedE2ETests"] = float64(0)
+	if err := auditFEDepthReferenceContract(doc); err != nil {
+		t.Fatalf("FE固有の観測件数を他Subjectの合否閾値として読んではいけません: %v", err)
+	}
+}
+
 func TestDepthParitySchemaAllowsHonestIncompleteStaging(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "depth.parity.yaml")
-	content := "schema_version: 2\natlas_id: sample-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_status: incomplete\nreference: {id: FE_DEPTH_REFERENCE, path: authority/FE_DEPTH_REFERENCE.yaml, digest: " + feDepthReferenceDigest + "}\nrows: []\n"
+	content := "schema_version: 2\natlas_id: sample-reference-atlas\nepoch: \"2026-08-28\"\ncompletion_status: incomplete\nreference: {id: fe-depth-reference-v1, path: authority/FE_DEPTH_REFERENCE.json, digest: " + feDepthReferenceDigest + ", repository: frontend-behavior-atlas, commit: " + feDepthReferenceCommit + ", status_at_commit: incomplete}\ndenominator_policy: {source: authority-derived-subject-surface-inventory, transplant_absolute_counts: false}\nrows: []\n"
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
