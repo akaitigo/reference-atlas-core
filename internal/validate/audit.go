@@ -439,14 +439,17 @@ func auditSupplyChain(ctx *auditContext, sbomRelative, thirdPartyRelative string
 	}
 	type dependency struct{ version, license string }
 	declared := map[string]dependency{}
+	hasGoModules := false
 	for _, raw := range anySlice(thirdParty["artifacts"]) {
 		item, _ := raw.(map[string]any)
-		if item["kind"] != "go-module" {
+		kind := stringValue(item["kind"])
+		if kind != "go-module" && kind != "maven-package" && kind != "npm-package" {
 			continue
 		}
+		hasGoModules = hasGoModules || kind == "go-module"
 		name := stringValue(item["name"])
 		if _, duplicate := declared[name]; duplicate {
-			return fmt.Errorf("第三者Go Moduleが重複しています: %s", name)
+			return fmt.Errorf("第三者Dependencyが重複しています: %s", name)
 		}
 		declared[name] = dependency{version: strings.TrimPrefix(stringValue(item["version"]), "v"), license: stringValue(item["license"])}
 	}
@@ -476,15 +479,22 @@ func auditSupplyChain(ctx *auditContext, sbomRelative, thirdPartyRelative string
 			return fmt.Errorf("SBOMと第三者Manifestが一致しません: %s", name)
 		}
 	}
-	modules, err := goModDependencies(filepath.Join(ctx.dir, "go.mod"))
-	if err != nil {
-		return err
-	}
-	for name, version := range modules {
-		pkg, ok := sbomPackages[name]
-		if !ok || pkg.version != strings.TrimPrefix(version, "v") {
-			return fmt.Errorf("go.mod DependencyがSBOMへ固定されていません: %s %s", name, version)
+	goModPath := filepath.Join(ctx.dir, "go.mod")
+	if _, err := os.Stat(goModPath); err == nil {
+		modules, err := goModDependencies(goModPath)
+		if err != nil {
+			return err
 		}
+		for name, version := range modules {
+			pkg, ok := sbomPackages[name]
+			if !ok || pkg.version != strings.TrimPrefix(version, "v") {
+				return fmt.Errorf("go.mod DependencyがSBOMへ固定されていません: %s %s", name, version)
+			}
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	} else if hasGoModules {
+		return fmt.Errorf("go-moduleを宣言したAtlasにはgo.modが必要です")
 	}
 	return nil
 }

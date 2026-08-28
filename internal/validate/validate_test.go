@@ -99,3 +99,64 @@ func TestRelativeDigestRejectsTraversalAndTampering(t *testing.T) {
 		t.Fatal("改変Digestは拒否する必要があります")
 	}
 }
+
+func TestSupplyChainAcceptsMavenAndNpmWithoutGoMod(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "third_party"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	thirdParty := `
+schema_version: 1
+artifacts:
+  - {id: kotlin-stdlib, name: org.jetbrains.kotlin:kotlin-stdlib, kind: maven-package, version: 2.4.10, source: "pkg:maven/org.jetbrains.kotlin/kotlin-stdlib@2.4.10", license: Apache-2.0, redistribution: metadata-only}
+  - {id: lru-cache, name: lru-cache, kind: npm-package, version: 10.4.3, source: "pkg:npm/lru-cache@10.4.3", license: ISC, redistribution: metadata-only}
+`
+	sbom := `{
+  "spdxVersion":"SPDX-2.3","dataLicense":"CC0-1.0","SPDXID":"SPDXRef-DOCUMENT",
+  "name":"test","documentNamespace":"https://example.invalid/sbom",
+  "packages":[
+    {"name":"test-atlas","SPDXID":"SPDXRef-Root","versionInfo":"1.0.0","licenseConcluded":"Apache-2.0","licenseDeclared":"Apache-2.0"},
+    {"name":"org.jetbrains.kotlin:kotlin-stdlib","SPDXID":"SPDXRef-Kotlin","versionInfo":"2.4.10","licenseConcluded":"Apache-2.0","licenseDeclared":"Apache-2.0"},
+    {"name":"lru-cache","SPDXID":"SPDXRef-Lru","versionInfo":"10.4.3","licenseConcluded":"ISC","licenseDeclared":"ISC"}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(dir, "third_party", "manifest.yaml"), []byte(thirdParty), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "sbom.spdx.json"), []byte(sbom), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	ctx := &auditContext{dir: dir, documents: map[string]map[string]any{"atlas": {"id": "test-atlas"}}}
+	if err := auditSupplyChain(ctx, "sbom.spdx.json", "third_party/manifest.yaml"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestSupplyChainRequiresGoModOnlyForGoModules(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "third_party"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	thirdParty := `
+schema_version: 1
+artifacts:
+  - {id: yaml-v3, name: gopkg.in/yaml.v3, kind: go-module, version: v3.0.1, source: "https://gopkg.in/yaml.v3", license: MIT, redistribution: allowed}
+`
+	sbom := `{
+  "packages":[
+    {"name":"test-atlas","versionInfo":"1.0.0","licenseDeclared":"Apache-2.0"},
+    {"name":"gopkg.in/yaml.v3","versionInfo":"3.0.1","licenseDeclared":"MIT"}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(dir, "third_party", "manifest.yaml"), []byte(thirdParty), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "sbom.spdx.json"), []byte(sbom), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	ctx := &auditContext{dir: dir, documents: map[string]map[string]any{"atlas": {"id": "test-atlas"}}}
+	err := auditSupplyChain(ctx, "sbom.spdx.json", "third_party/manifest.yaml")
+	if err == nil || !strings.Contains(err.Error(), "go.mod") {
+		t.Fatalf("go-module宣言にはgo.mod拒否を期待しました: %v", err)
+	}
+}
