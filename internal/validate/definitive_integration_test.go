@@ -404,7 +404,7 @@ func createDefinitiveRepositoryFixture(t *testing.T) string {
 				"required_deliverables": []any{"concept", "evidence"}, "required_output_fields": []any{"result", "evidence"}, "mutation_policy": "authorized", "mutation_status": "completed", "blocked_reasons": []any{},
 				"stop_conditions": []any{"coverage-gap", "unverified-evidence", "unauthorized-mutation", "external-human-decision-required", "stale-source-relock-explicit-procedure-required"}, "acceptance_criteria": []any{"固定Contractに対する実行結果とEvidenceが一致する。"},
 				"implementation_bindings": []any{fileBinding(strings.TrimPrefix(behavior, "counter.")+"-default", "reference/counter-system.txt")},
-				"source_bindings":         []any{map[string]any{"source_id": "reference-atlas-core-v1", "url": sourceURL, "digest": lockedDigest, "bytes": 1}},
+				"source_bindings":         []any{map[string]any{"source_id": "reference-atlas-core-v1", "url": sourceURL, "digest": lockedDigest}},
 				"evidence_bindings":       []any{fileBinding(evidenceID+"-artifact", "evidence/reports/"+evidenceID+".json")}, "expected_pattern_id": behavior, "result": "pass", "support_status": "routed", "assertions": map[string]any{"permission_boundary": true, "authority_binding": true, "evidence_binding": true},
 				"variant_ids": []any{behavior + ".default"}, "authority_item_ids": []any{"counter-protocol." + behavior}, "runtime_evidence_bindings": []any{map[string]any{"evidence_id": evidenceID, "path": evidenceRelative, "digest": fileDigest(t, filepath.Join(dir, evidenceRelative))}},
 			})
