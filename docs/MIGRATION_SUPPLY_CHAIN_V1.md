@@ -12,4 +12,6 @@ Core Policy 1.0.0内の後方互換なSchema拡張である。既存の`go-modul
 4. `go.mod`は`go-module`を宣言するAtlasだけで必須とする。Maven/npmだけのSubjectへ空の`go.mod`を追加しない。
 5. 既存の`source`、`asset`、`github-action`等はDependency closureの照合対象へ暗黙昇格しない。
 
+Package identityは`name`と正規化した`version`の組である。同じPackageの複数Versionがlock closureに共存する場合は、それぞれを独立Artifact／SPDX Packageとして保持する。
+
 この変更はCompletion Gateを弱めない。SPDXに列挙した第三者Packageは、対応ecosystemの第三者Manifest実体とversion／licenseが一致しなければ引き続き拒否される。

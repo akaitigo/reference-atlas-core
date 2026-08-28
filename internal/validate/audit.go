@@ -448,10 +448,12 @@ func auditSupplyChain(ctx *auditContext, sbomRelative, thirdPartyRelative string
 		}
 		hasGoModules = hasGoModules || kind == "go-module"
 		name := stringValue(item["name"])
-		if _, duplicate := declared[name]; duplicate {
-			return fmt.Errorf("第三者Dependencyが重複しています: %s", name)
+		version := strings.TrimPrefix(stringValue(item["version"]), "v")
+		key := dependencyKey(name, version)
+		if _, duplicate := declared[key]; duplicate {
+			return fmt.Errorf("第三者Dependencyが重複しています: %s %s", name, version)
 		}
-		declared[name] = dependency{version: strings.TrimPrefix(stringValue(item["version"]), "v"), license: stringValue(item["license"])}
+		declared[key] = dependency{version: version, license: stringValue(item["license"])}
 	}
 	sbomData, err := os.ReadFile(filepath.Join(ctx.dir, filepath.FromSlash(sbomRelative)))
 	if err != nil {
@@ -468,15 +470,16 @@ func auditSupplyChain(ctx *auditContext, sbomRelative, thirdPartyRelative string
 		if name == stringValue(ctx.documents["atlas"]["id"]) {
 			continue
 		}
-		sbomPackages[name] = dependency{version: strings.TrimPrefix(stringValue(pkg["versionInfo"]), "v"), license: stringValue(pkg["licenseDeclared"])}
+		version := strings.TrimPrefix(stringValue(pkg["versionInfo"]), "v")
+		sbomPackages[dependencyKey(name, version)] = dependency{version: version, license: stringValue(pkg["licenseDeclared"])}
 	}
-	for name, pkg := range sbomPackages {
-		entry, ok := declared[name]
+	for key, pkg := range sbomPackages {
+		entry, ok := declared[key]
 		if !ok {
-			return fmt.Errorf("SBOM Packageが第三者Manifestにありません: %s", name)
+			return fmt.Errorf("SBOM Packageが第三者Manifestにありません: %s", key)
 		}
 		if entry.version != pkg.version || entry.license != pkg.license {
-			return fmt.Errorf("SBOMと第三者Manifestが一致しません: %s", name)
+			return fmt.Errorf("SBOMと第三者Manifestが一致しません: %s", key)
 		}
 	}
 	goModPath := filepath.Join(ctx.dir, "go.mod")
@@ -486,8 +489,9 @@ func auditSupplyChain(ctx *auditContext, sbomRelative, thirdPartyRelative string
 			return err
 		}
 		for name, version := range modules {
-			pkg, ok := sbomPackages[name]
-			if !ok || pkg.version != strings.TrimPrefix(version, "v") {
+			normalized := strings.TrimPrefix(version, "v")
+			_, ok := sbomPackages[dependencyKey(name, normalized)]
+			if !ok {
 				return fmt.Errorf("go.mod DependencyがSBOMへ固定されていません: %s %s", name, version)
 			}
 		}
@@ -497,6 +501,10 @@ func auditSupplyChain(ctx *auditContext, sbomRelative, thirdPartyRelative string
 		return fmt.Errorf("go-moduleを宣言したAtlasにはgo.modが必要です")
 	}
 	return nil
+}
+
+func dependencyKey(name, version string) string {
+	return name + "@" + strings.TrimPrefix(version, "v")
 }
 
 func goModDependencies(path string) (map[string]string, error) {
