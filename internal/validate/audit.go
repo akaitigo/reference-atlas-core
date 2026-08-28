@@ -14,23 +14,25 @@ import (
 )
 
 type AuditResult struct {
-	AtlasID      string
-	Status       string
-	TargetSets   int
-	Targets      int
-	MasteryAreas int
-	Claims       int
-	Evidence     int
-	OpenRequired int
+	AtlasID         string
+	Status          string
+	CompletionClass string
+	TargetSets      int
+	Targets         int
+	MasteryAreas    int
+	Claims          int
+	Evidence        int
+	OpenRequired    int
 }
 
 type auditContext struct {
-	dir       string
-	documents map[string]map[string]any
-	targets   []any
-	claims    map[string]map[string]any
-	evidence  map[string]map[string]any
-	sources   map[string]bool
+	dir        string
+	documents  map[string]map[string]any
+	targets    []any
+	claims     map[string]map[string]any
+	evidence   map[string]map[string]any
+	sources    map[string]bool
+	definitive map[string]any
 }
 
 func AuditDir(dir string) (AuditResult, error) {
@@ -40,6 +42,10 @@ func AuditDir(dir string) (AuditResult, error) {
 	}
 	atlasID := stringValue(ctx.documents["atlas"]["id"])
 	status := stringValue(ctx.documents["atlas"]["status"])
+	completionClass := "incomplete"
+	if status == "complete" || status == "superseded" {
+		completionClass = "bounded-complete"
+	}
 	targetSets := collectIDs(ctx.documents["coverage"]["target_sets"])
 	openRequired := countOpenRequired(ctx.targets)
 	if status == "complete" && openRequired > 0 {
@@ -51,7 +57,7 @@ func AuditDir(dir string) (AuditResult, error) {
 		}
 	}
 	return AuditResult{
-		AtlasID: atlasID, Status: status, TargetSets: len(targetSets), Targets: len(ctx.targets),
+		AtlasID: atlasID, Status: status, CompletionClass: completionClass, TargetSets: len(targetSets), Targets: len(ctx.targets),
 		MasteryAreas: len(collectIDs(ctx.documents["mastery"]["surfaces"])), Claims: len(ctx.claims),
 		Evidence: len(ctx.evidence), OpenRequired: openRequired,
 	}, nil
@@ -73,6 +79,25 @@ func loadAuditContext(dir string) (*auditContext, error) {
 			return nil, err
 		}
 		documents[name] = document
+	}
+	completion, _ := documents["atlas"]["completion"].(map[string]any)
+	definitiveConfig, hasDefinitive := completion["definitive"].(map[string]any)
+	policyVersion := stringValue(completion["policy_version"])
+	if strings.HasPrefix(policyVersion, "2.") && !hasDefinitive {
+		return nil, fmt.Errorf("Core Policy v2にはcompletion.definitiveが必要です")
+	}
+	var definitive map[string]any
+	if hasDefinitive {
+		path := filepath.Join(dir, filepath.FromSlash(stringValue(definitiveConfig["manifest"])))
+		if _, err := File(path); err != nil {
+			return nil, err
+		}
+		loaded, err := readDocument(path)
+		if err != nil {
+			return nil, err
+		}
+		definitive = loaded
+		documents["definitive"] = definitive
 	}
 	atlasID := stringValue(documents["atlas"]["id"])
 	for _, name := range []string{"mastery", "coverage", "sources", "skill"} {
@@ -112,7 +137,7 @@ func loadAuditContext(dir string) (*auditContext, error) {
 	}
 	sources := collectIDs(documents["sources"]["sources"])
 	targets, _ := documents["coverage"]["targets"].([]any)
-	return &auditContext{dir: dir, documents: documents, targets: targets, claims: claims, evidence: evidence, sources: sources}, nil
+	return &auditContext{dir: dir, documents: documents, targets: targets, claims: claims, evidence: evidence, sources: sources, definitive: definitive}, nil
 }
 
 func auditComplete(ctx *auditContext) error {

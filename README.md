@@ -36,7 +36,7 @@ reference-atlas-core
 
 ## 現在の状態
 
-Control Plane v1は固定したCoverage Epoch `2026-08-28`に対して`complete`です。これは世界知識の完成ではなく、Schema、横断監査、生成、移行、互換性、Release契約がCompletion Certificateへ束縛され、`make release-check`を通るという限定された主張です。
+Control Plane v1の既存Certificateは固定したCoverage Epoch `2026-08-28`に対する`bounded-complete`履歴です。`subject-definitive`とは区別されます。Definitive Gate v2はAuthority由来Surface全件、Behavior粒度Proof、10 Scenario Matrix、実Runtime／Platform Evidenceを別Certificateで検証します。
 
 ## 開発用検証
 

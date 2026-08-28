@@ -1,0 +1,3 @@
+mutation: skill-outcome-gap
+want_error: Definitive Skill EvalがOutcomeをCoverageしていません
+refresh_bounded: false

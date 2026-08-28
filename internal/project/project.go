@@ -219,6 +219,85 @@ func MigrateV1(dir, generatedAt string) ([]string, error) {
 	return created, nil
 }
 
+// MigrateDefinitiveV2 preserves the v1 certificate as bounded history and
+// creates only a migration checklist. Authority inventory is deliberately not
+// generated from atlas.yaml scope because that would reproduce the v1 flaw.
+func MigrateDefinitiveV2(dir, generatedAt string) (string, error) {
+	path := filepath.Join(dir, "migrations", "definitive-v2.yaml")
+	if _, err := os.Stat(path); err == nil {
+		return "", nil
+	} else if !os.IsNotExist(err) {
+		return "", err
+	}
+	atlas, err := readYAML(filepath.Join(dir, "atlas.yaml"))
+	if err != nil {
+		return "", err
+	}
+	id, _ := atlas["id"].(string)
+	completion, _ := atlas["completion"].(map[string]any)
+	certificatePath, _ := completion["certificate"].(string)
+	certificateData, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(certificatePath)))
+	if err != nil {
+		return "", fmt.Errorf("v1 Certificateを履歴化できません: %w", err)
+	}
+	if generatedAt == "" {
+		generatedAt = time.Now().UTC().Format(time.RFC3339)
+	}
+	skill, err := readYAML(filepath.Join(dir, "skill.package.yaml"))
+	if err != nil {
+		return "", err
+	}
+	release, _ := skill["atlas_release"].(string)
+	historicalRelative := filepath.ToSlash(filepath.Join("evidence", "history", release, "completion-certificate.json"))
+	historicalPath := filepath.Join(dir, filepath.FromSlash(historicalRelative))
+	if _, err := os.Stat(historicalPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Dir(historicalPath), 0o755); err != nil {
+			return "", err
+		}
+		if err := os.WriteFile(historicalPath, certificateData, 0o644); err != nil {
+			return "", err
+		}
+	} else if err != nil {
+		return "", err
+	} else {
+		historicalData, err := os.ReadFile(historicalPath)
+		if err != nil {
+			return "", err
+		}
+		if sha256.Sum256(historicalData) != sha256.Sum256(certificateData) {
+			return "", fmt.Errorf("既存のbounded Certificate履歴が現在のv1 Certificateと一致しません: %s", historicalRelative)
+		}
+	}
+	content := fmt.Sprintf(`schema_version: 2
+atlas_id: %s
+from: bounded-complete-v1
+to: subject-definitive-v2
+generated_at: %q
+historical_certificate:
+  path: %s
+  digest: sha256:%x
+  classification: bounded-complete
+status: inventory-required
+required_actions:
+  - lock-authority-artifacts
+  - classify-all-surfaces
+  - split-behavior-proofs
+  - complete-scenario-matrix
+  - collect-runtime-evidence
+  - add-reference-system-if-applicable
+  - add-comparisons-if-applicable
+  - upgrade-skill-eval
+  - issue-definitive-certificate
+`, id, generatedAt, historicalRelative, sha256.Sum256(certificateData))
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
 func masteryTemplate(id, epoch string, sets []string) string {
 	setList := "[" + strings.Join(sets, ", ") + "]"
 	outcomes := []struct{ id, title string }{{"understand", "原理と境界を説明できる"}, {"choose", "条件から方式を選べる"}, {"build", "安全に構築できる"}, {"verify", "主張を証拠で検証できる"}, {"operate", "観測して運用できる"}, {"troubleshoot", "失敗を診断し復旧できる"}, {"evolve", "互換性を保って進化できる"}, {"delegate", "Agentへ安全に委任できる"}}

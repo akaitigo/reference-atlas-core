@@ -18,11 +18,11 @@ Atlasの完成は、世界中の知識を網羅したという主張ではあり
 | `planned` | Catalogに登録済みで実装未開始 |
 | `active` | Authority Inventoryまたは実装を更新中 |
 | `incomplete` | Release候補は存在するが必須Gate未通過 |
-| `complete` | 固定Epochに対する全必須Gate通過 |
+| `complete` | v1 Manifest上、宣言済みの有限Coverageに対する全必須Gate通過。公開上の分類は`bounded-complete` |
 | `superseded` | 新しい完成Releaseが存在する |
 | `archived` | 保守終了。証拠と履歴は保持 |
 
-`partial`やMVPをRepositoryの完成状態にしません。作業は小さく分割しても、公開上の完成は`complete`だけです。
+`partial`やMVPをRepositoryの完成状態にしません。v1の`complete`は`subject-definitive`と同義ではなく、固定した自己宣言Coverageに対する`bounded-complete`です。
 
 ## 8つのClosure
 
@@ -35,10 +35,10 @@ Atlasの完成は、世界中の知識を網羅したという主張ではあり
 
 ### 2. Coverage Closure
 
-- すべての必須Targetが`covered`、`excluded`、`infeasible`のいずれかである。
+- v1 bounded Gateでは、すべての必須Targetが`covered`、`excluded`、`infeasible`のいずれかである。
 - `covered`にはClaimとEvidenceが一つ以上ある。
 - `excluded`と`infeasible`には具体的理由と再評価日がある。
-- 未分類のAuthority Surfaceがゼロである。
+- v2 definitive Gateでは、固定Authority Artifact由来Surfaceの未分類をゼロにし、required Targetをすべて`covered`にする。
 
 ### 3. Mastery Closure
 
@@ -88,7 +88,7 @@ Atlasの完成は、世界中の知識を網羅したという主張ではあり
 
 `local`、`container`、`simulator`は適用可能なAtlasで必須とします。`cloud-live`と`hardware-in-the-loop`は、Scope上その証拠なしに主要Claimを立証できない場合だけ必須です。
 
-Profileは開発段階ではなく検証環境です。Profileを省略して完成条件を弱めることはできません。高額・実機不足の場合は`infeasible`として理由と代替証拠を公開し、完全に同等であるとは主張しません。
+Profileは開発段階ではなく検証環境です。Profileを省略して完成条件を弱めることはできません。v1では高額・実機不足を`infeasible`としてbounded履歴に残せますが、v2では環境不足を未完として残し、static／compile-onlyを同等証拠とは扱いません。
 
 ## Certificate
 
@@ -106,7 +106,7 @@ Profileは開発段階ではなく検証環境です。Profileを省略して完
 
 Certificateは生成物であり手編集しません。
 
-## Subject Definitive Gate
+## Schema横断Audit v1
 
 `atlas audit <atlas-directory>`は、個別Schema適合だけでなく次を横断検査する。
 
@@ -117,3 +117,29 @@ Certificateは生成物であり手編集しません。
 - `complete`の場合、必須Targetに`missing`、`planned`、`partial`、`expired`がない。
 
 Control Plane v1のRelease Gateは、Evidence IDの実体、Artifact Digest、Claim Graph、Skill Eval、SBOM、Provenance、Payload Digest付きCertificateまで同じ監査へ含める。宣言だけを増やして完成扱いにはしない。
+
+## Completion Class
+
+| Class | 意味 | Certificate |
+|---|---|---|
+| `incomplete` | 必須Closureが残る | なし |
+| `bounded-complete` | v1の自己宣言Coverage Epochに対する履歴証明 | `completion-certificate.json` |
+| `subject-definitive` | Authority由来Surface全件とBehavior Proofを閉じた決定版証明 | `definitive-certificate.json` |
+
+公開UIとCLIは`complete`だけを表示せず、必ずCompletion Classを表示する。
+`epoch-complete`は固定Epochに対する有限Closureを表す一般名であり、v1 CertificateのCLI識別子は曖昧さを避けて`bounded-complete`へ固定する。どちらも`subject-definitive`ではない。
+
+## Subject Definitive Gate v2
+
+v2はRaw Target件数を要求しない。固定Authority Artifactから抽出されたSurface集合とInventory集合が完全一致することを要求する。
+
+- required Targetはすべて`covered`でなければならず、`excluded`／`infeasible`は未完として拒否する。
+- Authority Surface Artifactは一次資料Source IDとDigestへ束縛し、Inventoryの未分類を0にする。Authority由来項目をSubject都合で除外できない。
+- 各Behavior／Capabilityは専用required Target、専用accepted Claim、Scenarioごとの専用Proof Obligationを持つ。Target、Claim、Proof、Evidence、Artifactの共有による集約Closureを拒否する。
+- 全Behaviorに正常、境界、拒否、障害、回復、移行、運用、Security、性能、互換性の10 Scenario Rowを要求する。Surfaceから必須となるScenarioは`not-applicable`にできない。
+- required Scenarioは指定Profileの実RuntimeまたはPlatform Evidenceを必要とする。static、fixture、compile-only、KLIBやbytecode生成は代替にならない。
+- Architecture／Compatibility Surfaceでは複数Behaviorを接続するReference System、Decision Surfaceでは2方式以上のComparisonを要求する。
+- Skill Evalは8 Outcomeと14 Surfaceの全件、Coverage Gap応答、権限境界をpass Caseへ接続する。
+- v1 Certificateは`bounded-complete`履歴としてv2 CertificateへDigest参照し、自動昇格させない。
+
+詳細な移行は`docs/MIGRATION_DEFINITIVE_V2.md`を正本とする。

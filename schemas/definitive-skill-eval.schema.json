@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/definitive-skill-eval.schema.json",
+  "title": "Subject Definitive Skill Eval",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "id", "atlas_id", "atlas_release", "skill_id", "generated_at", "cases"],
+  "properties": {
+    "schema_version":{"const":2},"id":{"$ref":"#/$defs/dottedId"},"atlas_id":{"$ref":"#/$defs/id"},"atlas_release":{"type":"string","pattern":"^v[0-9]+\\.[0-9]+\\.[0-9]+$"},"skill_id":{"$ref":"#/$defs/id"},"generated_at":{"type":"string","format":"date-time"},
+    "cases":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["id","result","outcome_ids","surface_ids","gap_behavior","authorization_boundary","assertion"],"properties":{"id":{"$ref":"#/$defs/dottedId"},"result":{"enum":["pass","fail","inconclusive"]},"outcome_ids":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/outcome"}},"surface_ids":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/surface"}},"gap_behavior":{"type":"boolean"},"authorization_boundary":{"type":"boolean"},"assertion":{"type":"string","minLength":15}}}}
+  },
+  "$defs":{"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"dottedId":{"type":"string","pattern":"^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},"outcome":{"enum":["understand","choose","build","verify","operate","troubleshoot","evolve","delegate"]},"surface":{"enum":["orientation-scope","foundations-mechanics","architecture-design","implementation-construction","testing-verification","failure-recovery","operations-observability","security-privacy-safety","performance-capacity-cost","compatibility-integration","migration-evolution-deprecation","decision-comparison","provenance-rights","agent-skill"]}}
+}

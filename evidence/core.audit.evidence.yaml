@@ -8,7 +8,7 @@ command: atlas audit .
 created_at: "2026-08-28T00:00:00+09:00"
 environment: {profile: local, manifest_digest: sha256:5b73c0f45f61d67b44b609e1713d7405ed76db9786f202674a074bd0e32c480a}
 source_digest: sha256:f35634bf23db21fae2249262aaf8692ea0e5050fbe50a9287874f7772bfb8657
-harness_digest: sha256:d7a23afdaa70edf53437c66509936b995605063e81757cdda65cdfd961117a7a
+harness_digest: sha256:9c08c6ed2302ca8cef429313a79b750ef5d89abedeb644ad38153be1ed021dad
 harness_path: internal/validate/audit.go
 artifact: {uri: evidence/reports/release-check.txt, digest: sha256:da62048ef3ee627c5a44c350c5e14801a442b969f34af1741070effbb108448c, media_type: text/plain, size_bytes: 334}
 verdict: pass

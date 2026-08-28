@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/verification-matrix.schema.json",
+  "title": "Subject Definitive Verification Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "epoch", "rows"],
+  "properties": {
+    "schema_version": { "const": 2 }, "atlas_id": { "$ref": "#/$defs/id" }, "epoch": { "$ref": "#/$defs/date" },
+    "rows": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["behavior_id", "scenario", "applicability", "rationale", "proof_obligation_id", "evidence_ids", "execution_requirement", "profile"],
+        "properties": {
+          "behavior_id": { "$ref": "#/$defs/dottedId" },
+          "scenario": { "enum": ["normal", "boundary", "rejection", "failure", "recovery", "migration", "operations", "security", "performance", "compatibility"] },
+          "applicability": { "enum": ["required", "not-applicable"] }, "rationale": { "type": "string", "minLength": 20 },
+          "proof_obligation_id": { "type": ["string", "null"], "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+          "evidence_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/dottedId" } },
+          "execution_requirement": { "enum": ["runtime", "platform", "static-allowed", "not-applicable"] },
+          "profile": { "type": ["string", "null"], "enum": ["local", "container", "vm", "cluster", "simulator", "cloud-live", "hardware-in-the-loop", null] }
+        },
+        "allOf": [{"if":{"properties":{"applicability":{"const":"required"}}},"then":{"properties":{"proof_obligation_id":{"type":"string"},"evidence_ids":{"minItems":1},"execution_requirement":{"enum":["runtime","platform","static-allowed"]},"profile":{"type":"string"}}},"else":{"properties":{"proof_obligation_id":{"type":"null"},"evidence_ids":{"maxItems":0},"execution_requirement":{"const":"not-applicable"},"profile":{"type":"null"}}}}]
+      }
+    }
+  },
+  "$defs": {"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"dottedId":{"type":"string","pattern":"^[a-z0-9]+(?:[.-][a-z0-9]+)*$"},"date":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}}
+}

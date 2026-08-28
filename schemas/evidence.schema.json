@@ -26,6 +26,8 @@
     "source_digest": { "$ref": "#/$defs/sha256" },
     "harness_digest": { "$ref": "#/$defs/sha256" },
     "harness_path": { "type": "string", "pattern": "^[^/].*" },
+    "execution_mode": { "enum": ["runtime", "platform", "static", "fixture"] },
+    "runtime_identity": { "type": "string", "minLength": 3 },
     "artifact": {
       "type": "object",
       "additionalProperties": false,

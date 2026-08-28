@@ -1,0 +1,3 @@
+mutation: static-runtime
+want_error: 代替できません
+refresh_bounded: true

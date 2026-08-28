@@ -9,3 +9,5 @@ Core ReleaseはSemVer、Manifestは各Fileの`schema_version`、Completion Polic
 - Major: Required Field追加、Field削除／改名、Enum縮小、既存入力の拒否、Completion Gateの意味論変更。
 
 Gateを強める変更は、既存Certificateへの影響とMigration Guideを同じ変更へ含める。発行済みCertificateは対応ReleaseとPolicy Versionに対して不変であり、新Policyによる再認証を自動継承しない。
+
+Definitive Gate v2はv1 Certificate Schemaを変更せず、独立Manifestと独立Certificateを追加する。旧`complete`の意味は`bounded-complete`履歴として保持し、`subject-definitive`へ昇格しない。

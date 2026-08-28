@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/surface-inventory.schema.json",
+  "title": "Subject Definitive Surface Inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "epoch", "authority_lock_digest", "authority_artifacts", "items"],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "atlas_id": { "$ref": "#/$defs/id" },
+    "epoch": { "$ref": "#/$defs/date" },
+    "authority_lock_digest": { "$ref": "#/$defs/sha256" },
+    "authority_artifacts": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "source_id", "path", "digest"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" }, "source_id": { "$ref": "#/$defs/dottedId" },
+          "path": { "type": "string", "pattern": "^[^/].*" }, "digest": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "items": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "authority_artifact_id", "authority_surface_id", "locator", "kind", "capability_id", "behavior_id", "target_id", "title", "surface_ids", "classification", "rationale", "claim_ids"],
+        "properties": {
+          "id": { "$ref": "#/$defs/dottedId" }, "authority_artifact_id": { "$ref": "#/$defs/id" },
+          "authority_surface_id": { "$ref": "#/$defs/dottedId" }, "locator": { "type": "string", "minLength": 2 },
+          "kind": { "enum": ["behavior", "capability"] }, "capability_id": { "$ref": "#/$defs/dottedId" },
+          "behavior_id": { "$ref": "#/$defs/dottedId" }, "target_id": { "$ref": "#/$defs/dottedId" }, "title": { "type": "string", "minLength": 2 },
+          "surface_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/surface" } },
+          "classification": { "const": "included" }, "rationale": { "type": "string", "minLength": 20 },
+          "claim_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/dottedId" } }
+        },
+        "allOf": [{"properties":{"claim_ids":{"minItems":1}}}]
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "dottedId": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "surface": { "enum": ["orientation-scope", "foundations-mechanics", "architecture-design", "implementation-construction", "testing-verification", "failure-recovery", "operations-observability", "security-privacy-safety", "performance-capacity-cost", "compatibility-integration", "migration-evolution-deprecation", "decision-comparison", "provenance-rights", "agent-skill"] }
+  }
+}

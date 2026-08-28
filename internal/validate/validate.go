@@ -76,6 +76,8 @@ func schemaFor(path string) (string, error) {
 		return "sources-lock.schema.json", nil
 	case base == "mastery.yaml" || base == "mastery.yml" || base == "mastery.json":
 		return "mastery.schema.json", nil
+	case base == "definitive.yaml" || base == "definitive.yml" || base == "definitive.json":
+		return "definitive.schema.json", nil
 	case base == "skill.package.yaml" || base == "skill.package.yml" || base == "skill.package.json":
 		return "skill-package.schema.json", nil
 	case base == "stage1.yaml" || base == "stage1.yml" || base == "catalog.json":
@@ -96,6 +98,18 @@ func schemaFor(path string) (string, error) {
 		return "completion-certificate.schema.json", nil
 	case base == "manifest.yaml" && filepath.Base(filepath.Dir(path)) == "third_party":
 		return "third-party.schema.json", nil
+	case base == "surface.inventory.yaml":
+		return "surface-inventory.schema.json", nil
+	case base == "verification.matrix.yaml":
+		return "verification-matrix.schema.json", nil
+	case strings.HasSuffix(base, ".authority-surfaces.yaml"):
+		return "authority-surfaces.schema.json", nil
+	case strings.HasSuffix(base, ".definitive-skill-eval.json"):
+		return "definitive-skill-eval.schema.json", nil
+	case base == "definitive-certificate.json":
+		return "definitive-certificate.schema.json", nil
+	case base == "definitive-v2.yaml":
+		return "definitive-migration.schema.json", nil
 	default:
 		return "", fmt.Errorf("%sに対応するSchemaを判定できません", path)
 	}

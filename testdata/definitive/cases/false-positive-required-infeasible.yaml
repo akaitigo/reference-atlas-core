@@ -1,0 +1,3 @@
+mutation: required-infeasible
+want_error: subject-definitiveではrequired Targetをcoveredにする必要があります
+refresh_bounded: true

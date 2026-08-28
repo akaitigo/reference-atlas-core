@@ -143,7 +143,16 @@
           "uniqueItems": true,
           "items": { "enum": ["local", "container", "vm", "cluster", "simulator", "cloud-live", "hardware-in-the-loop"] }
         },
-        "certificate": { "const": "evidence/completion-certificate.json" }
+        "certificate": { "const": "evidence/completion-certificate.json" },
+        "definitive": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["manifest", "contract_version"],
+          "properties": {
+            "manifest": { "const": "definitive.yaml" },
+            "contract_version": { "const": "2.0.0" }
+          }
+        }
       }
     },
     "license": {

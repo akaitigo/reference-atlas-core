@@ -106,6 +106,8 @@ atlas-skills     lab
 
 ```text
 Authority Source
+  -> Fixed Authority Surface Artifact
+  -> Complete Surface Inventory
   -> Mastery Surface / Outcome
   -> Coverage Target
   -> Capability
@@ -118,7 +120,9 @@ Authority Source
   -> Completion Certificate
 ```
 
-孤立したNodeはReleaseを阻止します。例外は、理由、責任者、再評価日を持つ明示的Exclusionだけです。
+v1 CertificateはこのChainのうち自己宣言Coverageを閉じる`bounded-complete`履歴である。`subject-definitive`はFixed Authority Surface Artifactから導出された全Behavior／CapabilityがInventory、専用Target、Claim、Proof、Scenario Matrix、Runtime Evidenceへ一対一で接続された場合だけ発行する。
+
+孤立したNodeはReleaseを阻止します。v1 bounded Gateだけは理由、責任者、再評価日を持つ明示的Exclusionを履歴化できるが、v2 definitive Gateのrequired Surfaceには例外を認めない。
 
 ## 6. Stage
 

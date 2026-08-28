@@ -1,0 +1,20 @@
+schema_version: 2
+atlas_id: reference-atlas-core
+from: bounded-complete-v1
+to: subject-definitive-v2
+generated_at: "2026-08-28T10:34:52Z"
+historical_certificate:
+  path: evidence/history/v1.0.0/completion-certificate.json
+  digest: sha256:bbf39d94bb1a36ca92ad08da75cef5d9b378b5ccd674b67acf7e4c9533833568
+  classification: bounded-complete
+status: inventory-required
+required_actions:
+  - lock-authority-artifacts
+  - classify-all-surfaces
+  - split-behavior-proofs
+  - complete-scenario-matrix
+  - collect-runtime-evidence
+  - add-reference-system-if-applicable
+  - add-comparisons-if-applicable
+  - upgrade-skill-eval
+  - issue-definitive-certificate

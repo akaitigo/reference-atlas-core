@@ -1,0 +1,3 @@
+mutation: aggregate-target
+want_error: 集約Targetは禁止です
+refresh_bounded: false

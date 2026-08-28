@@ -1,0 +1,3 @@
+mutation: inventory-omission
+want_error: Authority Surface Inventoryに未分類があります
+refresh_bounded: false

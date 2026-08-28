@@ -97,3 +97,4 @@ Installerは既存Skillを黙って上書きしません。変更予定、Source
 
 文言一致ではなく、選択、Evidence、Observable Outcomeを評価します。
 
+Definitive Gate v2では、pass Case集合が8 Outcomeと14 SurfaceをすべてCoverageし、Coverage外をGapとして返すCaseと、変更・公開・Security Taskの権限境界を守るCaseを含むことを機械検証する。
