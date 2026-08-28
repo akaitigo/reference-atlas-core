@@ -2,7 +2,7 @@
   "atlas_id": "reference-atlas-core",
   "atlas_release": "v1.0.0",
   "authority_lock_digest": "sha256:f35634bf23db21fae2249262aaf8692ea0e5050fbe50a9287874f7772bfb8657",
-  "commit": "60cd25e7c68e31c0939c531527f895ccdc82569a",
+  "commit": "60cd25ede3fed368a1bd8487199154c4984f4cd7",
   "core_policy_version": "1.0.0",
   "coverage_epoch": "2026-08-28",
   "evidence_set_digest": "sha256:5eb5a5ad423a9570f73b1d362a9f7429a8923e46eef409c81478547a67db56c1",
@@ -25,7 +25,7 @@
   "sbom_digest": "sha256:e96103992b62754e01b068dfc2200be3c808acb9c8c6e28bff7db6e66dfddb2d",
   "schema_version": 1,
   "signature": {
-    "digest": "sha256:f854424a554ffae4ebc4f0c9c74cbbca070ab2918f225e233ee5f67ccac1a07d",
+    "digest": "sha256:3befd5d238995de4eed9203e9175416fa978356238d0266b19d106bd9719e4a6",
     "type": "payload-sha256"
   },
   "skill_eval": {
