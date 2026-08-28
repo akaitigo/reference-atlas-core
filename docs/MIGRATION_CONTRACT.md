@@ -21,7 +21,7 @@
 ## 移行順序
 
 1. Repository IDと正式な日本語Titleを確定する。
-2. `atlas.yaml`、`sources.lock.yaml`、`coverage.yaml`、`skill.package.yaml`を追加する。
+2. `atlas.yaml`、`mastery.yaml`、`sources.lock.yaml`、`coverage.yaml`、`skill.package.yaml`を追加する。
 3. 既存Canonical RecordとCoverage TargetのID対応表を`migrations/core-v1.yaml`へ記録する。
 4. 既存Test／Capture／BenchmarkをEvidence Schemaへ束縛するAdapterを追加する。
 5. Router Skillを一つ定義し、既存Skillは内部ModeまたはReferenceへ移す。
@@ -40,6 +40,7 @@ Repository名は原則`<subject>-reference-atlas`に統一します。既に適�
 `experiments/**/pattern.json`、Runner Protocol、決定論Capture、Benchmark、Accessibility ContractはFrontend固有の正本として維持します。Coreへ移すのは次だけです。
 
 - Atlas Identity
+- Mastery Outcome／Surface
 - Authority Lock
 - Coverage状態意味論
 - Claim／Evidence接続
@@ -49,10 +50,9 @@ Repository名は原則`<subject>-reference-atlas`に統一します。既に適�
 
 ## 完了条件
 
-- 共通4 ManifestがSchema適合する。
+- 共通5 ManifestがSchema適合し、`atlas audit`の横断監査を通る。
 - 既存Canonical IDから新IDへの欠落がない。
 - 既存TestとEvidenceが失われていない。
 - Skill Evalが新Router経由で通る。
 - Release前の権利・秘密・第三者素材Gateが通る。
 - Core v1依存が固定Releaseで指定される。
-

@@ -1,0 +1,117 @@
+schema_version: 1
+atlas_id: frontend-behavior-atlas
+epoch: "2026-08-28"
+promise: >-
+  Webフロントエンドの挙動について、初学者が仕組みを理解し、実務者が方式を選び実装し、
+  運用者が観測・診断・復旧し、保守者が互換性を守って移行できるまでを、一次資料と再実行可能な証拠へ結び付けて提供する。
+audiences: [learner, practitioner, architect, operator, maintainer, reviewer, educator, agent]
+outcomes:
+  - id: understand
+    title: 原理と境界を説明できる
+    target_sets: [behavior, lifecycle]
+  - id: choose
+    title: 条件から方式を選択できる
+    target_sets: [behavior]
+  - id: build
+    title: 実装して統合できる
+    target_sets: [behavior]
+  - id: verify
+    title: 主張を試験と証拠で検証できる
+    target_sets: [behavior, lifecycle]
+  - id: operate
+    title: 観測し安全に運用できる
+    target_sets: [lifecycle]
+  - id: troubleshoot
+    title: 失敗を再現し診断・復旧できる
+    target_sets: [behavior, lifecycle]
+  - id: evolve
+    title: 互換性を守って移行・廃止できる
+    target_sets: [lifecycle]
+  - id: delegate
+    title: Agentへ安全に委任し結果をReviewできる
+    target_sets: [skill]
+surfaces:
+  - id: orientation-scope
+    title: 定義・目的・境界
+    applicability: required
+    rationale: 似た技術との境界と対象外を明示し、利用者が誤った入口を選ばないために必要である。
+    target_sets: [behavior]
+    required_deliverables: [concept, decision]
+  - id: foundations-mechanics
+    title: 原理・内部機構・Invariant
+    applicability: required
+    rationale: 表面的なAPI利用ではなく、状態とBrowser挙動の理由を説明するために必要である。
+    target_sets: [behavior]
+    required_deliverables: [concept, lab]
+  - id: architecture-design
+    title: Architecture・設計
+    applicability: required
+    rationale: 責任境界、状態、入力、描画、通信を保守可能な形へ分解するために必要である。
+    target_sets: [behavior]
+    required_deliverables: [decision, reference-implementation]
+  - id: implementation-construction
+    title: 実装・構築
+    applicability: required
+    rationale: 説明した挙動を実際に構築し、Observable Contractへ結び付けるために必要である。
+    target_sets: [behavior]
+    required_deliverables: [reference-implementation, lab]
+  - id: testing-verification
+    title: 試験・検証
+    applicability: required
+    rationale: 正常、境界、失敗、Accessibilityの主張を反復可能なOracleで確かめるために必要である。
+    target_sets: [behavior, lifecycle]
+    required_deliverables: [test, evidence]
+  - id: failure-recovery
+    title: 失敗・診断・回復
+    applicability: required
+    rationale: 通信、入力、Lifecycle、描画の失敗時にも状態を壊さず回復するために必要である。
+    target_sets: [behavior, lifecycle]
+    required_deliverables: [failure-catalog, runbook, evidence]
+  - id: operations-observability
+    title: 運用・Observability
+    applicability: required
+    rationale: 利用者環境で起きる劣化や失敗をTelemetryと再現手順から診断するために必要である。
+    target_sets: [lifecycle]
+    required_deliverables: [runbook, evidence]
+  - id: security-privacy-safety
+    title: Security・Privacy・Safety
+    applicability: required
+    rationale: Browser境界、入力、権限、個人Data、危険なInteractionを安全に扱うために必要である。
+    target_sets: [behavior, lifecycle]
+    required_deliverables: [security-review, test]
+  - id: performance-capacity-cost
+    title: 性能・容量・Cost
+    applicability: required
+    rationale: 応答、描画、Network、Memoryの予算と劣化を測定し設計判断へ戻すために必要である。
+    target_sets: [lifecycle]
+    required_deliverables: [benchmark, evidence]
+  - id: compatibility-integration
+    title: 互換性・Integration
+    applicability: required
+    rationale: Browser、入力方式、支援技術、Application境界の差を検証して統合するために必要である。
+    target_sets: [behavior]
+    required_deliverables: [test, evidence]
+  - id: migration-evolution-deprecation
+    title: 移行・進化・廃止
+    applicability: required
+    rationale: APIやPatternの変更時に利用者挙動と互換性を壊さず移行するために必要である。
+    target_sets: [lifecycle]
+    required_deliverables: [migration-guide, test]
+  - id: decision-comparison
+    title: 選択・比較・Trade-off
+    applicability: required
+    rationale: 類似方式の条件、利点、失敗、Costを同じObservable Contractで比較するために必要である。
+    target_sets: [behavior, lifecycle]
+    required_deliverables: [decision, benchmark]
+  - id: provenance-rights
+    title: 出典・来歴・権利
+    applicability: required
+    rationale: 仕様根拠、実装の独自性、素材の再配布可否を追跡し安全に公開するために必要である。
+    target_sets: [lifecycle]
+    required_deliverables: [provenance-record, evidence]
+  - id: agent-skill
+    title: Agent Skill・評価
+    applicability: required
+    rationale: AgentがCoverage外を捏造せず、適切な実験、判断、実装、Reviewへ到達するために必要である。
+    target_sets: [skill]
+    required_deliverables: [skill-reference, skill-eval]

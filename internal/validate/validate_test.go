@@ -13,6 +13,7 @@ func TestExamplesValidate(t *testing.T) {
 		filepath.Join(root, "catalog", "stage1.yaml"),
 		filepath.Join(root, "examples", "company-inventory.yaml"),
 		filepath.Join(root, "examples", "frontend-behavior-atlas", "atlas.yaml"),
+		filepath.Join(root, "examples", "frontend-behavior-atlas", "mastery.yaml"),
 		filepath.Join(root, "examples", "frontend-behavior-atlas", "coverage.yaml"),
 		filepath.Join(root, "examples", "frontend-behavior-atlas", "sources.lock.yaml"),
 		filepath.Join(root, "examples", "frontend-behavior-atlas", "skill.package.yaml"),
@@ -59,5 +60,16 @@ targets:
 	_, err := File(path)
 	if err == nil || !strings.Contains(err.Error(), "claim_ids") {
 		t.Fatalf("covered制約違反を期待しました: %v", err)
+	}
+}
+
+func TestExampleAudit(t *testing.T) {
+	root := filepath.Join("..", "..")
+	result, err := AuditDir(filepath.Join(root, "examples", "frontend-behavior-atlas"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.MasteryAreas != 14 || result.OpenRequired == 0 {
+		t.Fatalf("予期しない監査結果: %+v", result)
 	}
 }

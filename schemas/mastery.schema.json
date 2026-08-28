@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/akaitigo/reference-atlas-core/schemas/mastery.schema.json",
+  "title": "Subject Atlas Mastery Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "atlas_id", "epoch", "promise", "audiences", "outcomes", "surfaces"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "atlas_id": { "$ref": "#/$defs/id" },
+    "epoch": { "$ref": "#/$defs/date" },
+    "promise": { "type": "string", "minLength": 80 },
+    "audiences": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": { "enum": ["learner", "practitioner", "architect", "operator", "maintainer", "reviewer", "educator", "agent"] }
+    },
+    "outcomes": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "target_sets"],
+        "properties": {
+          "id": { "$ref": "#/$defs/outcome" },
+          "title": { "type": "string", "minLength": 2 },
+          "target_sets": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } }
+        }
+      }
+    },
+    "surfaces": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "applicability", "rationale", "target_sets", "required_deliverables"],
+        "properties": {
+          "id": { "$ref": "#/$defs/surface" },
+          "title": { "type": "string", "minLength": 2 },
+          "applicability": { "enum": ["required", "not-applicable"] },
+          "rationale": { "type": "string", "minLength": 20 },
+          "target_sets": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+          "required_deliverables": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "enum": ["concept", "decision", "reference-implementation", "lab", "test", "evidence", "runbook", "failure-catalog", "migration-guide", "benchmark", "security-review", "skill-reference", "skill-eval", "provenance-record"] }
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "applicability": { "const": "required" } }, "required": ["applicability"] },
+            "then": { "properties": { "target_sets": { "minItems": 1 } } },
+            "else": { "properties": { "target_sets": { "maxItems": 0 } } }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "outcome": { "enum": ["understand", "choose", "build", "verify", "operate", "troubleshoot", "evolve", "delegate"] },
+    "surface": { "enum": ["orientation-scope", "foundations-mechanics", "architecture-design", "implementation-construction", "testing-verification", "failure-recovery", "operations-observability", "security-privacy-safety", "performance-capacity-cost", "compatibility-integration", "migration-evolution-deprecation", "decision-comparison", "provenance-rights", "agent-skill"] }
+  }
+}

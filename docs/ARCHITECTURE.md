@@ -70,6 +70,7 @@ atlas-skills     lab
 ```text
 /
 ├── atlas.yaml
+├── mastery.yaml
 ├── sources.lock.yaml
 ├── coverage.yaml
 ├── skill.package.yaml
@@ -105,6 +106,7 @@ atlas-skills     lab
 
 ```text
 Authority Source
+  -> Mastery Surface / Outcome
   -> Coverage Target
   -> Capability
   -> Claim
@@ -163,4 +165,3 @@ Repository数はArchitecture上の成果ではありません。初期Catalogは
 - 未対応項目を隠さず`planned`、`partial`、`excluded`等で表現する状態機械
 
 一方、DOM、Canvas、Motion、Browser ProtocolなどはFrontend固有Overlayとして残します。
-

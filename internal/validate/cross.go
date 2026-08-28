@@ -15,9 +15,44 @@ func crossValidate(schemaName string, document any) error {
 		return validateCoverage(root)
 	case "company-inventory.schema.json":
 		return validateCompanyInventory(root)
+	case "mastery.schema.json":
+		return validateMastery(root)
 	default:
 		return nil
 	}
+}
+
+func validateMastery(root map[string]any) error {
+	requiredOutcomes := []string{"understand", "choose", "build", "verify", "operate", "troubleshoot", "evolve", "delegate"}
+	requiredSurfaces := []string{
+		"orientation-scope", "foundations-mechanics", "architecture-design", "implementation-construction",
+		"testing-verification", "failure-recovery", "operations-observability", "security-privacy-safety",
+		"performance-capacity-cost", "compatibility-integration", "migration-evolution-deprecation",
+		"decision-comparison", "provenance-rights", "agent-skill",
+	}
+	if err := requireExactIDs(root["outcomes"], requiredOutcomes, "Mastery Outcome"); err != nil {
+		return err
+	}
+	return requireExactIDs(root["surfaces"], requiredSurfaces, "Mastery Surface")
+}
+
+func requireExactIDs(raw any, required []string, label string) error {
+	items, _ := raw.([]any)
+	found := map[string]bool{}
+	for _, rawItem := range items {
+		item, _ := rawItem.(map[string]any)
+		id, _ := item["id"].(string)
+		if found[id] {
+			return fmt.Errorf("%s IDが重複しています: %s", label, id)
+		}
+		found[id] = true
+	}
+	for _, id := range required {
+		if !found[id] {
+			return fmt.Errorf("必須%sがありません: %s", label, id)
+		}
+	}
+	return nil
 }
 
 func validateCompanyInventory(root map[string]any) error {

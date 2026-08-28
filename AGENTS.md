@@ -7,6 +7,7 @@
 - `schemas/*.schema.json`をManifest形式の正本とする。
 - `catalog/stage1.yaml`をStage 1対象分野の正本とする。
 - `docs/ARCHITECTURE.md`と`docs/COMPLETION_MODEL.md`を境界・完成意味論の正本とする。
+- 各Subjectの`mastery.yaml`を「その分野の決定版」が満たすOutcomeとSurfaceの正本とする。
 - Templateや生成物を先に変更せず、正本を変更して再生成または移行する。
 
 ## Language
@@ -33,5 +34,5 @@
 
 - Schema変更には互換性分類とMigration Guideを伴わせる。
 - Completion Gateを弱める変更は、理由と既存Certificateへの影響を明記する。
+- `complete`への変更は個別Schema検証だけでなく`atlas audit`を通す。
 - Catalog項目は件数目標のために分割・統合しない。独立したAuthority、Version、検証環境、完成条件を持つかで判断する。
-

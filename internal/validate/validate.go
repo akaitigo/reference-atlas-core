@@ -74,6 +74,8 @@ func schemaFor(path string) (string, error) {
 		return "coverage.schema.json", nil
 	case base == "sources.lock.yaml" || base == "sources.lock.yml" || base == "sources.lock.json":
 		return "sources-lock.schema.json", nil
+	case base == "mastery.yaml" || base == "mastery.yml" || base == "mastery.json":
+		return "mastery.schema.json", nil
 	case base == "skill.package.yaml" || base == "skill.package.yml" || base == "skill.package.json":
 		return "skill-package.schema.json", nil
 	case base == "stage1.yaml" || base == "stage1.yml" || base == "catalog.json":

@@ -9,6 +9,7 @@
 - 全Subject Atlasが従う機械可読Schema
 - Stage 1の技術分野Catalog
 - 完成判定とVersion規則
+- 各分野を決定版にする8 Outcome・14 SurfaceのMastery契約
 - 日本語を正本とする文書化規則
 - Agent Skillの生成・配布契約
 - 権利、出典、第三者素材のPublication Gate
@@ -45,6 +46,7 @@ go run ./cmd/atlas validate catalog/stage1.yaml
 go run ./cmd/atlas validate examples/company-inventory.yaml
 go run ./cmd/atlas validate examples/frontend-behavior-atlas/atlas.yaml
 go run ./cmd/atlas validate examples/frontend-behavior-atlas/coverage.yaml
+go run ./cmd/atlas audit examples/frontend-behavior-atlas
 ```
 
 ## 言語

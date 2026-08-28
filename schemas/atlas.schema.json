@@ -16,6 +16,7 @@
     "language",
     "coverage",
     "authority",
+    "mastery",
     "scope",
     "skills",
     "completion",
@@ -81,6 +82,15 @@
         "policy": { "const": "primary-first" }
       }
     },
+    "mastery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest", "contract_version"],
+      "properties": {
+        "manifest": { "const": "mastery.yaml" },
+        "contract_version": { "const": "1.0.0" }
+      }
+    },
     "scope": {
       "type": "object",
       "additionalProperties": false,
@@ -139,11 +149,12 @@
     "license": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["default", "notice", "third_party_manifest"],
+      "required": ["default", "notice", "third_party_manifest", "sbom"],
       "properties": {
         "default": { "const": "Apache-2.0" },
         "notice": { "const": "NOTICE" },
-        "third_party_manifest": { "const": "third_party/manifest.yaml" }
+        "third_party_manifest": { "const": "third_party/manifest.yaml" },
+        "sbom": { "const": "sbom.spdx.json" }
       }
     },
     "security": {
@@ -173,4 +184,3 @@
     }
   }
 }
-

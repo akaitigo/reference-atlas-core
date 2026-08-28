@@ -19,6 +19,9 @@ coverage:
 authority:
   lockfile: sources.lock.yaml
   policy: primary-first
+mastery:
+  manifest: mastery.yaml
+  contract_version: 1.0.0
 scope:
   statement: Web UIの挙動、状態、入力、失敗、アクセシビリティ、性能を再実行可能な実験として証明する。
   exclusions:
@@ -41,6 +44,7 @@ license:
   default: Apache-2.0
   notice: NOTICE
   third_party_manifest: third_party/manifest.yaml
+  sbom: sbom.spdx.json
 security:
   disclosure: SECURITY.md
   defensive_only: true
