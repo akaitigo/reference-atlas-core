@@ -24,6 +24,9 @@ func GenerateDefinitiveCertificate(dir, issuedAt, commit string) (string, error)
 		}
 		commit = strings.TrimSpace(string(output))
 	}
+	if err := ensureSourceCommitExists(dir, commit); err != nil {
+		return "", err
+	}
 	certificate, path, err := buildDefinitiveCertificate(dir, issuedAt, commit)
 	if err != nil {
 		return "", err
@@ -104,8 +107,8 @@ func buildDefinitiveCertificate(dir, issuedAt, commit string) (map[string]any, s
 	if err := auditDefinitiveSkill(ctx); err != nil {
 		return nil, "", err
 	}
-	if len(commit) != 40 || strings.Trim(commit, "0123456789abcdef") != "" {
-		return nil, "", fmt.Errorf("commitは40桁の小文字Git SHAである必要があります")
+	if err := validateCommit(commit); err != nil {
+		return nil, "", err
 	}
 	inventoryData, err := os.ReadFile(filepath.Join(dir, "surface.inventory.yaml"))
 	if err != nil {

@@ -5,6 +5,13 @@ import (
 	"testing"
 )
 
+func TestCertificateGenerationRejectsUnknownGitCommit(t *testing.T) {
+	err := ensureSourceCommitExists(".", strings.Repeat("a", 40))
+	if err == nil || !strings.Contains(err.Error(), "Git履歴に存在しません") {
+		t.Fatalf("存在しないsource commitをCertificate生成に使えてはいけません: %v", err)
+	}
+}
+
 func TestDefinitiveRejectsRequiredExcluded(t *testing.T) {
 	ctx := &definitiveContext{base: &auditContext{targets: []any{map[string]any{"id": "runtime.native", "requirement": "required", "state": "infeasible"}}}}
 	err := auditDefinitiveRequiredTargets(ctx)

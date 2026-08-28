@@ -28,6 +28,9 @@ func GenerateCertificate(dir, issuedAt, commit string) (string, error) {
 		}
 		commit = strings.TrimSpace(string(output))
 	}
+	if err := ensureSourceCommitExists(dir, commit); err != nil {
+		return "", err
+	}
 	certificate, path, err := buildCertificate(dir, issuedAt, commit)
 	if err != nil {
 		return "", err
@@ -121,8 +124,8 @@ func buildCertificate(dir, issuedAt, commit string) (map[string]any, string, err
 	if err := auditProvenance(ctx); err != nil {
 		return nil, "", err
 	}
-	if len(commit) != 40 || strings.Trim(commit, "0123456789abcdef") != "" {
-		return nil, "", fmt.Errorf("commitは40桁の小文字Git SHAである必要があります")
+	if err := validateCommit(commit); err != nil {
+		return nil, "", err
 	}
 
 	graphDigest, err := digestCanonical(map[string]any{
@@ -173,6 +176,29 @@ func buildCertificate(dir, issuedAt, commit string) (map[string]any, string, err
 	}
 	payload["signature"] = map[string]any{"type": "payload-sha256", "digest": signature}
 	return payload, filepath.Join(dir, filepath.FromSlash(stringValue(completion["certificate"]))), nil
+}
+
+func validateCommit(commit string) error {
+	if len(commit) != 40 || strings.Trim(commit, "0123456789abcdef") != "" {
+		return fmt.Errorf("commitは40桁の小文字Git SHAである必要があります")
+	}
+	return nil
+}
+
+// ensureSourceCommitExists rejects transcription mistakes when generating in a
+// Git worktree. Verification remains content-addressed and does not require the
+// commit object so historical certificates continue to work in shallow clones.
+func ensureSourceCommitExists(dir, commit string) error {
+	if err := validateCommit(commit); err != nil {
+		return err
+	}
+	if err := exec.Command("git", "-C", dir, "rev-parse", "--is-inside-work-tree").Run(); err != nil {
+		return nil
+	}
+	if err := exec.Command("git", "-C", dir, "cat-file", "-e", commit+"^{commit}").Run(); err != nil {
+		return fmt.Errorf("証明対象CommitがGit履歴に存在しません: %s", commit)
+	}
+	return nil
 }
 
 func certificateProfiles(ctx *auditContext) []any {
