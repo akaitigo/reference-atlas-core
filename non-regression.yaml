@@ -25,3 +25,10 @@ replacements:
     reason: v1 completeの曖昧表示を廃止し、同じ自己監査へbounded-complete分類の追加Assertionを行う強化である。
     execution_proof_evidence_ids: [core.audit]
     migration_evidence_ids: [core.tooling]
+  - collection: ci_jobs
+    old_id: .github/workflows/ci.yml:verify
+    new_ids: [.github/workflows/ci.yml:verify]
+    equivalence: equal-or-stronger
+    reason: Pull Requestのsynthetic merge commitではなくhead SHAまでの実CommitだけをDCO検証し、同じRelease Gateとubuntu-latest Platformを維持する。
+    execution_proof_evidence_ids: [core.audit]
+    migration_evidence_ids: [core.tooling]
