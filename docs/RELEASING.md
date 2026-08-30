@@ -6,7 +6,7 @@
 4. GitHub Actionsがexact commitへ固定され、mutable tagへの回帰をnegative fixtureが拒否することを`make ci-supply-chain`で確認する。
 5. `make release-check`をクリーンなLocal環境で実行する。
 6. `atlas certificate generate . --issued-at <RFC3339> --commit <source-commit-sha>`でCertificateを再生成し、再度`make release-check`を実行する。
-7. `git status --short`が空であること、全CommitにDCO `Signed-off-by`があることを確認する。
+7. `security/allowed_signers`をtrust rootとして`git verify-commit`を実行し、`git status --short`が空であること、全CommitにDCO `Signed-off-by`があることを確認する。
 8. `vMAJOR.MINOR.PATCH`の署名付きTagを作り、`bin/atlas`とCertificateとSBOMをRelease Artifactにする。
 
 `subject-definitive`を公開するSubjectは、上記bounded Releaseを履歴固定した後、`atlas audit . --gate evidence-durability`、`atlas audit . --gate evidence-dependency`、`atlas audit . --gate non-regression`、`atlas audit . --gate definitive`、`atlas certificate generate-definitive`、`atlas certificate verify-definitive`を別途実行する。Depth ParityのGapが0でない場合、成功Evidenceの原子的公開を検証できない場合、または入力変更後の再実行対象が残る場合は発行せず、v1 Certificateをv2 Certificateで上書きしない。
