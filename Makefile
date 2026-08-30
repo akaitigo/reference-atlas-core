@@ -1,7 +1,10 @@
-.PHONY: fmt-check vet test compatibility validate audit check build release-check
+.PHONY: ci-supply-chain fmt-check vet test compatibility validate audit check build release-check
 
 GOCACHE ?= $(CURDIR)/.cache/go-build
 export GOCACHE
+
+ci-supply-chain:
+	python3 scripts/check_ci_action_pins.py --self-test
 
 fmt-check:
 	test -z "$$(gofmt -l cmd internal schemas)"
@@ -31,7 +34,7 @@ build:
 	mkdir -p bin
 	go build -trimpath -ldflags "-s -w" -o bin/atlas ./cmd/atlas
 
-check: fmt-check vet test compatibility validate audit
+check: ci-supply-chain fmt-check vet test compatibility validate audit
 
 release-check: check build
 	./bin/atlas version
