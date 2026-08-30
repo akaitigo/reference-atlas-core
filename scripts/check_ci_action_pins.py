@@ -16,6 +16,7 @@ REQUIRED_PINS = {
     "actions/checkout": "11d5960a326750d5838078e36cf38b85af677262",
     "actions/setup-go": "40f1582b2485089dde7abd97c1529aa768e1baff",
 }
+PUBLISHED_SOURCE_ENV = "DCO_AUDIT_REF: ${{ github.event.pull_request.head.sha || github.sha }}"
 
 
 class PinError(RuntimeError):
@@ -37,6 +38,8 @@ def verify(text: str) -> None:
             raise PinError(f"必須Actionがありません: {action}")
         if any(reference != expected for reference in references):
             raise PinError(f"必須Actionの固定commitが不一致です: {action}")
+    if PUBLISHED_SOURCE_ENV not in text:
+        raise PinError("Release gateがpublished source commitをDCO_AUDIT_REFへ固定していません")
 
 
 def expect_rejection(name: str, text: str, expected: str) -> None:
@@ -75,6 +78,11 @@ def self_test(text: str) -> None:
             "mutable-reusable-workflow",
             text + "\n  mutable-reusable:\n    uses: example/workflows/.github/workflows/ci.yml@v1\n",
             "exact commitではありません",
+        ),
+        (
+            "pr-synthetic-merge-ref",
+            text.replace(PUBLISHED_SOURCE_ENV, "DCO_AUDIT_REF: ${{ github.sha }}", 1),
+            "published source commit",
         ),
     ]
     for name, fixture, expected in fixtures:

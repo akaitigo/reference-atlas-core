@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -132,10 +133,61 @@ def verify_records(
 
 
 def audit_records(reference: str) -> list[tuple[str, str]]:
-    result = git("log", "--topo-order", "--format=%H%x00%B%x00", reference)
+    resolved = resolve_reference(reference)
+    validate_published_source(resolved, dict(os.environ), load_github_event(dict(os.environ)))
+    result = git("log", "--topo-order", "--format=%H%x00%B%x00", resolved)
     if result.returncode != 0:
         raise DCOError(f"DCO audit対象refを読めません: {reference}")
     return parse_records(result.stdout)
+
+
+def resolve_reference(reference: str) -> str:
+    result = git("rev-parse", "--verify", f"{reference}^{{commit}}")
+    resolved = result.stdout.strip()
+    if result.returncode != 0 or SHA40.fullmatch(resolved) is None:
+        raise DCOError(f"DCO audit対象refを解決できません: {reference}")
+    return resolved
+
+
+def load_github_event(environment: dict[str, str]) -> dict[str, object] | None:
+    if environment.get("GITHUB_ACTIONS") != "true":
+        return None
+    event_path = environment.get("GITHUB_EVENT_PATH")
+    if not event_path:
+        raise DCOError("GitHub event payload pathがありません")
+    try:
+        event = json.loads(Path(event_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise DCOError("GitHub event payloadを読めません") from error
+    if not isinstance(event, dict):
+        raise DCOError("GitHub event payloadがObjectではありません")
+    return event
+
+
+def validate_published_source(
+    resolved: str,
+    environment: dict[str, str],
+    event: dict[str, object] | None,
+) -> None:
+    if environment.get("GITHUB_ACTIONS") != "true":
+        return
+    event_name = environment.get("GITHUB_EVENT_NAME")
+    github_sha = environment.get("GITHUB_SHA", "")
+    expected = ""
+    if event_name == "pull_request":
+        pull_request = event.get("pull_request") if event else None
+        head = pull_request.get("head") if isinstance(pull_request, dict) else None
+        expected = head.get("sha", "") if isinstance(head, dict) else ""
+        if resolved == github_sha and github_sha != expected:
+            raise DCOError("PR synthetic merge SHAをDCO audit対象にできません")
+    elif event_name == "push":
+        expected = github_sha
+    else:
+        raise DCOError(f"published source commitを決定できないGitHub eventです: {event_name}")
+    if SHA40.fullmatch(expected) is None:
+        raise DCOError("published source commit SHAが不正です")
+    if resolved != expected:
+        raise DCOError(f"DCO audit対象がpublished source commitと一致しません: {resolved} != {expected}")
 
 
 def self_test() -> None:
@@ -162,6 +214,37 @@ def self_test() -> None:
                 raise DCOError(f"DCO negative fixtureの拒否理由が不一致です: {error}") from error
         else:
             raise DCOError("DCO negative fixtureが受理されました")
+        fixtures += 1
+    head = "d" * 40
+    synthetic = "e" * 40
+    pr_environment = {
+        "GITHUB_ACTIONS": "true",
+        "GITHUB_EVENT_NAME": "pull_request",
+        "GITHUB_SHA": synthetic,
+    }
+    push_environment = {
+        "GITHUB_ACTIONS": "true",
+        "GITHUB_EVENT_NAME": "push",
+        "GITHUB_SHA": head,
+    }
+    pull_request_event: dict[str, object] = {"pull_request": {"head": {"sha": head}}}
+    validate_published_source(head, pr_environment, pull_request_event)
+    validate_published_source(head, push_environment, {})
+    fixtures += 2
+    source_rejections = [
+        (synthetic, pr_environment, pull_request_event, "synthetic merge SHA"),
+        ("f" * 40, pr_environment, pull_request_event, "published source commitと一致"),
+        (synthetic, push_environment, {}, "published source commitと一致"),
+        (head, {"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "pull_request", "GITHUB_SHA": synthetic}, {}, "SHAが不正"),
+    ]
+    for resolved, environment, event, expected in source_rejections:
+        try:
+            validate_published_source(resolved, environment, event)
+        except DCOError as error:
+            if expected not in str(error):
+                raise DCOError(f"published source negative fixtureの拒否理由が不一致です: {error}") from error
+        else:
+            raise DCOError("published source negative fixtureが受理されました")
         fixtures += 1
     print(f"DCO remediation fixtures: {fixtures}/{fixtures} passed")
 
