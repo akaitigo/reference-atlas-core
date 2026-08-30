@@ -29,4 +29,6 @@ jobs:
             git log --format='%H%x00%B%x00' "HEAD^..HEAD" | python3 scripts/check_dco.py
           fi
       - name: Release gate
+        env:
+          DCO_AUDIT_REF: ${{ github.event.pull_request.head.sha || github.sha }}
         run: make release-check

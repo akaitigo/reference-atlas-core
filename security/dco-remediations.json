@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "remediations": [
+    {
+      "commit": "8415dd097a8fe7bf8f9dce591ddd46244543fc8f",
+      "reason": "PR #2のsquash merge本文で改行escapeが文字列化され、Signed-off-by trailerとして解釈されなかったため、公開履歴を変更せず署名済みattestationで是正する。",
+      "source_pr": 2,
+      "source_signed_commits": [
+        "1b5b4cce5140a9dcffbd956257f01c6f4e7a3bfb",
+        "f2f1872efb1d37ff465503d68b39c06bdd8877bb"
+      ]
+    }
+  ]
+}

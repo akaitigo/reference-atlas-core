@@ -1,10 +1,14 @@
-.PHONY: ci-supply-chain fmt-check vet test compatibility validate audit check build release-check
+.PHONY: ci-supply-chain dco-audit fmt-check vet test compatibility validate audit check build release-check
 
 GOCACHE ?= $(CURDIR)/.cache/go-build
+DCO_AUDIT_REF ?= HEAD
 export GOCACHE
 
 ci-supply-chain:
 	python3 scripts/check_ci_action_pins.py --self-test
+
+dco-audit:
+	python3 scripts/check_dco_history.py --self-test --audit-ref "$(DCO_AUDIT_REF)"
 
 fmt-check:
 	test -z "$$(gofmt -l cmd internal schemas)"
@@ -34,7 +38,7 @@ build:
 	mkdir -p bin
 	go build -trimpath -ldflags "-s -w" -o bin/atlas ./cmd/atlas
 
-check: ci-supply-chain fmt-check vet test compatibility validate audit
+check: ci-supply-chain dco-audit fmt-check vet test compatibility validate audit
 
 release-check: check build
 	./bin/atlas version
