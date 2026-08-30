@@ -21,8 +21,12 @@ jobs:
           cache: true
       - name: DCO
         run: |
-          base="${{ github.event.pull_request.base.sha }}"
-          if [ -z "$base" ]; then base="HEAD^"; fi
-          git log --format='%H%x00%B%x00' "$base..HEAD" | python3 scripts/check_dco.py
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+            git log --format='%H%x00%B%x00' "$base..$head" | python3 scripts/check_dco.py
+          else
+            git log --format='%H%x00%B%x00' "HEAD^..HEAD" | python3 scripts/check_dco.py
+          fi
       - name: Release gate
         run: make release-check
