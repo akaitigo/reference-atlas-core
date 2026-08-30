@@ -7,7 +7,7 @@ ci-supply-chain:
 	python3 scripts/check_ci_action_pins.py --self-test
 
 dco-audit:
-	python3 scripts/check_dco.py --self-test --audit-ref HEAD
+	python3 scripts/check_dco_history.py --self-test --audit-ref HEAD
 
 fmt-check:
 	test -z "$$(gofmt -l cmd internal schemas)"
