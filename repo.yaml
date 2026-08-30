@@ -1,0 +1,12 @@
+schemaVersion: 1
+id: reference-atlas-core
+classification: metadata-catalog
+lifecycle: active
+sensitivity: public
+hostClass: managed-development-mac
+commands:
+  verify: make release-check
+externalWrites:
+  github: allowed
+  cloud: denied
+  existingRepositories: denied
